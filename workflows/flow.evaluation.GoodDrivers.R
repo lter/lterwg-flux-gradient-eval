@@ -6,6 +6,8 @@ library(dplyr)
 library(ggplot2)
 library(ggridges)
 library(ggpubr)
+library(VSURF)
+library(randomForest)
 
 dir <- '/Volumes/MaloneLab/Research/FluxGradient/RandomForestModel/'
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
@@ -38,8 +40,6 @@ train  %>% summary
 test  %>% summary
 
 # Variable Selection : ####
-library(VSURF)
-library(randomForest)
 
 SITES_One2One_canopy %>% names
 train[, c(7:8, 10,78)] %>% names
@@ -120,7 +120,6 @@ train$rf_model <- predict(rf_model , train)
 confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
-dir <- '/Volumes/MaloneLab/Research/FluxGradient/RandomForestModel/'
 save(train, test,rf_model, final.vars, SITES_One2One_canopy, file= paste(dir, "Good_Fluxes.Rdata", sep="") )
 
 
@@ -242,3 +241,8 @@ ggarrange(plot.wp.1,
           plot.wp.3,
           plot.wp.4,
           plot.wp.5, common.legend = TRUE )
+
+
+# Next : #####
+
+message('run flow.bhatt')

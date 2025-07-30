@@ -8,11 +8,11 @@
 
 library(tidyverse)
 
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient"
+DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 setwd(DirRepo)
 
 # Compiles Dataframes into one list:
-source(fs::path(DirRepo,'exploratory/flow.evaluation_SITELIST.R'))
+source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R'))
 
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct  %>% mutate( site = Site)
 
@@ -91,8 +91,6 @@ total.report %>%  filter( Canopy_L2 == "AW") %>% select( site) %>% unique %>% co
 total.report %>%  filter( Canopy_L2 == "WW") %>% select( site) %>% unique %>% count
 total.report %>%  filter( Canopy_L2 == "WW-") %>% select( site) %>% unique %>% count
 
-
-
 Canopy.summary <- total.report %>% reframe(.by= c(Canopy_L2) , Sites = site %>% unique %>% length)
  
 total.report %>% ggplot( aes( Canopy_L2, col=Canopy_L2, fill=Canopy_L2)) + geom_bar() + theme_bw() + ylab('Measurement Levels') + xlab ("")
@@ -103,3 +101,4 @@ listofsites <- total.report %>%  filter( Canopy_L1 == "AA") %>% select( site)
 AA.sites <- listofsites$site%>% unique 
 
 setdiff(all.sites, AA.sites)
+

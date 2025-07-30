@@ -1,7 +1,7 @@
 # Filter flux data:
 
-source(fs::path(DirRepo,'exploratory/FUNCTION_Filter_FG.R' ))
-source(fs::path(DirRepo,'exploratory/FUNCTION_SITELIST_FORMATTING.R' ))
+source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
+source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R'))
 
 for( site in site.list){
   
@@ -18,7 +18,7 @@ for( site in site.list){
   
   library(lutz)
   # Get NEON sites from the server and find the time zones: https://cran.r-project.org/web/packages/lutz/readme/README.html
-  sites.location <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
+  sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
                                                                                                                       crs = "+proj=longlat +datum=WGS84")
   
   sites.location$TZ <- tz_lookup(sites.location, method = "accurate")

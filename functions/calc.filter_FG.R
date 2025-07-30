@@ -83,7 +83,6 @@ filter_report <- function( df,
 }
 
 # Stability filter report:
-WP_9min.df.final$Stability_500
 filter_report_stability <- function( df, 
                            dConcSNR.min, 
                            approach){

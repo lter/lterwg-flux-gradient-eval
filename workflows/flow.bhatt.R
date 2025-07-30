@@ -9,14 +9,14 @@ library(sf)
 
 # Bhatt:
 # This script uses flow.temporalcoverage and flow.bhatt to evaluate the representativeness of the the twice filtered data:
-source("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient/exploratory/calc_bhatt_coefficient.R" )
+source("functions/calc_bhatt_coefficient.R" )
 
 # The Diel analysis is currently set up by CCC threshold:
 drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3") # The Data 
 data_folder <- googledrive::drive_ls(path = drive_url)
 googledrive::drive_auth(email = email)
 
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient"
+DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 load(fs::path(localdir, paste0("SITES_One2One.Rdata"))) # Import CCC results
@@ -123,3 +123,7 @@ save( temporal.coverage.month,
       temporal.coverage.diel, file = paste(localdir.site, "/", site, "_Temporal_Coverage.Rdata", sep=""))
 fileSave <- paste(localdir.site, "/", site, "_Temporal_Coverage.Rdata", sep="")
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+# Next : #####
+
+message('run flow.temporal Coverage')

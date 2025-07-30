@@ -7,6 +7,7 @@ rm(list=ls())
 library(tidyverse)
 library(ggplot2)
 library(ggpubr)
+library(sf)
 
 # -------------- Change this stuff -------------
 #DirRepo <- 'C:/Users/csturtevant/Documents/Git/lterwg-flux-gradient' # Relative or absolute path to lterwg-flux-gradient git repo on your local machine. Make sure you've pulled the latest from main!
@@ -63,43 +64,52 @@ if(DnldFromGoogleDrive == TRUE){
   }
   } }
 
-# Evaluation of SNR Threshold: (ETA 1 Hour)
-source(fs::path(DirRepo,'exploratory/flow_evaluation_SNR.R'))
+# Evaluation of SNR Threshold: (ETA 1 Hour) ####
+SNR.plot.dir <- '/Volumes/MaloneLab/Research/FluxGradient/SNR_plot' # Where do you want to save the plots
+SNR.summary.dir <-"/Volumes/MaloneLab/Research/FluxGradient/SNR_Summary/" # Where to save the summary file
+source(fs::path(DirRepo,'workflows/flow.evaluation.SNR.R'))
 
 # Application of Filter Functions: ####
 message('Running Filter...')
-library(sf)
-source(fs::path(DirRepo,'exploratory/flow.evaluation.filter.R'))
+source(fs::path(DirRepo,'workflows/flow.evaluation.filter.R'))
 
 # Compiles Dataframes into one list: ####
-source(fs::path(DirRepo,'exploratory/flow.evaluation_SITELIST.R'))
+source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R'))
 
 # Application of the One2One Analysis ####
 message('Running One2One with CCC computation for best height...')
 
 # set where you want plots to go:
 dir.one2one <- '/Volumes/MaloneLab/Research/FluxGradient/One2One_Plots'
-source(fs::path(DirRepo,'exploratory/flow.evaluation.One2One.CCC.R'))
+source(fs::path(DirRepo,'workflows/flow.evaluation.One2One.CCC.R'))
 
 fileSave <- fs::path(localdir,paste0("SITES_One2One.Rdata"))
 save( SITES_One2One,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-#fileSave <- fs::path(localdir,paste0("FilteredData_BH.Rdata"))
-#save( SITES_WP_9min_FILTER_BH,SITES_AE_9min_FILTER_BH, SITES_MBR_9min_FILTER_BH ,      file=fileSave)
-#googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
-
 # Zip the plots and upload to google"
-
 files2zip <- dir(dir.one2one, full.names = TRUE)
 zip(zipfile = 'One2One.zip', files = files2zip)
 
 fileSave <- paste(dir.one2one, 'One2One.zip', sep="/")
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Application of the Diurnal Analysis ####
-load(fs::path(localdir,paste0("FilteredData_BH.Rdata")))
+# Application of the Diel Analysis ####
+
 # set where you want plots to go:
 dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'
+source(fs::path(DirRepo,'workflows/flow.evaluation.diel.R'))
 
-source(fs::path(DirRepo,'exploratory/flow.evaluation.diurnal.R'))
+
+# Visualizations: ####
+message('run flow.evaluation.filter.vizualizations')
+message('run flow.CCC_VIZ')
+
+# Next : #####
+
+message('run flow.evaluation.GoodDrivers')
+
+
+
+
+

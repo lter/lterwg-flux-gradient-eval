@@ -1,9 +1,12 @@
 # The Diel analysis is currently set up by CCC threshold:
+library(ggpubr)
+library(ggplot2)
 
-source(fs::path(DirRepo,'exploratory/FUNCTION_DIURNAL.R' ))
+source(fs::path(DirRepo,'functions/calc.diel.R' ))
 load(fs::path(localdir,paste0("SITES_One2One.Rdata"))) # Import CCC results
 
 message(" Currently the diel is fit for the peak growing season for each year using all measurement heights. Good data is where the CCC > 0.5, bad data is where the CCC is < 0.5")
+
 ccc.thresholds <- c(0.5, 0.55, 0.6, 0.65, 0.7, 0.75)
 
 # Calculate diels by ccc: ####
@@ -195,11 +198,6 @@ for( site in site.list){
 
 
 # Plots : ####
-
-library(ggpubr)
-library(ggplot2)
-
-
   for ( site in site.list){
     for(ccc in ccc.thresholds){
     
@@ -298,7 +296,7 @@ diel.summary.year.gas.typ <- data.frame(Year = as.character(),
 for( site in site.list){
   for(ccc in ccc.thresholds){
     
-    localdir.site = paste( "/Volumes/MaloneLab/Research/FluxGradient/FluxData/", site, sep="")
+    localdir.site = paste( localdir ,"/", site, sep="")
     print(paste(site, "CCC threshold =", ccc))
     load(file=paste(localdir.site, "/", site, "_ccc",ccc,"_DIEL.Rdata", sep=""))
     
@@ -400,7 +398,7 @@ diel.summary.year.gas.cl2.typ <- data.frame(Year = as.character(),
 for( site in site.list){
   for(ccc in ccc.thresholds){
     
-    localdir.site = paste( "/Volumes/MaloneLab/Research/FluxGradient/FluxData/", site, sep="")
+    localdir.site = paste( localdir ,"/", site, sep="")
     print(paste(site, "CCC threshold =", ccc))
     file_path=paste(localdir.site, "/", site, "_ccc",ccc,"_CL2_DIEL.Rdata", sep="")
     

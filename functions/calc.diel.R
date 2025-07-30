@@ -160,16 +160,6 @@ DIEL.COMPILE <- function( dataframe, FG_flux, EC_flux, Gas){
         } })
           
         }
-        
-        
-  
-  if(exists('DIEL.df' )) { 
-    return( DIEL.df)
-    }
-    
-  
-  
-}
 
 # Depreciated:
 

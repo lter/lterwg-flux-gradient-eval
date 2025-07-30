@@ -1,9 +1,10 @@
 # Need to check the impact of different filters for SNR:
 library(tidyverse)
 library(sf)
+library(lutz)
 
-source(fs::path(DirRepo,'exploratory/FUNCTION_Filter_FG.R' ))
-source(fs::path(DirRepo,'exploratory/FUNCTION_SITELIST_FORMATTING.R' ))
+source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
+source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R' ))
 
 for( site in site.list){
   
@@ -17,10 +18,9 @@ for( site in site.list){
   load(paste(localdir.site, "/", files, sep=""))
   
   # Change the time to local:
-  
-  library(lutz)
+ 
   # Get NEON sites from the server and find the time zones: https://cran.r-project.org/web/packages/lutz/readme/README.html
-  sites.location <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
+  sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
                                                                                                                       crs = "+proj=longlat +datum=WGS84")
   
   sites.location$TZ <- tz_lookup(sites.location, method = "accurate")
@@ -128,15 +128,14 @@ for( site in site.list){
 
   # Save plots
   plot.name <- paste(site,"_SNR.png", sep="")
-  SNR.dir <- '/Volumes/MaloneLab/Research/FluxGradient/SNR_plot'
 ggsave( plot.name , 
         plot=plot,
-  path =  SNR.dir)
+  path =   SNR.plot.dir)
 message( paste(site, "plot saved"))
 # Save Summary:
 summary.rmse <- summary.rmse %>% mutate(site = site)
 
-summary.file.name <- paste("/Volumes/MaloneLab/Research/FluxGradient/SNR_Summary/",site, "_SNR.csv", sep="")
+summary.file.name <- paste(SNR.summary.dir,site, "_SNR.csv", sep="")
 write.csv(summary.rmse ,summary.file.name )
 
 message( paste(site, "file saved"))
