@@ -13,4 +13,12 @@ site.att.sf$geometry %>% plot
 
 aoi.usa <- aoi_get(country = c('PR', 'USA'))
 
-ggplot() + geom_sf(data = aoi.usa, fill='white', color="navy", lwd=1.5) + geom_sf(data = site.att.sf, size=2, color = 'goldenrod') + theme_bw()
+ggplot() + geom_sf(data = aoi.usa, fill='white', color="navy", lwd=1) + geom_sf(data = site.att.sf, size=2, color = 'goldenrod') + theme_bw()
+
+# Attribute and canopy file:
+canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
+metadata %>% names
+
+metadata$Vegetation.Abbreviation..IGBP. %>% as.factor %>% summary
+
+# Get climate classes and eco-domains for the location
