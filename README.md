@@ -1,20 +1,97 @@
-# GROUP NAME HERE
+# LTER Synthesis working group -- The Flux Gradient Project: Understanding the methane sink-source capacity of natural ecosystems
 
-Principal Investigators:
-- PI NAME HERE
 
-## Script Explanations
+## PIs: 
 
-Briefly describe the purpose of each script (or folder of scripts) here as you create them!
+- Sparkle L. Malone, Assistant Professor, Yale University
+- Jackie H. Matthes, Senior Scientist, Harvard University
 
-## Contributing Guidelines & Style Guide
+## Project Summary
 
-When you have a group of people collaborating on a shared project (particularly a code-heavy one), it can be nice to create some guidelines to make sure everyone is contributing in consistent ways. Similarly if your group reaches consensus on a 'style' of file names and/or code it can be good to formalize those rules as well. The standard convention in GitHub is to create a file called "CONTRIBUTING.md" that contains all of this information. If you want some inspiration check out the LTER Scientific Computing team's [CONTRIBUTING.md](https://github.com/lter/scicomp/blob/main/CONTRIBUTING.md) document!
+- https://lternet.edu/working-groups/the-flux-gradient-project/
+
+## Repository Structure
+
+```
+lterwg-flux-gradient-eval/
+├── functions/               # Core analysis functions
+│   └── calc.*.R             # Calculation functions
+│   
+├── workflows/               # Complete analysis workflows
+│   └── flow.*.R             # Analysis workflows
+│
+├── exploratory/             # Preliminary analyses and development
+│   └── flow.evaluation.*.R
+│
+└── aop/             # Preparation of AOP, canopy diversity, and caopy information data
+    ├── flow.NEONAOP.EVI.Download.R
+    ├── flow_AOP_FormatLayers.R
+    ├── flow.AOP.viz.R
+    └── flow.StructuralDiversity.R 
+```
+
+## Data Frame Organization
+- Column name should use snake case include units, last "_" proceeds units (i.e. var_molperm3)
+- no "- or /" in column names
+
+## Getting Started
+
+1. Clone this repository
+   ```bash
+   git clone https://github.com/lter/lterwg-flux-gradient.git
+   cd lterwg-flux-gradient
+   ```
+
+2. Install required R packages
+   ```r
+   # Core packages
+   install.packages(c("tidyverse", "neonUtilities", "rhdf5", "googledrive", 
+                     "foreach", "doParallel", "lubridate", "ggplot2"))
+   
+   # Additional packages
+   install.packages(c("gslnls", "terra", "sf", "ggh4x"))
+   
+   # If using BiocManager
+   if (!requireNamespace("BiocManager", quietly = TRUE))
+       install.packages("BiocManager")
+   BiocManager::install("rhdf5")
+   ```
+
+## Workflow
+TBA
+
+## AOP Workflow
+
+1. `flow.NEONAOP.Download.R` → Downloads and mosaics NEON AOP Data. Data is stored locally on the Malone Lab server.
+
+2. `flow.neon.site.squarebuffers.R` → Creates square buffers for LTER-NEON co-located sites using this file: Ameriflux_NEON field-sites.csv to produce: NEONLTERsiteBuffers.Rdata.
+
+3. `flow.neon.site.simplefeatures.R` → This script uses the NEONLTERsiteBuffers.Rdata and breaks each buffer into wedges to produce: FG_Site_Wdges.RDATA.
+
+4. `flow_AOP_FormatLayers` → Extracts AOP information for each wedge to produce a summary file.
+
+   ```
+   NEON AOP Data → flow.NEONAOP.Download.R → Downloaded AOP data 
+   
+   Ameriflux_NEON field-sites.csv → flow.neon.site.squarebuffers.R → NEONLTERsiteBuffers.Rdata
+   
+   NEONLTERsiteBuffers.Rdata → flow.neon.site.simplefeatures.R → FG_Site_Wdges.RDATA
+   
+   FG_Site_Wdges.RDATA + Downloaded AOP data → flow_AOP_FormatLayers → Summary files
+   ```
+   
+## Function Folder
+- Use hierarchical naming with the active verb first, i.e. "flag.iqr.R"
+- This is where all functions called by flow. scripts in Workflow Folder are stored
+
+## Exploratory Folder
+- Wild West, this is where preliminary functions and workflows are stored
 
 ## Related Repositories
 
-- TBD (recommend including user/repository name, link, and brief description)
+- [lterwg-flux-gradient](https://github.com/lter/lterwg-flux-gradient): Main repo, contains code for filtering
+- [lterwg-flux-gradient-methane](https://github.com/lter/lterwg-flux-gradient-methane): Code for the methane paper
 
 ## Supplementary Resources
 
-LTER Scientific Computing Team [website](https://lter.github.io/scicomp/) & NCEAS' [Resources for Working Groups](https://www.nceas.ucsb.edu/working-group-resources)
+NCEAS Scientific Computing Support Team page [link](https://lter.github.io/scicomp/)
