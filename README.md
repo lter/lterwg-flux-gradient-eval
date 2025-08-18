@@ -94,4 +94,4 @@ TBA
 
 ## Supplementary Resources
 
-NCEAS Scientific Computing Support Team page [link](https://lter.github.io/scicomp/)
+LTER Scientific Computing Team [website](https://lter.github.io/scicomp/) & NCEAS' [Resources for Working Groups](https://www.nceas.ucsb.edu/working-group-resources)
