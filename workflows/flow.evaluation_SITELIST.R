@@ -3,8 +3,11 @@
 SITES_MBR_9min_FILTER <- list()
 SITES_AE_9min_FILTER <- list()
 SITES_WP_9min_FILTER <- list()
-filter.report <- data.frame()
-filter.report.stability <- data.frame()
+filter.report.CO2 <- data.frame()
+filter.report.stability.CO2 <- data.frame()
+
+filter.report.H2O <- data.frame()
+filter.report.stability.H2O <- data.frame()
 # Site List DF and filter report
 for( site in site.list){
   
@@ -18,14 +21,21 @@ for( site in site.list){
   load(paste(localdir.site, "/", files, sep=""))
   
   
-  SITES_MBR_9min_FILTER[[site]] <- MBR_9min_FILTER
+  SITES_MBR_9min_FILTER[[site]] <- MBR_9min_FILTER 
   SITES_AE_9min_FILTER[[site]] <- AE_9min_FILTER
   SITES_WP_9min_FILTER[[site]] <- WP_9min_FILTER
   
-  files <- paste(site, "_9min.report.csv", sep = "")
+  files.CO2 <- paste(site, "_9min.report.CO2.csv", sep = "")
   
-  report <- read.csv( paste( localdir.site,"/", files, sep="" ))
-  filter.report <- rbind(filter.report,  report )
+  report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))
+
+  filter.report.CO2 <- rbind(filter.report.CO2,  report.CO2 )
+  
+  files.H2O <- paste(site, "_9min.report.H2O.csv", sep = "")
+  
+  report.H2O <- read.csv( paste( localdir.site,"/", files.H2O, sep="" ))
+  
+  filter.report.H2O <- rbind(filter.report.H2O,  report.H2O )
   
   message("Done with ", site)
 }
@@ -37,10 +47,13 @@ for( site in site.list){
   # Load the files:
   localdir.site <- paste(localdir,"/", site, sep = "")
 
-  files <- paste(site, "_9min.report.stability.csv", sep = "")
+  files.CO2 <- paste(site, "_9min.report.stability.CO2.csv", sep = "")
+  report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))
+  filter.report.stability.CO2 <- rbind(filter.report.stability.CO2,  report.CO2 )
   
-  report <- read.csv( paste( localdir.site,"/", files, sep="" ))
-  filter.report.stability <- rbind(filter.report.stability,  report )
+  files.H2O <- paste(site, "_9min.report.stability.H2O.csv", sep = "")
+  report.H2O <- read.csv( paste( localdir.site,"/", files.H2O, sep="" ))
+  filter.report.stability.H2O <- rbind(filter.report.stability.H2O,  report.H2O )
   
   message("Done with ", site)
 }

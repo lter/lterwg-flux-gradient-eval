@@ -1,4 +1,7 @@
-# Filter flux data:
+# Filter Gradient Flux Data:
+
+library(lutz)
+library(sf)
 
 source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
 source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R'))
@@ -16,7 +19,7 @@ for( site in site.list){
   
   # Change the time to local:
   
-  library(lutz)
+
   # Get NEON sites from the server and find the time zones: https://cran.r-project.org/web/packages/lutz/readme/README.html
   sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
                                                                                                                       crs = "+proj=longlat +datum=WGS84")
@@ -43,47 +46,78 @@ for( site in site.list){
   WP_9min.df.final$hour.local <- WP_9min.df.final$timeEndA.local %>% format("%H")
   
   # Run the filter functions... Report:
-
-  WP_9min.report <-  filter_report(df = WP_9min.df.final,
-                                   dConcSNR.min = 3,
-                                   approach = "WP")
   
-  AE_9min.report <-  filter_report( df = AE_9min.df.final,
-                                    dConcSNR.min = 3,
-                                    approach = "AE")
+  # CO2
   
-  MBR_9min.report <-  filter_report( df = MBR_9min.df.final,
-                                     dConcSNR.min = 3,
-                                     approach = "MBR")
+  WP_9min.report.CO2 <-  filter_report(df = WP_9min.df.final %>% filter(gas == "CO2"),
+                                       dConcSNR.min = 3,
+                                       approach = "WP") %>% mutate(approach = "WP",
+                                                                   site =site)
+  
+  AE_9min.report.CO2  <-  filter_report( df = AE_9min.df.final %>% filter(gas == "CO2"),
+                                         dConcSNR.min = 3,
+                                         approach = "AE") %>% mutate(approach = "AE",
+                                                                     site =site)
+  
+  MBR_9min.report.CO2  <-  filter_report( df = MBR_9min.df.final %>% filter(gas == "CO2"),
+                                          dConcSNR.min = 3,
+                                          approach = "MBR") %>% mutate(approach = "MBR",
+                                                                       site =site)
   
   
-  WP_9min.report.stability <-  filter_report_stability(df = WP_9min.df.final,
-                                   dConcSNR.min = 3,
-                                   approach = "WP")
+  WP_9min.report.stability.CO2 <-  filter_report_stability(df = WP_9min.df.final %>% filter(gas == "CO2"),
+                                                           dConcSNR.min = 3,
+                                                           approach = "WP") %>% mutate(approach = "WP",
+                                                                                       site =site)
   
-  AE_9min.report.stability <-  filter_report_stability( df = AE_9min.df.final,
-                                    dConcSNR.min = 3,
-                                    approach = "AE")
+  AE_9min.report.stability.CO2 <-  filter_report_stability( df = AE_9min.df.final%>% filter(gas == "CO2"),
+                                                            dConcSNR.min = 3,
+                                                            approach = "AE") %>% mutate(approach = "AE",
+                                                                                        site =site)
   
-  MBR_9min.report.stability <-  filter_report_stability( df = MBR_9min.df.final,
-                                     dConcSNR.min = 3,
-                                     approach = "MBR")
+  MBR_9min.report.stability.CO2 <-  filter_report_stability( df = MBR_9min.df.final%>% filter(gas == "CO2"),
+                                                             dConcSNR.min = 3,
+                                                             approach = "MBR") %>% mutate(approach = "MBR",
+                                                                                          site =site)
   
-  # Add the approach into the file:
-  MBR_9min.report$approach = "MBR"
-  AE_9min.report$approach = "AE" 
-  WP_9min.report$approach = "WP"
+  SITE_9min.report.CO2 <- rbind( WP_9min.report.CO2, AE_9min.report.CO2, MBR_9min.report.CO2)
+  SITE_9min.report.stability.CO2 <- rbind( WP_9min.report.stability.CO2, AE_9min.report.stability.CO2, MBR_9min.report.stability.CO2)
   
-  MBR_9min.report.stability $approach = "MBR"
-  AE_9min.report.stability $approach = "AE" 
-  WP_9min.report.stability $approach = "WP"
+  # H2O
   
-  SITE_9min.report <- rbind( WP_9min.report, AE_9min.report, MBR_9min.report)
-  SITE_9min.report.stability <- rbind( WP_9min.report.stability, AE_9min.report.stability, MBR_9min.report.stability)
+  WP_9min.report.H2O <-  filter_report(df = WP_9min.df.final %>% filter(gas == "H2O"),
+                                       dConcSNR.min = 3,
+                                       approach = "WP") %>% mutate(approach = "WP",
+                                                                   site =site)
   
-  # Add the site into the file:
-  SITE_9min.report$site <- site
-  SITE_9min.report.stability$site <- site
+  AE_9min.report.H2O  <-  filter_report( df = AE_9min.df.final %>% filter(gas == "H2O"),
+                                         dConcSNR.min = 3,
+                                         approach = "AE") %>% mutate(approach = "AE",
+                                                                     site =site)
+  
+  MBR_9min.report.H2O  <-  filter_report( df = MBR_9min.df.final %>% filter(gas == "H2O"),
+                                          dConcSNR.min = 3,
+                                          approach = "MBR") %>% mutate(approach = "MBR",
+                                                                       site =site)
+  
+  
+  WP_9min.report.stability.H2O <-  filter_report_stability(df = WP_9min.df.final%>% filter(gas == "H2O"),
+                                                           dConcSNR.min = 3,
+                                                           approach = "WP") %>% mutate(approach = "WP",
+                                                                                       site =site)
+  
+  AE_9min.report.stability.H2O <-  filter_report_stability( df = AE_9min.df.final%>% filter(gas == "H2O"),
+                                                            dConcSNR.min = 3,
+                                                            approach = "AE") %>% mutate(approach = "AE",
+                                                                                        site =site)
+  
+  MBR_9min.report.stability.H2O <-  filter_report_stability( df = MBR_9min.df.final%>% filter(gas == "H2O"),
+                                                             dConcSNR.min = 3,
+                                                             approach = "MBR") %>% mutate(approach = "MBR",
+                                                                                          site =site)
+  
+  SITE_9min.report.H2O <- rbind( WP_9min.report.H2O, AE_9min.report.H2O, MBR_9min.report.H2O)
+  SITE_9min.report.stability.H2O <- rbind( WP_9min.report.stability.H2O, AE_9min.report.stability.H2O, MBR_9min.report.stability.H2O)
   
   # Run the filter functions... FILTER data:
   MBR_9min_FILTER <- filter_fluxes( df = MBR_9min.df.final,
@@ -101,8 +135,12 @@ for( site in site.list){
   # Output the files
   localdir.site <- paste(localdir,"/", site, sep = "")
   
-  write.csv( SITE_9min.report.stability,  paste(localdir.site, "/", site,"_9min.report.stability.csv", sep=""))
-  write.csv( SITE_9min.report,  paste(localdir.site, "/", site,"_9min.report.csv", sep=""))
+  write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,"_9min.report.stability.CO2.csv", sep=""))
+  write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,"_9min.report.CO2.csv", sep=""))
+  
+  write.csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,"_9min.report.stability.H2O.csv", sep=""))
+  write.csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,"_9min.report.H2O.csv", sep=""))
+  
   
   save( AE_9min_FILTER,
         WP_9min_FILTER,
@@ -116,17 +154,39 @@ for( site in site.list){
   fileSave <- paste(localdir.site, "/", site, "_FILTER.Rdata", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path = site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.csv", sep="")
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.CO2.csv", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.csv", sep="")
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.CO2.csv", sep="")
+  googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
+  
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.H2O.csv", sep="")
+  googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
+  
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.H2O.csv", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
 
   message( paste("Done with filtering", site))
   
   rm( AE_9min_FILTER,
       WP_9min_FILTER,
-      MBR_9min_FILTER,SITE_9min.report, WP_9min.report, AE_9min.report, MBR_9min.report,
-      SITE_9min.report.stability, WP_9min.report.stability, AE_9min.report.stability, MBR_9min.report.stability,
-      SITE_9min.report, sample.diel, sample.month)
+      MBR_9min_FILTER,
+      SITE_9min.report.CO2, 
+      WP_9min.report.CO2, 
+      AE_9min.report.CO2, 
+      MBR_9min.report.CO2,
+      SITE_9min.report.stability.CO2, 
+      WP_9min.report.stability.CO2, 
+      AE_9min.report.stability.CO2, 
+      MBR_9min.report.stability.CO2,
+      SITE_9min.report.H2O, 
+      WP_9min.report.H2O, 
+      AE_9min.report.H2O, 
+      MBR_9min.report.H2O,
+      SITE_9min.report.stability.H2O, 
+      WP_9min.report.stability.H2O, 
+      AE_9min.report.stability.H2O, 
+      MBR_9min.report.stability.H2O,
+      SITE_9min.report.H2O,
+      sample.diel, sample.month)
 }
