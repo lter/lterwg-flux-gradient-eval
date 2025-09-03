@@ -1,4 +1,5 @@
 #flow.evaluation.filter.Vizualization:
+rm(list=ls())
 
 # This script is developed to understand the following:
 # 1. How much data is left?
@@ -8,7 +9,13 @@
 
 library(tidyverse)
 
+metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') # has a list of all the sites
+
+# -------------------------------------------------------
+site.list <- metadata$Site_Id.NEON %>% unique
+localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 setwd(DirRepo)
 
 # Compiles Dataframes into one list:
@@ -56,36 +63,36 @@ total.report.CO2 %>% reframe( .by = c(Canopy_L2) ,flag.interaction.ALL = mean(fl
 
 total.report.H2O %>% reframe( .by = c(Canopy_L2) ,flag.interaction.ALL = mean(flag.interaction.ALL))
 
-MLevels.violin.plot.CO2 <- total.report.CO2 %>%  ggplot(aes( x= Canopy_L2, y = flag.interaction.ALL, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + theme_bw() +  labs(col = "Canopy Level")
+MLevels.violin.plot.CO2 <- total.report.CO2 %>%  ggplot(aes( x= Canopy_L2, y = flag.interaction.ALL) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + theme_bw() +  labs(col = "Canopy Level")
 
-MLevels.violin.plot.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.interaction.ALL, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + theme_bw() +  labs(col = "Canopy Level")
+MLevels.violin.plot.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.interaction.ALL) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + theme_bw() +  labs(col = "Canopy Level")
 
 
-MLevels.approach.site.violin.plot.CO2 <- total.report.CO2 %>%  ggplot(aes( x= approach, y = flag.interaction.ALL, col= Canopy_L2) ) + geom_violin( ) + 
+MLevels.approach.site.violin.plot.CO2 <- total.report.CO2 %>%  ggplot(aes( x= approach, y = flag.interaction.ALL) ) + geom_violin( ) + 
   ylab("Filtered (%)") + ylim(0, 100) +
   theme(legend.position = "none") + theme_bw() + facet_wrap(~Site)
 
-MLevels.approach.site.violin.plot.H2O <- total.report.H2O %>%  ggplot(aes( x= approach, y = flag.interaction.ALL, col= Canopy_L2) ) + geom_violin( ) + 
+MLevels.approach.site.violin.plot.H2O <- total.report.H2O %>%  ggplot(aes( x= approach, y = flag.interaction.ALL) ) + geom_violin( ) + 
   ylab("Filtered (%)") + ylim(0, 100) +
   theme(legend.position = "none") + theme_bw() + facet_wrap(~Site)
 
 
 # Which filter led to the most loss?
-p.all.ustar.CO2 <- total.report.CO2 %>%  ggplot(aes( x= Canopy_L2, y = flag.ustar_interp, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + 
+p.all.ustar.CO2 <- total.report.CO2 %>%  ggplot(aes( x= Canopy_L2, y = flag.ustar_interp) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + 
   geom_boxplot(width=0.1)+ xlab("") + ylab("Filtered (%)") + ylim(0, 100) + guides(col = "none") + theme_bw()
 
-p.all.ustar.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.ustar_interp, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + 
+p.all.ustar.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.ustar_interp) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + 
   geom_boxplot(width=0.1)+ xlab("") + ylab("Filtered (%)") + ylim(0, 100) + guides(col = "none") + theme_bw()
 
 
-p.all.snr.CO2  <- total.report.CO2  %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcSNR, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + guides(col = "none") + theme_bw()
+p.all.snr.CO2  <- total.report.CO2  %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcSNR) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + guides(col = "none") + theme_bw()
 
-p.all.snr.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcSNR, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + guides(col = "none") + theme_bw()
+p.all.snr.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcSNR) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("") + ylim(0, 100) + guides(col = "none") + theme_bw()
 
 
-p.all.tsnr.CO2 <- total.report.CO2 %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcTSNR, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1) + xlab("") + ylab("") + ylim(0, 100) + theme_bw() + guides(col = "none")
+p.all.tsnr.CO2 <- total.report.CO2 %>% filter(approach == "MBR") %>% ggplot(aes( x= Canopy_L2, y = flag.dConcTSNR) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1) + xlab("") + ylab("") + ylim(0, 100) + theme_bw() + guides(col = "none")
 
-p.all.tsnr.H2O <- total.report.H2O %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcTSNR, col= Canopy_L2) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1) + xlab("") + ylab("") + ylim(0, 100) + theme_bw() + guides(col = "none")
+p.all.tsnr.H2O <- total.report.H2O %>% filter(approach == "MBR") %>%  ggplot(aes( x= Canopy_L2, y = flag.dConcTSNR) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1) + xlab("") + ylab("") + ylim(0, 100) + theme_bw() + guides(col = "none")
 
 
 top.plot.CO2 <- ggpubr::ggarrange(approach.violin.plot.CO2, MLevels.violin.plot.CO2, nrow=1, ncol=2, common.legend = TRUE, labels=c("A", "B"))
@@ -96,7 +103,7 @@ bottom.plot.CO2 <- ggpubr::ggarrange(p.all.ustar.CO2 ,
 
 filter.plot.CO2 <- ggpubr::ggarrange(top.plot.CO2 ,bottom.plot.CO2 ,  nrow=2, ncol=1, common.legend = TRUE)
 
-ggsave("Figures/Filter_plot_CO2.png", plot = filter.plot, width = 9, height = 6, units = "in")
+ggsave("Figures/Filter_plot_CO2.png", plot = filter.plot.CO2, width = 9, height = 6, units = "in")
 
 
 
@@ -108,46 +115,42 @@ bottom.plot.H2O <- ggpubr::ggarrange(p.all.ustar.H2O ,
 
 filter.plot.H2O <- ggpubr::ggarrange(top.plot.H2O ,bottom.plot.H2O ,  nrow=2, ncol=1, common.legend = TRUE)
 
-ggsave("Figures/Filter_plot_H2O.png", plot = filter.plot, width = 9, height = 6, units = "in")
+ggsave("Figures/Filter_plot_H2O.png", plot = filter.plot.H2O, width = 9, height = 6, units = "in")
+
+# Need to update below to consider the gas of interst
+
+total.report.CO2$flag.ustar_interp %>% mean
+total.report.CO2$flag.ustar_interp %>% sd
+total.report.CO2$flag.dConcSNR %>% mean
+total.report.CO2$flag.dConcSNR %>% sd
+
+total.report.CO2$flag.dConcTSNR %>% mean
+total.report.H2O$flag.dConcTSNR %>% mean
 
 
-
-total.report$flag.ustar_interp %>% mean
-total.report$flag.ustar_interp %>% sd
-total.report$flag.dConcSNR %>% mean
-total.report$flag.dConcSNR %>% sd
-total.report$flag.dConcTSNR %>% mean
-total.report$flag.dConcTSNR %>% sd
-
-p.all.approach <- total.report %>%  ggplot(aes( x= approach, y = flag.interaction.ALL) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("Filtered (%)") + ylim(0, 100) +
-  theme(legend.position = "none") + theme_bw()
-
-
-summary.apprach <- total.report %>% reframe( .by=approach,
+summary.apprach.CO2 <- total.report.CO2 %>% reframe( .by=approach,
                                              flag.ustar_interp = mean(flag.ustar_interp),
                                              flag.dConcSNR = mean(flag.dConcSNR),
                                              flag.dConcTSNR = mean(flag.dConcTSNR),
                                              flag.interaction.ALL = mean(flag.interaction.ALL))
 
 
+summary.apprach.H2O <- total.report.H2O %>% reframe( .by=approach,
+                                                     flag.ustar_interp = mean(flag.ustar_interp),
+                                                     flag.dConcSNR = mean(flag.dConcSNR),
+                                                     flag.dConcTSNR = mean(flag.dConcTSNR),
+                                                     flag.interaction.ALL = mean(flag.interaction.ALL))
+
 # Summarize Canopy:
+# Same for both gases!
+Canopy.summary<- total.report.CO2 %>% reframe(.by= c(Canopy_L2) , Sites = site %>% unique %>% length)
 
-total.report %>%  filter( Canopy_L2 == "AA") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "AA+") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "AW+") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "AW+-") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "AW-") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "AW") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "WW") %>% select( site) %>% unique %>% count
-total.report %>%  filter( Canopy_L2 == "WW-") %>% select( site) %>% unique %>% count
-
-Canopy.summary <- total.report %>% reframe(.by= c(Canopy_L2) , Sites = site %>% unique %>% length)
  
-total.report %>% ggplot( aes( Canopy_L2, col=Canopy_L2, fill=Canopy_L2)) + geom_bar() + theme_bw() + ylab('Measurement Levels') + xlab ("")
+total.report.CO2 %>% ggplot( aes( Canopy_L2, col=Canopy_L2, fill=Canopy_L2)) + geom_bar() + theme_bw() + ylab('Measurement Levels') + xlab ("")
 
-all.sites <-total.report$site %>% unique 
+all.sites <-total.report.CO2 $site %>% unique 
 
-listofsites <- total.report %>%  filter( Canopy_L1 == "AA") %>% select( site) 
+listofsites <- total.report.CO2 %>%  filter( Canopy_L1 == "AA") %>% select( site) 
 AA.sites <- listofsites$site%>% unique 
 
 setdiff(all.sites, AA.sites)

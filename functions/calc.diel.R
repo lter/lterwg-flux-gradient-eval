@@ -140,6 +140,129 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
  
 }
 
+DIEL.FINAL <- function( dataframe, flux, Gas){
+  
+  dataframe <- dataframe %>% as.data.frame
+  
+  dataframe$flux <- dataframe[, flux]
+ 
+  # Need to define the growing season???
+  dataframe.GrowS <- dataframe %>% 
+    mutate(  timeEndA.local = as.POSIXct(timeEndA.local),
+      Month = timeEndA.local %>% format("%m") %>% as.numeric,
+             YearMon = timeEndA.local %>% format("%Y-%m"),
+             Year = timeEndA.local %>% format("%Y"),
+             Hour = timeEndA.local %>% format("%H") %>% as.numeric,
+             TowerH = paste(TowerPosition_A, TowerPosition_B, sep="-")) %>% filter(!is.na(FC_turb_interp) == TRUE) %>% reframe(.by=YearMon, min.EC = min(FC_turb_interp, na.rm=T) ) 
+  
+
+  
+  Year <- unique(dataframe.GrowS$Year)
+  
+  
+  message(" Ready to fit loess for all data")
+  new.data <- data.frame()
+  Final.data.all <- data.frame()
+  
+  for( i in Year){
+    print(i)
+    try({
+      subset <- dataframe.GrowS %>% filter(Year == i)
+      subset$flux <-subset[,flux]
+      count <- subset$flux %>% na.omit %>% length
+      
+      if(count > 48){
+        model <- loess( flux ~ Hour , data = subset )
+        model %>% plot
+        Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
+        pred <- predict(model, newdata = Diel.df, se=TRUE)
+        
+        new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
+                                        DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df)) %>% mutate(data="all")
+        
+        new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
+        Peak <- new.data$DIEL %>% max(na.rm=T)
+        MIN <- new.data$DIEL %>% min(na.rm=T)
+        
+        new.data$Peak.Hour <-  new.data$Hour[new.data$DIEL == Peak] %>% as.numeric %>% mean(na.rm=T)
+        new.data$Min.Hour <-  new.data$Hour[new.data$DIEL == MIN] %>% as.numeric %>% mean(na.rm=T)
+        new.data$count <- count
+        Final.data.all <- rbind(Final.data.all, new.data) } },silent=T)}
+  
+  rm(new.data)
+  message(" Done fitting loess for all data")
+  
+  
+  message(" Ready to fit loess for good data")
+  new.data <- data.frame()
+  Final.data.good <- data.frame()
+  
+  for( i in Year){
+    print(i)
+    try({
+      subset <- dataframe.GrowS %>% filter(Year == i, Good.CCC == 1)
+      count <- subset[,flux] %>% na.omit %>% length
+      
+      if(count > 48){
+        subset$flux <-subset[,flux]
+        model <- loess( flux ~ Hour , data = subset )
+        model %>% plot
+        Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
+        pred <- predict(model, newdata = Diel.df, se=TRUE)
+        
+        new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
+                                        DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df)) %>% mutate(data="good")
+        
+        new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
+        Peak <- new.data$DIEL %>% max(na.rm=T)
+        MIN <- new.data$DIEL %>% min(na.rm=T)
+        
+        new.data$Peak.Hour <-  new.data$Hour[new.data$DIEL == Peak] %>% as.numeric %>% mean(na.rm=T)
+        new.data$Min.Hour <-  new.data$Hour[new.data$DIEL == MIN] %>% as.numeric %>% mean(na.rm=T)
+        new.data$count <- count
+        Final.data.good  <- rbind(Final.data.good , new.data) %>% mutate(data="good")}},silent=T)}
+  rm(new.data)
+  message(" Done fitting loess for good data")
+  
+  
+  message(" Ready to fit loess for bad data")
+  new.data <- data.frame()
+  Final.data.bad <- data.frame()
+  for( i in Year){
+    print(i)
+    try({
+      subset <- dataframe.GrowS %>% filter(Year == i, Good.CCC == 0)
+      count <- subset[,flux] %>% na.omit %>% length
+      if(count > 48){
+        subset$flux <-subset[,flux]
+        model <- loess( flux ~ Hour , data = subset )
+        model %>% plot
+        Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
+        pred <- predict(model, newdata = Diel.df, se=TRUE)
+        
+        new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
+                                        DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df))%>% mutate(data="bad")
+        
+        new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
+        Peak <- new.data$DIEL %>% max(na.rm=T)
+        MIN <- new.data$DIEL %>% min(na.rm=T)
+        
+        new.data$Peak.Hour <-  new.data$Hour[new.data$DIEL == Peak] %>% as.numeric %>% mean(na.rm=T)
+        new.data$Min.Hour <-  new.data$Hour[new.data$DIEL == MIN] %>% as.numeric %>% mean(na.rm=T)
+        new.data$count <- count
+        Final.data.bad  <- rbind(Final.data.bad , new.data) %>% mutate(data="bad")}},silent=T) }
+  rm(new.data)
+  message(" Done fitting loess for all data")
+  
+  Final.data <- rbind(Final.data.all, Final.data.good, Final.data.bad )
+  
+  if( exists('Final.data' )) { 
+    return( Final.data)
+  }
+  
+}
+
+
 DIEL.COMPILE <- function( dataframe, FG_flux, EC_flux, Gas){
 
   try({
@@ -160,6 +283,22 @@ DIEL.COMPILE <- function( dataframe, FG_flux, EC_flux, Gas){
         } })
           
         }
+
+DIEL.COMPILE.FINAL <- function( dataframe, FG_flux, Gas){
+
+    FG.DIEL <- DIEL.FINAL( dataframe = dataframe, flux = FG_flux, Gas)
+    
+    if(length(FG.DIEL ) > 0) {
+      
+      FG.DIEL.1 <- FG.DIEL %>% rename( FG= DIEL, FG.SE= DIEL.SE,Peak.Hour.FG = Peak.Hour, Min.Hour.FG = Min.Hour) %>% 
+        select( Year, Hour, FG, FG.SE, Peak.Hour.FG, Min.Hour.FG, data, count) %>% distinct()
+      
+      
+     
+  
+    } }
+
+
 
 # Depreciated:
 

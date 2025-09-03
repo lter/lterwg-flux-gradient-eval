@@ -100,6 +100,9 @@ googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'
 source(fs::path(DirRepo,'workflows/flow.evaluation.diel.R'))
 
+fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY.RDATA'
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
 
 # Visualizations: ####
 message('run flow.evaluation.filter.vizualizations')

@@ -27,12 +27,15 @@ site.list <- metadata$Site_Id.NEON %>% unique
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
 
 SITES_One2One_ID <- SITES_One2One %>% mutate( Approach = factor(Approach, levels = c("MBR", "AE", "WP")),
-                                              Good.CCC = case_when( CCC >= 0.5 & Approach == "MBR" ~ 1,
-                                                                    CCC >= 0.75 & Approach == "WP" ~ 1,
-                                                                    CCC >= 0.7 & Approach == "AE" ~ 1,
-                                                                    CCC < 0.5 & Approach == "MBR" ~ 0,
-                                                                    CCC < 0.75 & Approach == "WP" ~ 0,
-                                                                    CCC < 0.7 & Approach == "AE" ~ 0)) %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) 
+                                              Good.CCC = case_when( gas == 'CO2' & CCC >= 0.5 & Approach == "MBR" ~ 1,
+                                                                    gas == 'CO2' &CCC >= 0.75 & Approach == "WP" ~ 1,
+                                                                    gas == 'CO2' &CCC >= 0.7 & Approach == "AE" ~ 1,
+                                                                    gas == 'CO2' &CCC < 0.5 & Approach == "MBR" ~ 0,
+                                                                    gas == 'CO2' & CCC < 0.75 & Approach == "WP" ~ 0,
+                                                                    gas == 'CO2' &CCC < 0.7 & Approach == "AE" ~ 0,
+                                                                    
+                                                                    gas == 'H2O' & CCC < 0.5  ~ 0,
+                                                                    gas == 'H2O' & CCC > 0.5  ~ 1) %>% as.factor) %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) 
 
 # Calculate Bhatt Coefficient and Distance for Tair, PAR,and VPD: ####
 

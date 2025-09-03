@@ -3,6 +3,7 @@
 SITES_MBR_9min_FILTER <- list()
 SITES_AE_9min_FILTER <- list()
 SITES_WP_9min_FILTER <- list()
+
 filter.report.CO2 <- data.frame()
 filter.report.stability.CO2 <- data.frame()
 
