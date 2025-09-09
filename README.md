@@ -57,8 +57,29 @@ lterwg-flux-gradient-eval/
    BiocManager::install("rhdf5")
    ```
 
-## Workflow
-TBA
+## Evaluation Workflow
+1. `flow.evaluation.batch` → Creates the data needed to evaluate gradient fluxes using the products of `lterwg-flux-gradient/workflows/flow.evaluation.dataframe.R`.
+First data is filtered (`flow.evaluation.filter.R`) to produce: FilteredData_ALLSites.Rdata and FilterReport_ALLSites.Rdata. Next, the One2One analysis (`flow.evaluation.One2One.R`) is done on filtered data to produce: One2One_ALLSites.Rdata and FilteredData_ALLSites_BH.Rdata. BH stands for the best height, which is determined by the height levels with the highest R2. Next the diurnal analysis (`flow.evaluation.diurnal.R`) produces: DiurnalSummary_ALLSites_BH.Rdata. Finally, we fit carbon exchange parameters (`flow.evaluation.cparms.R`) to produce: CarbonParms.Rdata. 
+
+2. `flow.evaluation.figures` → produces the figures and tables that evaluate the gradient flux. The products of `flow.evaluation.batch` are used. 
+
+   ```
+   SITE_aligned_conc_flux_9min.RData → flow.calc.flux.batch.R 
+                                     ├─ flow.calc.flag.mbr.batch.R
+                                     ├─ flow.calc.flag.aero.batch.R 
+                                     └─ flow.calc.flag.windprof.batch.R
+                                     → SITE_METHOD.RData
+   
+   SITE_METHOD.RData → lterwg-flux-gradient/workflows/flow.evaluation.dataframe.R → SITE_Evaluation.RData
+   
+   SITE_Evaluation.RData → flow.evaluation.batch
+                         ├─ flow.evaluation.filter.R → FilteredData_ALLSites.Rdata, FilterReport_ALLSites.Rdata
+                         ├─ flow.evaluation.One2One.R → One2One_ALLSites.Rdata, FilteredData_ALLSites_BH.Rdata
+                         ├─ flow.evaluation.diurnal.R → DiurnalSummary_ALLSites_BH.Rdata
+                         └─ flow.evaluation.cparms.R → CarbonParms.Rdata
+   
+   FilteredData_ALLSites.Rdata, etc. → flow.evaluation.figures → Figures and tables
+   ```
 
 ## AOP Workflow
 
