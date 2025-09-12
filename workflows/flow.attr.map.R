@@ -59,3 +59,6 @@ canopy.ML <- canopy %>% mutate( Canopy_L1 = as.factor(Canopy_L1)) %>% reframe( .
 canopy.ML2 <- canopy %>% mutate( Canopy_L2 = as.factor(Canopy_L2)) %>% reframe( .by=Canopy_L2,
                                                                                Levels = length(Canopy_L2),  
                                                                                Towers = length(Site %>% unique),)
+
+
+SITE_DIEL_FINAL_Daily_C_same %>% ggplot() + geom_point( aes(x= canopyHeight_m, y = TopRugosity, col = SDSDH.mean )) + theme_bw()  + ylab("TopRugosity") + xlab("Canopy Height (m)")
