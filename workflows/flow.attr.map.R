@@ -34,7 +34,7 @@ canopy.Ht$canopyHeight_m %>% range
 
 tower.counts <- ggplot(data=site.att.sf, aes(x=Vegetation.Abbreviation..IGBP.)) +
   geom_bar(stat="count", width=0.7, fill='grey50') + theme_bw() + ylab('Towers') +
-  xlab('IGBP')
+  xlab('IGBP') + scale_y_continuous(breaks = scales::breaks_pretty(n = 5)) 
 
 site.att.sf.ht <- site.att.sf %>% left_join(canopy.Ht, by = 'Site')
 
@@ -60,5 +60,14 @@ canopy.ML2 <- canopy %>% mutate( Canopy_L2 = as.factor(Canopy_L2)) %>% reframe( 
                                                                                Levels = length(Canopy_L2),  
                                                                                Towers = length(Site %>% unique),)
 
+canopy.summary <- canopy %>% reframe( .by=Site, canopyHeight_m = mean(canopyHeight_m), EVI.mean= mean(EVI.mean),EVI.sd= mean(EVI.sd), NDVI.mean= mean(NDVI.mean), NDVI.sd= mean(NDVI.sd), LAI.mean= mean(LAI.sd), LAI.sd= mean(LAI.sd), CHM.sd = mean(CHM.sd), SDSDH.mean = mean(Cutoff05.SDSDH), TopRugosity= mean(Cutoff05.TopRugosity))
 
-SITE_DIEL_FINAL_Daily_C_same %>% ggplot() + geom_point( aes(x= canopyHeight_m, y = TopRugosity, col = SDSDH.mean )) + theme_bw()  + ylab("TopRugosity") + xlab("Canopy Height (m)")
+canopy.plot <- canopy.summary  %>% ggplot() + geom_point( aes(x= canopyHeight_m, y = TopRugosity, col = SDSDH.mean )) + theme_bw()  + ylab("Rugosity") + xlab("Height (m)") +   theme(legend.position = "top")+ labs(color = "Height Variance")
+
+top.plot <- ggarrange(map, labels=c("A", "B"), ncol=2)
+bottom.plot <-ggarrange(tower.counts,canopy.plot,  labels=c("C", "D"), ncol=2)
+
+final.plot <- ggarrange(top.plot , bottom.plot, ncol=1)
+
+ggsave("Figures/Map_plot.png", plot = final.plot, width = 7, height = 5, units = "in")
+
