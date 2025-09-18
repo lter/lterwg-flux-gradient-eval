@@ -64,14 +64,6 @@ First data is filtered (`flow.evaluation.filter.R`) to produce: FilteredData_ALL
 2. `flow.evaluation.figures` → produces the figures and tables that evaluate the gradient flux. The products of `flow.evaluation.batch` are used. 
 
    ```
-   SITE_aligned_conc_flux_9min.RData → flow.calc.flux.batch.R 
-                                     ├─ flow.calc.flag.mbr.batch.R
-                                     ├─ flow.calc.flag.aero.batch.R 
-                                     └─ flow.calc.flag.windprof.batch.R
-                                     → SITE_METHOD.RData
-   
-   SITE_METHOD.RData → lterwg-flux-gradient/workflows/flow.evaluation.dataframe.R → SITE_Evaluation.RData
-   
    SITE_Evaluation.RData → flow.evaluation.batch
                          ├─ flow.evaluation.filter.R → FilteredData_ALLSites.Rdata, FilterReport_ALLSites.Rdata
                          ├─ flow.evaluation.One2One.R → One2One_ALLSites.Rdata, FilteredData_ALLSites_BH.Rdata
