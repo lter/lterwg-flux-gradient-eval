@@ -27,11 +27,58 @@ SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevel
                                                                                              gas == 'CO2' &CCC < 0.7 & Approach == "AE" ~ 0,
                                                                                              
                                                                                              gas == 'H2O' & CCC < 0.5  ~ 0,
-                                                                                             gas == 'H2O' & CCC > 0.5  ~ 1) %>% as.factor)
-# Set up VSURF
+                                                                                             gas == 'H2O' & CCC > 0.5  ~ 1) %>% as.factor,
+                                                                       RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
+                                                                       RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
+                                                                       MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_A)
 
-SITES_One2One_canopy %>% names
+# What is good or bad: ####
 
+# Determine the fraction of flagged data for each canopy level and determine what flags will remain after Good Level filtering. * May need to add this as a filter prior to diel calculation!
+
+Site_Fluxes_Summary = Site_Fluxes  %>% reframe( .by = c(Canopy_L1, Site, Approach, Good.CCC, gas),
+                                                roughLength_calc = mean(roughLength_calc),
+                                                cgf.total1 = sum(cross_grad_flag, na.rm=T),
+                                                total = length( Site),
+                                                cgf.percent = cgf.total1/total*100 %>% round(2),
+                                                RelativeDistB = mean(RelativeDistB, na.rm=T)) %>% filter(gas != "CH4") 
+
+
+CGF.plot <- Site_Fluxes_Summary %>% ggplot( aes( x= Canopy_L1, y = cgf.percent , col=gas)) + geom_boxplot() + facet_wrap( ~ Approach) + theme_bw() + ylab('% Flagged') + xlab("") + scale_color_manual(values=c("black", "grey"),name= "Gas")  + theme(legend.position="top", strip.background = element_rect(colour = "black", fill = "transparent"))
+
+
+ggsave("Figures/CrossGradientFlag_plot.png", plot = CGF.plot, width = 4, height = 2.5, units = "in")
+
+
+Site_Fluxes_Summary %>% filter(gas == "CO2") %>% ggplot() + 
+  geom_bar( aes( x = Canopy_L1 , fill = Good.CCC)) + scale_fill_manual(values=c("black", "grey")) + theme_bw()
+
+Site_Fluxes_Summary %>% reframe(.by=c(Canopy_L1),
+                                count = length(Good.CCC ))
+
+Site_Fluxes_Summary %>% reframe(.by=c(Good.CCC),
+                                count = length(Good.CCC ))
+
+Site_Fluxes_Summary %>% filter(Good.CCC == 1) %>% reframe(.by=c( Canopy_L1),
+                                                          count = length(Canopy_L1)/940)
+
+Site_Fluxes_Summary %>% filter(Good.CCC == 1) %>% reframe(.by=c( Canopy_L1),
+                                                          count = length(Canopy_L1)/312)
+
+Site_Fluxes_Summary %>% reframe(.by=c(Good.CCC, Canopy_L1),
+                                count = case_when( Canopy_L1 == 'WW' ~ length(Good.CCC )/ 202,
+                                                   Canopy_L1 == 'AW' ~ length(Good.CCC )/ 328,
+                                                   Canopy_L1 == 'AA' ~ length(Good.CCC )/ 410),
+                                RelativeDistB.mean = mean(RelativeDistB),
+                                RelativeDistB.min = min(RelativeDistB), 
+                                RelativeDistB.max = max(RelativeDistB)) %>% distinct 
+
+Site_Fluxes_Summary %>% ggplot(aes( x=Canopy_L1, y= RelativeDistB, col=Good.CCC )) +  geom_boxplot()
+
+Site_Fluxes %>% ggplot(aes( x=Canopy_L1, fill=Stability_100 )) +  geom_bar() + facet_wrap(~Good.CCC)
+
+
+# Set up VSURF ####
 # Divide into test and training datasets:
 train <- SITES_One2One_canopy %>% 
   sample_frac(0.65) 
@@ -45,22 +92,23 @@ test  %>% summary
 # Variable Selection : ####
 
 SITES_One2One_canopy %>% names
-train[, c(7:8, 10,78)] %>% names
+train[, c(7, 10,73, 81, 82)] %>% names
 
-rf_index.sdesign.vsurf <- VSURF(train[, c(7:8, 10,78)], 
+rf_index.sdesign.vsurf <- VSURF(train[, c(7, 10,73, 81, 82)], 
                             train[["Good.CCC"]],
-                            ntree = 500,
+                            ntree = 1000,
                             RFimplem = "randomForest", 
                             clusterType = "PSOCK", 
                             verbose = TRUE,
                             ncores = parallelly::availableCores() - 2, parallel= TRUE)
 
 rf_index.sdesign.vsurf$varselect.pred
-rf_index.sdesign.vars <-names( train[, c(7:8, 10,78)]) [rf_index.sdesign.vsurf$varselect.interp] 
+rf_index.sdesign.vars <-names( train[, c(7, 10,73, 81, 82)]) [rf_index.sdesign.vsurf$varselect.interp] 
+rf_index.sdesign.vars <- train[, c(7, 10,73, 81, 82)] %>% names
 
-train[, c(21:34, 36:38,80)] %>% names
 train.sub <- train[, c(21:34, 36:38,80)] %>% na.omit
-rf_index.Cspec.vsurf <- VSURF(train.sub[-18], 
+
+rf_index.Cspec.vsurf <- VSURF(train.sub[,-18], 
                               train.sub[["Good.CCC"]],
                                 ntree = 500,
                               mtry=2,
@@ -70,7 +118,7 @@ rf_index.Cspec.vsurf <- VSURF(train.sub[-18],
                                 ncores = parallelly::availableCores() - 2, parallel= TRUE)
 
 rf_index.Cspec.vsurf$varselect.pred
-rf_index.Cspec.vars <-names( train.sub[-18]) [rf_index.Cspec.vsurf$varselect.interp] 
+rf_index.Cspec.vars <-names( train.sub[-18]) [rf_index.Cspec.vsurf$varselect.pred] 
 
 
 
@@ -87,13 +135,13 @@ rf_index.Cstructure.vsurf <- VSURF(train.sub[-17],
 rf_index.Cstructure.vsurf$varselect.pred
 rf_index.Cstructure.vars <-names( train.sub[-17]) [rf_index.Cstructure.vsurf$varselect.pred] 
 
+final.vars <- c(rf_index.sdesign.vars, rf_index.Cspec.vars,rf_index.Cstructure.vars ) 
+
+save(final.vars, file= paste(dir, "FinalVarsSelection.Rdata", sep="") )
 
 # Final Model Fit : ####
-rf_index.Cstructure.vars
-rf_index.Cspec.vars 
-rf_index.sdesign.vars
 
-final.vars <- c(rf_index.sdesign.vars, rf_index.Cspec.vars,rf_index.Cstructure.vars )   
+load( file= paste(dir, "FinalVarsSelection.Rdata", sep="") )
 
 rf_model <- randomForest( Good.CCC ~ .,
                               data= train %>% select(c(Good.CCC, all_of(final.vars))) %>% na.omit,
@@ -114,99 +162,70 @@ save(train, test,rf_model, final.vars, SITES_One2One_canopy, file= paste(dir, "G
 
 
 # Sensitivity Analysis: ####
+
 load(file= paste(dir, "Good_Fluxes.Rdata", sep="") )
+final.vars
 
 SITES_One2One_canopy$Approach %>% unique
-SITES_One2One_canopy$Canopy_L2 %>% unique
+SITES_One2One_canopy$Canopy_L1 %>% unique
+SITES_One2One_canopy$gas %>% unique
 
-SITES_One2One_canopy$CHM.mean %>% summary
-SITES_One2One_canopy$Cutoff05.SDSDH %>% summary
-SITES_One2One_canopy$EVI.sd %>% summary
+SITES_One2One_canopy$RelativeDistB %>% summary
+SITES_One2One_canopy$RelativeDistA %>% summary
+SITES_One2One_canopy$Cutoff05.SDH %>% summary
+SITES_One2One_canopy$NDVI.mean %>% summary
 SITES_One2One_canopy$LAI.sd %>% summary
 
-mean.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L2), 
-                                             CHM.mean = mean(CHM.mean,na.rm=T),
-                                             Cutoff05.SDSDH = mean(Cutoff05.SDSDH,na.rm=T),
-                                             EVI.sd = mean(EVI.sd,na.rm=T),
+mean.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L1, gas), 
+                                             RelativeDistB = mean(RelativeDistB, na.rm=T),
+                                             RelativeDistA = mean(RelativeDistA, na.rm=T),
+                                             Cutoff05.SDH  = mean(Cutoff05.SDH ,na.rm=T),
+                                             NDVI.mean = mean(NDVI.mean,na.rm=T),
                                              LAI.sd = mean(LAI.sd,na.rm=T))
 
-min.df <- SITES_One2One_canopy %>% reframe(  .by=c(Approach, Canopy_L2), 
-                                             CHM.mean = min(CHM.mean,na.rm=T),
-                                             Cutoff05.SDSDH = min(Cutoff05.SDSDH,na.rm=T),
-                                             EVI.sd = min(EVI.sd,na.rm=T),
+min.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L1, gas), 
+                                             RelativeDistB = min(RelativeDistB, na.rm=T),
+                                             RelativeDistA = min(RelativeDistA, na.rm=T),
+                                             Cutoff05.SDH  = min(Cutoff05.SDH ,na.rm=T),
+                                             NDVI.mean = min(NDVI.mean,na.rm=T),
                                              LAI.sd = min(LAI.sd,na.rm=T))
 
-max.df <- SITES_One2One_canopy %>% reframe(  .by=c(Approach, Canopy_L2), 
-                                             CHM.mean = max(CHM.mean,na.rm=T),
-                                             Cutoff05.SDSDH = max(Cutoff05.SDSDH,na.rm=T),
-                                             EVI.sd = max(EVI.sd,na.rm=T),
+max.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L1, gas), 
+                                             RelativeDistB = max(RelativeDistB, na.rm=T),
+                                             RelativeDistA = max(RelativeDistA, na.rm=T),
+                                             Cutoff05.SDH  = max(Cutoff05.SDH ,na.rm=T),
+                                             NDVI.mean = max(NDVI.mean,na.rm=T),
                                              LAI.sd = max(LAI.sd,na.rm=T))
 
 summary.df <- rbind( mean.df, min.df, max.df)
 
-CHM.mean.df <- data.frame( CHM.mean = seq(SITES_One2One_canopy$CHM.mean %>% min(na.rm=T), SITES_One2One_canopy$CHM.mean %>% max(na.rm=T), 2) )
-
-Cutoff05.SDSDH.df <- data.frame( Cutoff05.SDSDH = seq(SITES_One2One_canopy$Cutoff05.SDSDH %>% min(na.rm=T), SITES_One2One_canopy$Cutoff05.SDSDH %>% max(na.rm=T), 0.2) )
-EVI.sd.df <- data.frame( EVI.sd = seq(SITES_One2One_canopy$EVI.sd %>% min(na.rm=T), SITES_One2One_canopy$EVI.mean %>% max(na.rm=T), 0.01) )
+RelativeDistB.df <- data.frame(  RelativeDistB = seq(SITES_One2One_canopy$ RelativeDistB %>% min(na.rm=T), SITES_One2One_canopy$ RelativeDistB %>% max(na.rm=T), 2) )
+RelativeDistA.df <- data.frame(  RelativeDistA = seq(SITES_One2One_canopy$RelativeDistA %>% min(na.rm=T), SITES_One2One_canopy$RelativeDistA %>% max(na.rm=T), 2) )
+Cutoff05.SDH.df <- data.frame( Cutoff05.SDH = seq(SITES_One2One_canopy$Cutoff05.SDH %>% min(na.rm=T), SITES_One2One_canopy$Cutoff05.SDH %>% max(na.rm=T), 0.2) )
+NDVI.mean.df <- data.frame( NDVI.mean = seq(SITES_One2One_canopy$NDVI.mean %>% min(na.rm=T), SITES_One2One_canopy$EVI.mean %>% max(na.rm=T), 0.01) )
 LAI.sd.df <- data.frame( LAI.sd = seq(SITES_One2One_canopy$LAI.sd %>% min(na.rm=T), SITES_One2One_canopy$LAI.sd %>% max(na.rm=T), 0.01) )
 
 # Format Factors
 
 format.factors <- function( data){
   data$Approach <- factor( data$Approach , levels = c("MBR", "AE", "WP"))
-  data$Canopy_L2 <- factor( data$Canopy_L2 , levels = c("AA+" , "AA", "AW+-", "AW+", "AW-" , "AW",   "WW-", "WW" ))
+  data$Canopy_L1 <- factor( data$Canopy_L1 , levels = c("AA" , "AW", "WW"))
   
   return(data)
 }
 
-CHM.mean.final <- summary.df %>% select(! CHM.mean) %>% cross_join(CHM.mean.df )
-Cutoff05.SDSDH.final <- summary.df %>% select(!Cutoff05.SDSDH) %>% cross_join(Cutoff05.SDSDH.df )
-EVI.sd.final <- summary.df %>% select(! EVI.sd) %>% cross_join(EVI.sd.df )
+
+Cutoff05.SDH.final <- summary.df %>% select(!Cutoff05.SDH) %>% cross_join(Cutoff05.SDH.df )
+RelativeDistB.final <- summary.df %>% select(! RelativeDistB) %>% cross_join(RelativeDistB.df )
+RelativeDistA.final <- summary.df %>% select(! RelativeDistA) %>% cross_join(RelativeDistA.df )
 LAI.sd.final <- summary.df %>% select(! LAI.sd) %>% cross_join(LAI.sd.df )
+NDVI.mean.final <- summary.df %>% select(! NDVI.mean) %>% cross_join(NDVI.mean.df )
 
-CHM.mean.final$model <-  predict(rf_model  ,CHM.mean.final,'prob')[,2]
-Cutoff05.SDSDH.final$model <-  predict(rf_model  ,Cutoff05.SDSDH.final,'prob')[,2]
-EVI.sd.final$model <-  predict(rf_model  ,EVI.sd.final,'prob')[,2]
+Cutoff05.SDH.final$model <-  predict(rf_model  ,Cutoff05.SDH.final,'prob')[,2]
+NDVI.mean.final$model <-  predict(rf_model  ,NDVI.mean.final,'prob')[,2]
 LAI.sd.final$model <-  predict(rf_model  , LAI.sd.final,'prob')[,2]
-
-CHM.mean.final <-  CHM.mean.final%>% format.factors %>% mutate( Canopy_L1 = case_when(Canopy_L2 == "AA+"~ "AA",
-                                                                                      Canopy_L2 == "AA-"~ "AA",
-                                                                                      Canopy_L2 == "AA"~ "AA",
-                                                                                      Canopy_L2 == "AW+"~ "AW",
-                                                                                      Canopy_L2 == "AW-"~ "AW",
-                                                                                      Canopy_L2 == "AW"~ "AW",
-                                                                                      Canopy_L2 == "WW+"~ "WW",
-                                                                                      Canopy_L2 == "WW-"~ "WW",
-                                                                                      Canopy_L2 == "WW"~ "WW"))
-Cutoff05.SDSDH.final <- Cutoff05.SDSDH.final %>% format.factors%>% mutate( Canopy_L1 = case_when(Canopy_L2 == "AA+"~ "AA",
-                                                                                                 Canopy_L2 == "AA-"~ "AA",
-                                                                                                 Canopy_L2 == "AA"~ "AA",
-                                                                                                 Canopy_L2 == "AW+"~ "AW",
-                                                                                                 Canopy_L2 == "AW-"~ "AW",
-                                                                                                 Canopy_L2 == "AW"~ "AW",
-                                                                                                 Canopy_L2 == "WW+"~ "WW",
-                                                                                                 Canopy_L2 == "WW-"~ "WW",
-                                                                                                 Canopy_L2 == "WW"~ "WW"))
-
-EVI.sd.final <- EVI.sd.final%>% format.factors%>% mutate( Canopy_L1 = case_when(Canopy_L2 == "AA+"~ "AA",
-                                                                                Canopy_L2 == "AA-"~ "AA",
-                                                                                Canopy_L2 == "AA"~ "AA",
-                                                                                Canopy_L2 == "AW+"~ "AW",
-                                                                                Canopy_L2 == "AW-"~ "AW",
-                                                                                Canopy_L2 == "AW"~ "AW",
-                                                                                Canopy_L2 == "WW+"~ "WW",
-                                                                                Canopy_L2 == "WW-"~ "WW",
-                                                                                Canopy_L2 == "WW"~ "WW"))
-LAI.sd.final <- LAI.sd.final %>% format.factors%>% mutate( Canopy_L1 = case_when(Canopy_L2 == "AA+"~ "AA",
-                                                                                 Canopy_L2 == "AA-"~ "AA",
-                                                                                 Canopy_L2 == "AA"~ "AA",
-                                                                                 Canopy_L2 == "AW+"~ "AW",
-                                                                                 Canopy_L2 == "AW-"~ "AW",
-                                                                                 Canopy_L2 == "AW"~ "AW",
-                                                                                 Canopy_L2 == "WW+"~ "WW",
-                                                                                 Canopy_L2 == "WW-"~ "WW",
-                                                                                 Canopy_L2 == "WW"~ "WW"))
- 
+RelativeDistB.final$model <-  predict(rf_model  , RelativeDistB.final,'prob')[,2]
+RelativeDistA.final$model <-  predict(rf_model  , RelativeDistA.final,'prob')[,2]
 
 Sensitivity_plot <- function(df, approach, label, var){
 
@@ -230,70 +249,75 @@ Sensitivity_plot2 <- function(df, approach, label, var){
   return(plot)
 }
 
-# MBR
-plot.mbr.1 <- Sensitivity_plot2(df = CHM.mean.final, approach = "MBR", label= "Canopy Height", var='CHM.mean' )
+Sensitivity_approach_plot <- function(approach, labels){
+  
+  plot.mbr.1 <- Sensitivity_plot2(df = NDVI.mean.final, approach = approach, label= "NDVI", var='NDVI.mean' ) + theme(legend.title = element_blank())
 
-plot.mbr.2 <- Sensitivity_plot2(df = Cutoff05.SDSDH.final, approach = "MBR", label= "SDSDH", var='Cutoff05.SDSDH' )
+  
+  plot.mbr.2 <- Sensitivity_plot2(df = Cutoff05.SDH.final, approach = approach, label= "SDH", var='Cutoff05.SDH' )+ theme(legend.title = element_blank())
+  
+  plot.mbr.4 <- Sensitivity_plot2(df = RelativeDistB.final, approach = approach, label= "Relative Dist B", var='RelativeDistB' )+ theme(legend.title = element_blank())
+  
+  plot.mbr.5 <- Sensitivity_plot2(df = RelativeDistA.final, approach = approach, label= "Relative Dist A", var='RelativeDistA' )+ theme(legend.title = element_blank())
+  
+  plot.mbr.3 <- Sensitivity_plot2(df = LAI.sd.final , approach = approach, label= "LAI", var='LAI.sd' )+ theme(legend.title = element_blank())
+  
+  
+  gd.plot.mbr <- ggarrange(plot.mbr.2,
+                           plot.mbr.5,
+                           plot.mbr.4,
+                           plot.mbr.1,
+                           plot.mbr.3, common.legend = TRUE , nrow=1, labels=labels)
+  return( gd.plot.mbr )
+}
 
-plot.mbr.3 <- Sensitivity_plot2(df = EVI.sd.final, approach = "MBR", label= "EVI", var='EVI.sd' )
+gd.plot.mbr <-Sensitivity_approach_plot(approach = "MBR", labels = c("A", "B", "C", "D", "E"))
+gd.plot.ae <-Sensitivity_approach_plot(approach = "AE", labels = c("F", "G", "H", "I", "J"))
+gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c("K", "L", "M", "N", "P"))
 
-plot.mbr.4 <- Sensitivity_plot2(df = LAI.sd.final , approach = "MBR", label= "LAI", var='LAI.sd' )  
-
-
-gd.plot.mbr <- ggarrange(plot.mbr.1,
-          plot.mbr.2,
-          plot.mbr.3,
-          plot.mbr.4, common.legend = TRUE , nrow=1)
-
-plot.ae.1 <- Sensitivity_plot2(df = CHM.mean.final, approach = "AE", label= "Canopy Height", var='CHM.mean' )
-
-plot.ae.2 <- Sensitivity_plot2(df = Cutoff05.SDSDH.final, approach = "AE", label= "SDSDH", var='Cutoff05.SDSDH' )
-
-plot.ae.3 <- Sensitivity_plot2(df = EVI.sd.final, approach = "AE", label= "EVI", var='EVI.sd' )
-
-plot.ae.4 <- Sensitivity_plot2(df = LAI.sd.final , approach = "AE", label= "LAI", var='LAI.sd' )  
-
-gd.plot.ae <-ggarrange(plot.ae.1,
-          plot.ae.2,
-          plot.ae.3,
-          plot.ae.4, common.legend = TRUE, nrow=1 )
-
-plot.wp.1 <- Sensitivity_plot2(df = CHM.mean.final, approach = "WP", label= "Canopy Height", var='CHM.mean' )
-
-plot.wp.2 <- Sensitivity_plot2(df = Cutoff05.SDSDH.final, approach = "WP", label= "SDSDH", var='Cutoff05.SDSDH' )
-
-plot.wp.3 <- Sensitivity_plot2(df = EVI.sd.final, approach = "WP", label= "EVI", var='EVI.sd' )
-
-plot.wp.4 <- Sensitivity_plot2(df = LAI.sd.final , approach = "WP", label= "LAI", var='LAI.sd' )  
-
-gd.plot.wp <-ggarrange(plot.wp.1,
-          plot.wp.2,
-          plot.wp.3,
-          plot.wp.4, common.legend = TRUE , nrow=1)
+final.gd.plot <- ggarrange( gd.plot.mbr, gd.plot.ae, gd.plot.wp, nrow=3, ncol=1, common.legend = TRUE)
 
 
-final.gd.plot <- ggarrange( plot.mbr.1,
-           plot.mbr.2,
-           plot.mbr.3,
-           plot.mbr.4,
-           
-           plot.ae.1,
-           plot.ae.2,
-           plot.ae.3,
-           plot.ae.4,
-           
-           plot.wp.1,
-           plot.wp.2,
-           plot.wp.3,
-           plot.wp.4, nrow=3, ncol=4,
-           common.legend = TRUE,
-           labels=c("A", "B", "C", "D",
-                    "E", "F", "G", "H",
-                    "I", "J", "K", "L" ))
+ggsave("Figures/GoodData_plot.png", plot = final.gd.plot, width = 11, height = 9, units = "in")
 
 
-ggsave("Figures/GoodData_plot.png", plot = final.gd.plot, width = 9, height = 9, units = "in")
+metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
+site.list <- metadata$Site_Id.NEON %>% unique
+
+rf_model 
+
+# Build file with all fluxes and information of interest.
+Site_Fluxes <- data.frame()
+for( site in site.list){
+  
+  print(paste("Working on " ,site))
+  localdir.site <- paste(localdir,"/", site, sep = "")
+  
+  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+  
+  
+  canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, Canopy_L1, dLevelsAminusB)
+
+  SITES_One2One_sub <- SITES_One2One_canopy  %>% 
+    select( Site, Good.CCC, dLevelsAminusB, Approach, RelativeDistB) %>% filter(Site == site) %>% left_join(canopy.sub , by= c('Site', 'dLevelsAminusB')) 
+  
+
+  MBR_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "MBR") %>% full_join( MBR_9min_FILTER , by = c('dLevelsAminusB'))  %>% select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local,  time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB  )
+  
+  WP_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "WP") %>% full_join( WP_9min_FILTER , by = c('dLevelsAminusB'))   %>%  select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local, time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB )
+  
+  AE_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "AE") %>% full_join( AE_9min_FILTER , by = c('dLevelsAminusB')) %>% select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local, time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB )
+  
+  
+  Data <- rbind(MBR_9min_FILTER_CCC,  AE_9min_FILTER_CCC, WP_9min_FILTER_CCC) %>% as.data.frame() %>% mutate(Site = site)
+  
+  Site_Fluxes <- rbind( Site_Fluxes ,Data)
+  
+  rm(  Data, WP_9min_FILTER_CCC, AE_9min_FILTER_CCC,  MBR_9min_FILTER_CCC,   canopy.sub, SITES_One2One_sub)
+ 
+  
+}
+
 
 # Next : #####
-
 message('run flow.bhatt')

@@ -23,6 +23,9 @@ source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R'))
 
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct  %>% mutate( site = Site)
 
+
+canopy %>% names
+
 total.report.CO2  <- filter.report.CO2  %>%  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% mutate( approach = approach %>% as.factor,
                                                                                                              Canopy_L2 =  factor(Canopy_L2, levels = c( "AA", "AA+", "AW+" , "AW-" ,"AW+-", "AW", "WW", "WW-" ))) 
 
