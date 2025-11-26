@@ -1,0 +1,278 @@
+# Harmonization
+# This script explores the distribution of fluxes:
+
+library(tidyverse)
+library(colorspace)
+library(ggpubr)
+library(ggplot2)
+
+localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
+DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3")
+
+email <- 'sparklelmalone@gmail.com'
+googledrive::drive_auth(email = TRUE) 
+
+
+googledrive::drive_auth(email = email) # Likely will not work on RStudio Server. If you get an error, try email=TRUE to open an interactive auth session.
+data_folder <- googledrive::drive_ls(path = drive_url)
+
+load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
+
+# Build the dataset for canopy Information: ####
+canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
+
+SITES_One2One$R2 %>% round(2)
+
+Highest.CCC <- SITES_One2One %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T), R2.max = max(R2, na.rm=T) )
+
+Highest.CCC %>% ggplot( aes( x= CCC.max, y= R2.max)) + geom_point()
+
+SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) %>% 
+  full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>%
+  mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
+         Good.CCC = case_when(  CCC >= 0.5 ~ 1, CCC < 0.5 ~ 0) %>% as.factor,
+         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct
+
+
+# What is the distribution of fluxes across hours and seasons?
+
+# Harmonize Data
+
+site.list <- SITE_DATA_FILTERED %>% names()
+Linear_Harmonized_plots_CO2 <- list()
+Linear_Harmonized_plots_H2O <- list()
+Linear_Harmonized_Stats <- data.frame()
+SITE_DATA_Harmonized <- list()
+
+
+# PUUM and TOOL have no flux data left!
+for( site in site.list[-c(31, 42)]){
+  print(site)
+  
+  df <-SITE_DATA_FILTERED[[site]] %>% filter(CCC >= 0.5, gas != "CH4") %>% 
+    mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
+           season = case_when(
+             month %in% c(12, 1, 2) ~ "Winter",
+             month %in% c(3, 4, 5) ~ "Spring",
+             month %in% c(6, 7, 8) ~ "Summer",
+             TRUE ~ "Autumn" # TRUE acts as the 'else' statement
+           ),
+           hour = format(timeEndA.local,'%H'),
+           count= case_when( is.na(FG_mean) == FALSE ~ 1,
+                             TRUE ~ 0)) %>% distinct
+  
+  # Reframe by time: ADD Tair, PAR, and VPD!!!
+  df.harmonized <- df %>% reframe(.by = c(timeEndA.local, gas), 
+                                  FG_harmonized = mean(FG_mean),
+                                  FC_turb_interp = mean(FC_turb_interp))
+  
+  SITE_DATA_Harmonized[[site]] <-  df.harmonized
+  
+  df.h.lm.co2 <- lm( data =df.harmonized %>% filter(gas== "CO2"),  FC_turb_interp ~FG_harmonized)%>% summary
+  df.h.lm.h2o <- lm( data =df.harmonized %>% filter(gas== "H2O"),  FC_turb_interp ~FG_harmonized)%>% summary
+  
+  summary.co2.df <- data.frame( Site = site, R2= df.h.lm.co2$r.squared) %>% mutate(gas = "CO2")
+  summary.h2o.df <- data.frame( Site = site, R2= df.h.lm.h2o$r.squared) %>% mutate(gas = "H2O")
+  
+  # Store information about Harmonization Fit here
+  Linear_Harmonized_Stats <- rbind(Linear_Harmonized_Stats, summary.co2.df, summary.h2o.df )  
+  rm(df.h.lm.co2 ,   df.h.lm.h20)
+  
+  Linear_Harmonized_plots_CO2[[site]] <- df.harmonized %>% filter(gas=="CO2") %>% 
+    ggplot( aes( x= FG_harmonized, y = FC_turb_interp)) + 
+    geom_point(size=0.1, alpha=0.1) + theme_bw() + xlim(-40, 40) + ylim(-40, 40) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
+    geom_smooth(method = "lm", se = FALSE, size=0.5) +
+    #stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~`,`~")), label.x = 2, label.y = c(40, 35, 30)) + xlab('GF') + ylab('EC') + 
+    ggtitle(site) + xlab("GF") + ylab("EC")
+  
+  Linear_Harmonized_plots_H2O[[site]] <- df.harmonized %>% filter(gas =="H2O") %>% 
+    ggplot( aes( x= FG_harmonized, y = FC_turb_interp)) + 
+    geom_point(size=0.1, alpha=0.1) + theme_bw() + xlim(-40, 40) + ylim(-40, 40) +
+    geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
+    geom_smooth(method = "lm", se = FALSE, size=0.5) +
+    #stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~`,`~")), label.x = 2, label.y = c(40, 35, 30)) + xlab('GF') + ylab('EC') + 
+    ggtitle(site) + xlab("GF") + ylab("EC")
+  
+  rm(df.harmonized, df )
+}
+
+# Linear plots by site: ####
+plots.linear.co2.1 <- ggarrange(plotlist = Linear_Harmonized_plots_CO2[1:25], common.legend = TRUE)
+plots.linear.co2.2 <- ggarrange(plotlist = Linear_Harmonized_plots_CO2[26:50], common.legend = TRUE)
+
+plots.linear.h2o.1 <- ggarrange(plotlist = Linear_Harmonized_plots_H2O[1:25], common.legend = TRUE)
+plots.linear.h2o.2 <- ggarrange(plotlist = Linear_Harmonized_plots_H2O[26:50], common.legend = TRUE)
+
+plots.linear.co2 <- ggarrange( plots.linear.co2.1, plots.linear.co2.2, ncol=1)
+plots.linear.h2o <- ggarrange( plots.linear.h2o.1, plots.linear.h2o.2, ncol=1)
+
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Linear_plots_co2.png", plot = plots.linear.co2, width = 8, height = 16, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Linear_plots_h2o.png", plot = plots.linear.h2o, width = 8, height = 16, units = "in")
+
+# Harmonized linear plots #####
+
+Linear_Harmonized_Stats %>% 
+  ggplot(aes(x = R2, y = Site)) +
+  geom_col() +
+  theme_bw() +
+  facet_wrap(~gas)
+
+# Seasonal Analysis:
+season <- c("Winter", "Spring", "Summer", "Autumn")
+Linear_Harmonized_Season_Stats <-list()
+
+for( site in site.list[-c(31, 42)]){
+  for(i in season){
+    print(site)
+  print(i)
+  
+  df <-SITE_DATA_FILTERED[[site]] %>% filter(CCC >= 0.5, gas != "CH4") %>% 
+    mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
+           season = case_when(
+             month %in% c(12, 1, 2) ~ "Winter",
+             month %in% c(3, 4, 5) ~ "Spring",
+             month %in% c(6, 7, 8) ~ "Summer",
+             TRUE ~ "Autumn" # TRUE acts as the 'else' statement
+           ),
+           hour = format(timeEndA.local,'%H'),
+           count= case_when( is.na(FG_mean) == FALSE ~ 1,
+                             TRUE ~ 0)) %>% distinct
+  
+  # Reframe by time:
+  df.harmonized <- df %>% filter(season == i) %>% reframe(.by = c(timeEndA.local, gas), 
+                                                          FG_harmonized = mean(FG_mean),
+                                                          FC_turb_interp = mean(FC_turb_interp))
+  
+  threshold.co2 <- df.harmonized$FG_harmonized[ df.harmonized$gas == "CO2"] %>% length
+  threshold.h2o <- df.harmonized$FG_harmonized[ df.harmonized$gas == "H2O"] %>% length
+  
+  if( threshold.co2 > 30){
+    df.h.lm.co2 <- lm( data =df.harmonized %>% filter(gas== "CO2"),  FC_turb_interp ~FG_harmonized)%>% summary
+    summary.co2.df <- data.frame( Site = site, R2= df.h.lm.co2$r.squared) %>% mutate(gas = "CO2", season=i, count = threshold.co2)
+    Linear_Harmonized_Season_Stats <- rbind(Linear_Harmonized_Season_Stats, summary.co2.df)  
+  }
+   
+  if( threshold.h2o >30){
+    df.h.lm.h2o <- lm( data =df.harmonized %>% filter(gas== "H2O"),  FC_turb_interp ~FG_harmonized)%>% summary
+    summary.h2o.df <- data.frame( Site = site, R2= df.h.lm.h2o$r.squared) %>% mutate(gas = "H2O", season=i, count = threshold.h2o)
+    Linear_Harmonized_Season_Stats <- rbind(Linear_Harmonized_Season_Stats, summary.h2o.df )  
+  }
+  rm(df.h.lm.co2 ,   df.h.lm.h20)
+  
+  }}
+
+plot.r2 <- Linear_Harmonized_Season_Stats %>%
+  ggplot(aes(x = R2, y = Site, col=gas)) +
+  geom_point(alpha = 1, size =2, shape=15) +
+  theme_bw() +
+  facet_wrap(~ season, ncol=4) + scale_color_manual(values = c('darkgreen', "blue")) +
+  theme( legend.text = element_text(size = 14),
+         legend.title = element_text(size = 14),
+         strip.background = element_rect(fill = "transparent", size = 0.5),
+         legend.position = "top")+ ylab("") +  xlab(expression(paste("Harmonized GF R"^2))) 
+
+plot.r2.density <- Linear_Harmonized_Season_Stats %>% ggplot( aes(x = R2, col=gas)) +
+  geom_density() + theme_bw() + ylab("Density" ) + facet_wrap(~season, ncol=4) +
+  scale_color_manual(values = c('darkgreen', "blue")) +
+  theme( legend.text = element_text(size = 14),
+         legend.title = element_text(size = 14),
+         strip.background = element_rect(fill = "transparent", size = 0.5),
+         legend.position = "none")+ ylab("") +  xlab(expression(paste("Harmonized GF R"^2))) +
+  ylab("Density")
+
+Linear_Harmonized_Season_Stats %>% reframe(.by=c(gas), 
+                                           min.R2= min(R2), 
+                                           mean.R2= mean(R2),
+                                           max.R2= max(R2),
+                                           sd.R2= sd(R2))
+
+Linear_Harmonized_Season_Stats %>% reframe(.by=c(gas, season), 
+                                           min.R2= min(R2), 
+                                           mean.R2= mean(R2),
+                                           max.R2= max(R2))
+
+library(ggforce)
+
+plot.r2.ellipse <- Linear_Harmonized_Season_Stats %>% ggplot( aes(x = R2, y= season, col=gas)) +
+  geom_density() +
+  geom_mark_ellipse() +theme_bw() + xlim(0, 1) + ylab("Season") +
+  scale_color_manual(values = c('darkgreen', "blue"))  +  
+  xlab(expression(paste("Harmonized GF R"^2))) 
+
+# Relationship between R2 and counts...
+
+Linear_Harmonized_Season_Stats %>% ggplot( aes(x = count, y= R2, col=season)) +
+  geom_point() + facet_wrap(~gas) + geom_smooth()
+
+
+# Sample plots:
+sample.plots.co2 <- c(
+Linear_Harmonized_plots_CO2$JORN,
+Linear_Harmonized_plots_CO2$KONZ,
+Linear_Harmonized_plots_CO2$GUAN,
+Linear_Harmonized_plots_CO2$HARV)
+
+sample.plots.h2o <- c(
+  Linear_Harmonized_plots_H2O$JORN,
+  Linear_Harmonized_plots_H2O$KONZ,
+  Linear_Harmonized_plots_H2O$GUAN,
+  Linear_Harmonized_plots_H2O$HARV)
+
+ggarrange(plotlist = sample.plots.co2, common.legend = TRUE, ncol=4)
+ggarrange(plotlist = sample.plots.h2o, common.legend = TRUE, ncol=4)
+
+# Explain patterns in variance explained:
+
+
+SITES_HARMONIZED_canopy <- SITES_One2One_canopy %>% filter( CCC >= 0.5) %>% 
+  full_join(Linear_Harmonized_Season_Stats %>% 
+              rename( R2.harmonized = R2), by=c("Site", "gas"), relationship = "many-to-many") %>% distinct
+
+
+
+plot.r2.canopy <- SITES_HARMONIZED_canopy %>% select(Canopy_L1,  R2.harmonized, gas) %>% na.omit %>%  ggplot( ) + 
+  geom_boxplot( aes( x= Canopy_L1, y = R2.harmonized, col=Canopy_L1)) + 
+  facet_wrap(~gas) + theme_bw() + 
+  scale_colour_discrete_sequential(palette = "OrYel")+
+  ylab(expression(paste("Harmonized GF R"^2))) + xlab('Canopy Level')+
+  theme( legend.text = element_text(size = 14),
+         legend.title = element_text(size = 14),
+         strip.background = element_rect(fill = "transparent", size = 0.5),
+         legend.position = "none") 
+
+
+plot.r2.canopyHt <- SITES_HARMONIZED_canopy %>% ggplot(aes( x= canopyHeight_m, y = R2.harmonized) ) + 
+  geom_point( ) + facet_wrap(~gas) + geom_smooth() + theme_bw() + xlab('Canopy Height (m)') +
+  ylab(expression(paste("Harmonized GF R"^2))) +
+  theme( legend.text = element_text(size = 14),
+         legend.title = element_text(size = 14),
+         strip.background = element_rect(fill = "transparent", size = 0.5),
+         legend.position = "none")
+
+
+# Harmonized plots:
+
+final.plot.r2 <- ggarrange(plot.r2 ,plot.r2.density , ncol= 1, heights = c(2.5, 1), 
+          labels=c("A", "B"))
+
+final.plot.r2.support <- ggarrange( plot.r2.ellipse,plot.r2.canopy,plot.r2.canopyHt,  ncol=1,
+           labels=c("A", "B", "C")) 
+
+
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Harmonized_Eval_R2.png", plot = final.plot.r2, width = 7, height = 8, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Harmonized_Eval_R2_Canopy.png", plot = final.plot.r2.support, width = 6, height = 10, units = "in")
+
+# Save the data: #####
+
+fileSave <- fs::path(localdir,paste0("SITE_DATA_Harmonized.Rdata"))
+save( SITE_DATA_Harmonized,
+      Linear_Harmonized_plots_H2O, 
+      Linear_Harmonized_plots_CO2,  
+      Linear_Harmonized_Stats,
+      Linear_Harmonized_Season_Stats,
+      file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+

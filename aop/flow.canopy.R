@@ -1,4 +1,3 @@
-
 # Summarize attribute and canopy information to understand where each height relative to the canopy:
 
 library(tidyverse)
@@ -89,10 +88,8 @@ CanopyInformation <- canopy_commbined %>% full_join( Sites.Summary.AOP, by = "Si
                                Canopy_B + Canopy_A == 0 ~ "AA"))
 
 # Compare the canopy height to the CHM
-CanopyInformation %>% names
-canopyHeight_m
-CHM.mean
-lm( canopyHeight_m ~CHM.mean, data = CanopyInformation) %>% summary
+
+lm( canopyHeight_m ~ CHM.mean, data = CanopyInformation) %>% summary
 CanopyInformation %>% ggplot(aes(x= CHM.mean, y = canopyHeight_m) ) + geom_point() + ylim(0, 50) + xlim(0,50) + geom_smooth( method='lm') + geom_abline (slope=1, linetype = "dashed", color="Red")
 
 # Calculate the index for the nearest height above and below the canopy:
@@ -141,7 +138,7 @@ CanopyInfo <- CanopyInformation %>% full_join(nearest.measurement.height, by="Si
                                Canopy_L1 == "WW" & Closet.Above == 1 & Closet.Below == 1 ~ "WW+-",
                                Canopy_L1 == "WW" & Closet.Above == 1 & Closet.Below != 1 ~ "WW+",
                                Canopy_L1 == "WW" & Closet.Above != 1 & Closet.Below != 1 ~ "WW",
-                               Canopy_L1 == "WW" & Closet.Above != 1 & Closet.Below == 1 ~ "WW-",) )
+                               Canopy_L1 == "WW" & Closet.Above != 1 & Closet.Below == 1 ~ "WW-") )
 
 # Save and upload the canopy information:
 

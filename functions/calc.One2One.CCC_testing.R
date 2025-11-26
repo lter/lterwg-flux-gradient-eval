@@ -179,7 +179,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
 
 ccc.parms <- function(Y, X, DF, TYPE) {
   
-  if(sum(!is.na(DF[,X]+DF[,Y])) < 3) {
+  if(sum(!is.na(DF[,X]+ DF[,Y])) < 3) {
     ccc.parms <- data.frame(Intercept = as.numeric(NA), 
                             Slope = as.numeric(NA),
                             CCC = as.numeric(NA), 
@@ -360,4 +360,3 @@ ccc.parms.site <- function(MBR.tibble, AE.tibble, WP.tibble, gas) {
   
   return(site.tibble_parms) 
 }
-

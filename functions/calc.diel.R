@@ -140,6 +140,94 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
  
 }
 
+DIEL.season <- function( dataframe, flux, Gas, flux.other){
+  
+  dataframe <- dataframe %>% as.data.frame %>% filter(gas == Gas)
+  
+  if(Gas == "CO2"){
+    dataframe$flux.other <- ((dataframe[, flux.other]* 44.01)/1000000)*1800 
+    dataframe$flux <- ((dataframe[, flux]* 44.01)/1000000)*1800 
+  }
+  
+  if(Gas == "H2O"){
+    dataframe$flux.other <- ((dataframe[, flux.other]*16)/1000000)*1800 
+    dataframe$flux <- ((dataframe[, flux]* 16)/1000000)*1800 
+  }
+  
+# Make sure season is in the dataframe:
+  dataframe.gs <- dataframe %>% 
+    mutate(  Month = timeEndA.local %>% format("%m") %>% as.numeric,
+             YearMon = timeEndA.local %>% format("%Y-%m"),
+             Year = timeEndA.local %>% format("%Y"),
+             Hour = timeEndA.local %>% format("%H") %>% as.numeric) %>% 
+    filter(!is.na(FC_turb_interp) == TRUE)
+  
+  season <- unique(dataframe.gs$season)
+  
+  message(" Ready to summarize by season")
+  Final.data.all <- data.frame()
+  for( i in season){
+    print(i)
+    try({
+      
+     # Remove outliers:
+       subset <- dataframe.gs %>% filter(season == i, 
+                                         FG_harmonized > -50, FG_harmonized < 50, 
+                                         FC_turb_interp > -50, FC_turb_interp < 50)
+      
+       count <- subset$flux %>% na.omit %>% length
+       
+       if(count > 48){
+         model <- loess( flux ~ Hour , data = subset )
+         model %>% plot
+         Diel.df <- data.frame(Hour = seq(0, 23), season = i)
+         pred <- predict(model, newdata = Diel.df, se=TRUE)
+         
+         new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
+                                         DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, 
+                                                               pred$df)) %>% mutate(data="all")
+      
+      
+        Peak <- new.data$DIEL %>% max(na.rm=T)
+        MIN <- new.data$DIEL %>% min(na.rm=T)
+        
+        new.data$Peak.Hour <-  new.data$Hour[new.data$DIEL == Peak] %>% as.numeric %>% mean(na.rm=T)
+        new.data$Min.Hour <-  new.data$Hour[new.data$DIEL == MIN] %>% as.numeric %>% mean(na.rm=T)
+        new.data$count <- count
+        Final.data.all <- rbind(Final.data.all, new.data) } },silent=T)}
+  
+  rm(new.data)
+  message(" Done fitting loess for all data")
+  
+  Final.data <- Final.data.all
+  
+  if( exists('Final.data' )) { 
+    return( Final.data)
+  }
+  
+}
+
+DIEL.COMPILE.Harmonized <- function( dataframe, FG_flux, EC_flux, Gas){
+  
+  try({
+    FG.DIEL <- DIEL.season( dataframe = dataframe, flux = FG_flux, Gas, flux.other = EC_flux)
+    
+    EC.DIEL <- DIEL.season( dataframe = dataframe, flux = EC_flux, Gas, flux.other = FG_flux)
+    
+    if(length(FG.DIEL ) > 0) {
+      
+      FG.DIEL.1 <- FG.DIEL %>%  rename( FG= DIEL, FG.SE= DIEL.SE,Peak.Hour.FG = Peak.Hour, Min.Hour.FG = Min.Hour) %>% 
+        select( season, Hour, FG, FG.SE, Peak.Hour.FG, Min.Hour.FG, data, count) %>% distinct()
+      
+      EC.DIEL.1 <- EC.DIEL %>% rename( EC= DIEL, EC.SE= DIEL.SE, Peak.Hour.EC = Peak.Hour, Min.Hour.EC = Min.Hour ) %>% 
+        select(season, Hour, EC, EC.SE,  Peak.Hour.EC, Min.Hour.EC, data)%>% distinct()
+      
+      
+      DIEL.df <- FG.DIEL.1 %>% full_join( EC.DIEL.1, by= c('season', 'Hour', 'data')) %>% distinct() %>% mutate( DIFF.DIEL = FG-EC)
+    } })
+  
+}
+
 DIEL.FINAL <- function( dataframe, flux, Gas){
   
   dataframe <- dataframe %>% as.data.frame %>% 

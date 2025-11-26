@@ -94,23 +94,44 @@ zip(zipfile = 'One2One.zip', files = files2zip)
 fileSave <- paste(dir.one2one, 'One2One.zip', sep="/")
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Application of the Diel Analysis ####
+# Build a SITE_LIST DATAFRAME: ####
+source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist.R'))
+fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata"))
+save( SITE_DATA_FILTERED,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
+# Zip the plots and upload to google"
+files2zip <- dir(dir.one2one, full.names = TRUE)
+zip(zipfile = 'One2One.zip', files = files2zip)
+
+fileSave <- paste(dir.one2one, 'One2One.zip', sep="/")
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+# Evaluate what data is left after filtering summarizing by what sampling pairs are left:
+source(fs::path(DirRepo,'workflows/Results/flow.CCC.VIZ.R'))
+
+# Evaluate what data is left after filtering summarizing by what flux data remains:
+source(fs::path(DirRepo,'workflows/flow.flux.counts.R'))
+
+source(fs::path(DirRepo,'workflows/flow.flux.harmonization.R'))
+# Linear plots are in here.
+
+source(fs::path(DirRepo,'workflows/flow.evaluation.diel.R'))
+
+# Application of the Diel Analysis ####
 # set where you want plots to go:
 dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'
-source(fs::path(DirRepo,'workflows/flow.evaluation.diel.R'))
+source(fs::path(DirRepo,'workflows/flow.evaluation.diel.v2.R'))
 
 fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY.RDATA'
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
+# Evaluation of drivers of good sampling height pairs:
+source(fs::path(DirRepo,'workflows/flow.evaluation.GoodDrivers.V2.R'))
 
-# Visualizations: ####
-message('run flow.evaluation.filter.vizualizations')
-message('run flow.CCC_VIZ')
+# Site based Figure: ####
+source(fs::path(DirRepo,'workflows/flow.evaluation.sitebased.summary.R'))
 
-# Next : #####
-
-message('run flow.evaluation.GoodDrivers')
 
 
 

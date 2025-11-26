@@ -9,28 +9,34 @@ library(ggpubr)
 library(VSURF)
 library(randomForest)
 
-dir <- '/Volumes/MaloneLab/Research/FluxGradient/RandomForestModel/'
+
+library(tidyverse)
+library(colorspace)
+library(ggpubr)
+library(ggplot2)
+
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-load(fs::path(localdir,paste0("SITES_One2One.Rdata")))
+DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
+
+# Extract month from POSIXct dates
+months <- as.numeric(format(dates, "%m"))
+
+# Build the dataset for canopy Information: ####
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
 
-Highest.CCC <- SITES_One2One %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T))
+SITES_One2One$R2 %>% round(2)
 
-# Define the Good
+Highest.CCC <- SITES_One2One %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T), R2.max = max(R2, na.rm=T) )
+
+Highest.CCC %>% ggplot( aes( x= CCC.max, y= R2.max)) + geom_point()
+
 SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) %>% 
-  full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>% mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-                                                                       Good.CCC = case_when( gas == 'CO2' & CCC >= 0.5 & Approach == "MBR" ~ 1,
-                                                                                             gas == 'CO2' &CCC >= 0.75 & Approach == "WP" ~ 1,
-                                                                                             gas == 'CO2' &CCC >= 0.7 & Approach == "AE" ~ 1,
-                                                                                             gas == 'CO2' &CCC < 0.5 & Approach == "MBR" ~ 0,
-                                                                                             gas == 'CO2' & CCC < 0.75 & Approach == "WP" ~ 0,
-                                                                                             gas == 'CO2' &CCC < 0.7 & Approach == "AE" ~ 0,
-                                                                                             
-                                                                                             gas == 'H2O' & CCC < 0.5  ~ 0,
-                                                                                             gas == 'H2O' & CCC > 0.5  ~ 1) %>% as.factor,
-                                                                       RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
-                                                                       RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
-                                                                       MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_A)
+  full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>%
+  mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
+         Good.CCC = case_when(  CCC >= 0.5 ~ 1, CCC < 0.5 ~ 0) %>% as.factor,
+         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct
 
 # What is good or bad: ####
 
