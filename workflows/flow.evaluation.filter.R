@@ -6,6 +6,7 @@ library(sf)
 source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
 source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R'))
 #38 run this number
+
 for( site in site.list){
   
   print( site)
@@ -45,9 +46,7 @@ for( site in site.list){
   WP_9min.df.final$hour.local <- WP_9min.df.final$timeEndA.local %>% format("%H")
   
   # Run the filter functions... Report:
-  
   # CO2
-
   WP_9min.report.CO2 <-  filter_report(df = WP_9min.df.final %>% filter(gas == "CO2"),
                                        dConcSNR.min = 3,
                                        approach = "WP") %>% mutate(approach = "WP",
@@ -58,6 +57,7 @@ for( site in site.list){
                                          approach = "AE") %>% mutate(approach = "AE",
                                                                      site =site)
   
+
   MBR_9min.report.CO2  <-  filter_report( df = MBR_9min.df.final %>% filter(gas == "CO2"),
                                           dConcSNR.min = 3,
                                           approach = "MBR") %>% mutate(approach = "MBR",
@@ -120,7 +120,6 @@ for( site in site.list){
   
   
    # Run the filter functions... FILTER data and adjust the GF sign:
-  MBR_9min.df.final$FC_turb_interp
   MBR_9min_FILTER <- filter_fluxes( df = MBR_9min.df.final,
                                     dConcSNR.min = 3,
                                     approach = "MBR") %>% 

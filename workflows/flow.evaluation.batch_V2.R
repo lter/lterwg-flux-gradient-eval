@@ -69,7 +69,7 @@ SNR.plot.dir <- '/Volumes/MaloneLab/Research/FluxGradient/SNR_plot' # Where do y
 SNR.summary.dir <-"/Volumes/MaloneLab/Research/FluxGradient/SNR_Summary/" # Where to save the summary file
 source(fs::path(DirRepo,'workflows/flow.evaluation.SNR.R'))
 
-# Application of Filter Functions: ####
+# Application of Filter Functions: #### 
 message('Running Filter...')
 source(fs::path(DirRepo,'workflows/flow.evaluation.filter.R'))
 

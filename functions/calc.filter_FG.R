@@ -1,5 +1,4 @@
-
-# Filter for MBR 
+# Although we trach cross gradient flags we dont filter by it! 
 
 filter_fluxes <- function( df, 
                            dConcSNR.min,
@@ -16,11 +15,11 @@ filter_fluxes <- function( df,
   
   df.new <- df %>% mutate(dConcSNR = abs(dConc)/dConc_sd,
                           dConcTSNR = abs(dConc.tracer)/dConc.tracer_sd) %>%  
-                              filter(dLevelsAminusB  %in% H.filter.list,
-                                     TowerPosition_A != TowerPosition_B,
-                                     dConcSNR >= dConcSNR.min,
-                                     dConcTSNR >= dConcSNR.min,
-                                     ustar_interp >= ustar_threshold )
+    filter(dLevelsAminusB  %in% H.filter.list,
+           TowerPosition_A != TowerPosition_B,
+           dConcSNR >= dConcSNR.min,
+           dConcTSNR >= dConcSNR.min,
+           ustar_interp >= ustar_threshold)
   return(df.new)
 }
 
@@ -54,12 +53,13 @@ filter_report <- function( df,
   
   H.filter.list = df$dLevelsAminusB %>% unique
   
+  
   if( approach !="MBR"){
-    
     df$dConc.tracer <- dConcSNR.min
     df$dConc.tracer_sd <- 1
   }
-  
+
+  df$cross_grad_flag %>% summary
   df.new <- df %>% mutate(diff.flux = abs(FG_mean - FC_turb_interp),
                           dConcSNR = abs(dConc)/dConc_sd,
                           dConcTSNR = abs(dConc.tracer)/dConc.tracer_sd) %>%  
@@ -69,7 +69,7 @@ filter_report <- function( df,
       flag.dConcSNR = case_when( dConcSNR >= dConcSNR.min ~ 0, dConcSNR < dConcSNR.min ~ 1, is.na(dConcSNR ) ~ 0),
       flag.dConcTSNR = case_when( dConcTSNR >= dConcSNR.min ~ 0, dConcTSNR < dConcSNR.min ~ 1, is.na(dConcTSNR ) ~ 0),
            flag.ustar_interp = case_when( ustar_interp >=  ustar_threshold ~ 0, ustar_interp <  ustar_threshold ~ 1, is.na(ustar_interp) ~ 0),   
-      interaction.ALL= flag.ustar_interp + flag.dConcTSNR + flag.dConcSNR ,
+      interaction.ALL= flag.ustar_interp + flag.dConcTSNR + flag.dConcSNR,
       
            flag.interaction.ALL = case_when( interaction.ALL > 0 ~1 ) )  %>% 
     reframe( .by = dLevelsAminusB,
@@ -77,6 +77,7 @@ filter_report <- function( df,
              flag.ustar_interp = sum(flag.ustar_interp, na.rm=T) /total *100,
              flag.dConcTSNR =  sum(flag.dConcTSNR, na.rm=T) /total *100,
              flag.dConcSNR =  sum(flag.dConcSNR, na.rm=T) /total *100,
+             flag.cross_grad =  sum(cross_grad_flag, na.rm=T) /total *100,
              flag.interaction.ALL = sum(flag.interaction.ALL, na.rm=T)/total *100)
   
   return(df.new)
@@ -104,8 +105,9 @@ filter_report_stability <- function( df,
     mutate(
       flag.dConcSNR = case_when( dConcSNR >= dConcSNR.min ~ 0, dConcSNR < dConcSNR.min ~ 1, is.na(dConcSNR ) ~ 0),
       flag.dConcTSNR = case_when( dConcTSNR >= dConcSNR.min ~ 0, dConcTSNR < dConcSNR.min ~ 1, is.na(dConcTSNR ) ~ 0),
-      flag.ustar_interp = case_when( ustar_interp >=  ustar_threshold ~ 0, ustar_interp <  ustar_threshold ~ 1, is.na(ustar_interp) ~ 0),   
-      interaction.ALL= flag.ustar_interp + flag.dConcTSNR + flag.dConcSNR ,
+      flag.ustar_interp = case_when( ustar_interp >=  ustar_threshold ~ 0, ustar_interp <  ustar_threshold ~ 1, is.na(ustar_interp) ~ 0),
+      interaction.ALL= flag.ustar_interp + flag.dConcTSNR + flag.dConcSNR  , 
+      
       
       flag.interaction.ALL = case_when( interaction.ALL > 0 ~1 ) )  %>% 
     reframe( .by = c(dLevelsAminusB,Stability_500),
@@ -113,6 +115,7 @@ filter_report_stability <- function( df,
              flag.ustar_interp = sum(flag.ustar_interp, na.rm=T) /total *100,
              flag.dConcTSNR =  sum(flag.dConcTSNR, na.rm=T) /total *100,
              flag.dConcSNR =  sum(flag.dConcSNR, na.rm=T) /total *100,
+             flag.cross_grad =  sum(cross_grad_flag, na.rm=T)/total *100,
              flag.interaction.ALL = sum(flag.interaction.ALL, na.rm=T)/total *100)
   
   return(df.new)

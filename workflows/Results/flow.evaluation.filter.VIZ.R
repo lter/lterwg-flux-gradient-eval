@@ -19,34 +19,44 @@ DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg
 setwd(DirRepo)
 
 # Compiles Dataframes into one list:
-source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R'))
+# source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R')) DeLETE THIS?
+source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist.R'))
 
-canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct  %>% mutate( site = Site)
+canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>%
+  distinct  %>% mutate( site = Site)
+
+total.report.CO2  <- filter.report.CO2  %>%  
+  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% 
+  mutate( approach = approach %>% as.factor,
+          Canopy_L2 =  factor(Canopy_L2, levels = c( "AA", "AA+", "AW+" , "AW-" ,"AW+-", "AW", "WW", "WW-" ))) 
+
+total.report.H2O <- filter.report.H2O  %>%  
+  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% 
+  mutate( approach = approach %>% as.factor,
+          Canopy_L2 =  factor(Canopy_L2, levels = c( "AA", "AA+", "AW+" , "AW-" ,"AW+-", "AW", "WW", "WW-" ))) 
 
 
-canopy %>% names
+total.report.stability.CO2 <- filter.report.stability.CO2  %>%  
+  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% mutate( approach = approach %>% as.factor)
 
-total.report.CO2  <- filter.report.CO2  %>%  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% mutate( approach = approach %>% as.factor,
-                                                                                                             Canopy_L2 =  factor(Canopy_L2, levels = c( "AA", "AA+", "AW+" , "AW-" ,"AW+-", "AW", "WW", "WW-" ))) 
+total.report.stability.H2O <- filter.report.stability.H2O   %>%  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% 
+  mutate( approach = approach %>% as.factor)
 
-total.report.H2O <- filter.report.H2O  %>%  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% mutate( approach = approach %>% as.factor,
-                                                                                                             Canopy_L2 =  factor(Canopy_L2, levels = c( "AA", "AA+", "AW+" , "AW-" ,"AW+-", "AW", "WW", "WW-" ))) 
+# Total data filtered
 
-
-total.report.stability.CO2 <- filter.report.stability.CO2  %>%  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% mutate( approach = approach %>% as.factor)
-
-total.report.stability.H2O <- filter.report.stability.H2O   %>%  full_join(canopy,  by=c( 'dLevelsAminusB', 'site')) %>% mutate( approach = approach %>% as.factor)
-
-# Change the order of the L2 factor:
-
-total.report.CO2 %>% ggplot( aes( x= approach, y = flag.interaction.ALL)) + geom_violin() +
-  facet_wrap(~ site) + xlab("") + ylab("Filtered (%)") + theme_bw() + ylim(0,100)
-
-total.report.H2O %>% ggplot( aes( x= approach, y = flag.interaction.ALL)) + geom_violin() +
+violin.plot.filtered <- ggplot( ) + 
+  geom_violin( data= total.report.CO2, 
+               aes( x= approach, y = flag.interaction.ALL),col='darkgreen', fill='transparent') +
+  geom_violin(data=total.report.H2O, 
+              aes( x= approach, y = flag.interaction.ALL),col='blue', fill='transparent') +
   facet_wrap(~ site) + xlab("") + ylab("Filtered (%)") + theme_bw() + ylim(0,100)
 
 # How much data is lost by approach: 
-total.report.CO2 %>% reframe( .by = c(approach) ,flag.interaction.ALL = mean(flag.interaction.ALL)) 
+
+
+total.report.CO2 %>% reframe( .by = c(approach) ,
+                              flag.interaction.ALL = mean(flag.interaction.ALL))
+
 total.report.H2O %>% reframe( .by = c(approach) ,flag.interaction.ALL = mean(flag.interaction.ALL)) 
 
 approach.violin.plot.CO2 <- total.report.CO2 %>% ggplot(aes( x= approach, y = flag.interaction.ALL) ) + geom_violin( ) + geom_point(position = position_jitter(seed = 1, width = 0.2), alpha=0.1)  + geom_boxplot(width=0.1)+ xlab("") + ylab("Filtered (%)") + ylim(0, 100) +
@@ -158,3 +168,48 @@ AA.sites <- listofsites$site%>% unique
 
 setdiff(all.sites, AA.sites)
 
+# Summary Table for filtering:
+
+sd_function <- function(x) {
+  # Remove NAs if present, as the formula will fail otherwise
+  x <- na.omit(x) 
+  
+  # Calculate the number of observations (n)
+  n <- length(x)
+  
+  # Check if n is less than 2, as sample SD is undefined for n <= 1
+  if (n <= 1) {
+    return(NA)
+  }
+  
+  # Calculate the mean of the vector
+  data_mean <- mean(x)
+  
+  # Calculate the sum of squared differences from the mean
+  squared_deviations <- sum((x - data_mean)^2)
+  
+  # Calculate variance (divide by n-1)
+  variance <- squared_deviations / (n - 1)
+  
+  # Calculate standard deviation (square root of variance)
+  standard_deviation <- sqrt(variance)
+  
+  # Return the result
+  return(standard_deviation)
+}
+
+
+summary.site.H2O <- total.report.H2O %>% reframe( .by= site,
+                                                  H2O.ustar = max(flag.ustar_interp),
+                                                  H2O.ustar.sd = sd_function(flag.ustar_interp),
+                                                  H2O.SNR = max(flag.dConcSNR),
+                                                  H2O.TSNR = max(flag.dConcTSNR),
+                                                  H2O.ALL = max(flag.interaction.ALL),
+                                                  H2O.cross_grad = max(flag.cross_grad, na.rm=T))
+
+summary.site.CO2 <- total.report.H2O %>% reframe( .by= site,
+                                                  CO2.ustar = mean(flag.ustar_interp),
+                                                  CO2.SNR = mean(flag.dConcSNR),
+                                                  CO2.TSNR = mean(flag.dConcTSNR),
+                                                  CO2.ALL = mean(flag.interaction.ALL),
+                                                  CO2.cross_grad = mean(flag.cross_grad, na.rm=T))

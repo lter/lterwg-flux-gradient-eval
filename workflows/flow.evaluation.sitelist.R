@@ -11,6 +11,7 @@ library(ggpmisc)
 
 DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
+
 source(fs::path(DirRepo,'functions/calc.diel.R' ))
 load(fs::path(localdir,paste0("SITES_One2One.Rdata"))) # Import CCC results
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
@@ -74,8 +75,7 @@ for( site in site.list){
 
 print("Create Site List by approach and reports")
 
-# Creates the list of dataframes used by One2One, Diel, and Cparms. This also compiles the filter reports for all sites.  
-
+# REPORTS: ####
 SITES_MBR_9min_FILTER <- list()
 SITES_AE_9min_FILTER <- list()
 SITES_WP_9min_FILTER <- list()
