@@ -1,5 +1,5 @@
-# CCC Viz and Evaluation:
-rm(list=ls())
+# Evaluate what data is left after filtering:
+
 
 library(dplyr)
 library(ggplot2)
@@ -25,8 +25,6 @@ SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevel
                                                                        RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct
 
 SITES_One2One_canopy.Highest <- SITES_One2One_canopy %>% filter( CCC== CCC.max)
-
-SITES_One2One_canopy.Highest %>% ggplot( aes( x= CCC, y= R2, col=Site)) + geom_point()
 
 SITES_One2One_canopy.Highest.100 <- SITES_One2One_canopy %>% filter( count > 100) %>% filter( CCC== CCC.max) 
 
@@ -77,8 +75,7 @@ SITES_One2One_canopy.subH2O <- SITES_One2One_canopy %>% filter(gas=="H2O")
  matrix.approach.plot.h2o <- pairwise.matrix.plot(df = SITES_One2One_canopy.subH2O, y = "CCC", x = "Approach"  )
  matrix.canopyl1.plot.h2o <-pairwise.matrix.plot(df = SITES_One2One_canopy.subH2O, y = "CCC", x = "Canopy_L1"  )
  
- final.plot.matrix <- ggarrange( matrix.approach.plot.co2,  matrix.canopyl1.plot.co2,
-            matrix.approach.plot.h2o,  matrix.canopyl1.plot.h2o,
+ final.plot.matrix <- ggarrange( matrix.approach.plot.co2, matrix.approach.plot.h2o, matrix.canopyl1.plot.co2, matrix.canopyl1.plot.h2o,
             ncol=2 , nrow=2, labels= c("A", "B", "C", "D"), common.legend = T, legend = "right")
  
  
@@ -88,22 +85,21 @@ SITES_One2One_canopy.subH2O <- SITES_One2One_canopy %>% filter(gas=="H2O")
  
  plot.pairwise.co2.canopy <- SITES_One2One_canopy %>% filter(gas == "CO2") %>% ggplot( aes( x= Canopy_L1, y = CCC , col= Canopy_L1)) +
    geom_boxplot() + scale_color_manual(values=c("black", "black", "black"),
-                                       name= "Canopy") +theme_bw() + xlab("Measurement Level") + theme(legend.position="none")
+                                       name= "Canopy") +theme_bw() + xlab("Canopy Level") + theme(legend.position="none") + ylab("CCC (EC)")
  
  plot.pairwise.co2.approach <- SITES_One2One_canopy %>% filter(gas == "CO2") %>% 
    ggplot( aes( x= Approach, y = CCC , col= Approach)) +
    geom_boxplot() + scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta"),
-                                       name= "Approach") +theme_bw() + theme(legend.position="none")
+                                       name= "Approach") +theme_bw() + theme(legend.position="none")+ ylab("CCC (EC)")
  
  
  plot.pairwise.h2o.canopy <- SITES_One2One_canopy %>% filter(gas == "H2O") %>% ggplot( aes( x= Canopy_L1, y = CCC , col= Canopy_L1)) +
    geom_boxplot() + scale_color_manual(values=c("black", "black", "black"),
-                                       name= "Canopy") +theme_bw()+ xlab("Measurement Level")+ theme(legend.position="none")
+                                       name= "Canopy") +theme_bw()+ xlab(" Canopy Level")+ theme(legend.position="none")+ ylab("CCC (EC)")
  
  plot.pairwise.h2o.approach <- SITES_One2One_canopy %>% filter(gas == "H2O") %>% 
    ggplot( aes( x= Approach, y = CCC , col= Approach)) +
-   geom_boxplot() + scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta"),
-                                       name= "Approach") +theme_bw()+ theme(legend.position="none")
+   geom_boxplot() + scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta"),name= "Approach") +theme_bw()+ theme(legend.position="none")+ ylab("CCC (EC)")
  
 
 evaluation.ccc.plot <-  ggarrange(  plot.pairwise.co2.approach ,
@@ -124,13 +120,13 @@ ggridges.co2 <- SITES_One2One_canopy %>% filter(gas=="CO2") %>% ggplot( aes(x = 
   theme(legend.position = "none") +
   scale_fill_manual(name = "Approach",
                     values=c("goldenrod", "aquamarine4", "darkmagenta"),
-                    labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC")
+                    labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC (EC)")
 
 ggridges.h2o <- SITES_One2One_canopy %>% filter(gas=="H2O") %>% ggplot( aes(x = CCC, y = Canopy_L1, fill = Approach)) + geom_density_ridges(alpha=0.5) + theme_ridges() +
   theme(legend.position = "none") +
   scale_fill_manual(name = "Approach",
                     values=c("goldenrod", "aquamarine4", "darkmagenta"),
-                    labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC")
+                    labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC (EC)")
 
 evaluation.ggridges <-  ggarrange( ggridges.co2, ggridges.h2o,ncol=2,
                                     labels = c("E", "F"))
@@ -138,30 +134,54 @@ evaluation.ggridges <-  ggarrange( ggridges.co2, ggridges.h2o,ncol=2,
 
 final.eval.ccc.plot <- ggarrange( evaluation.ccc.plot, evaluation.ggridges , ncol=1)
 
+final.eval.ccc.plot 
+
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/final.eval.ccc.plot.png", plot = final.eval.ccc.plot, width = 5, height = 6, units = "in")
 
 
  # CCC  Evaluation Threshold ####
-plot.CCC.CO2.all <- SITES_One2One_canopy %>% filter(gas=="CO2") %>%  ggplot() + geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + facet_grid(cols = vars(Canopy_L1)) + scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + theme_bw() + ylab("") + geom_vline(xintercept= 0.5, linetype="dashed", color ="red")
+plot.CCC.CO2.all <- SITES_One2One_canopy %>% 
+  filter(gas=="CO2") %>%  
+  ggplot() + 
+  geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + 
+  facet_grid(cols = vars(Canopy_L1)) + 
+  scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  theme_bw() + ylab("") + xlab("CCC (EC)") +
+  geom_vline(xintercept= 0.5, linetype="dashed", color ="red")+ 
+  geom_vline(xintercept= -0.5, linetype="dashed", color ="red")
 
 
-plot.CCC.H2O.all <- SITES_One2One_canopy %>% filter(gas=="H2O") %>%  ggplot() + geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + facet_grid(cols = vars(Canopy_L1)) + scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + theme_bw() + ylab("") + geom_vline(xintercept= 0.5, linetype="dashed", color ="red")
+plot.CCC.H2O.all <- SITES_One2One_canopy %>% filter(gas=="H2O") %>%  
+  ggplot() + 
+  geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + 
+  facet_grid(cols = vars(Canopy_L1)) + 
+  scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  theme_bw() + ylab("") + xlab("CCC (EC)") +
+  geom_vline(xintercept= 0.5, linetype="dashed", color ="red")+ 
+  geom_vline(xintercept= -0.5, linetype="dashed", color ="red")
 
 ggsave("Figures/CCC_plot_co2.png", plot = plot.CCC.CO2.all, width = 8, height = 9, units = "in")
 ggsave("Figures/CCC_plot_h2o.png", plot = plot.CCC.H2O.all, width = 8, height = 9, units = "in")
 
 
-plot.CCC.all <- SITES_One2One_canopy %>%  ggplot() + geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + facet_grid(cols = vars(gas)) + scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + theme_bw() + ylab("") + geom_vline(xintercept= 0.5, linetype="dashed", color = "red")
+plot.CCC.all <- SITES_One2One_canopy %>%  ggplot() + 
+  geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + 
+  facet_grid(cols = vars(gas)) + 
+  scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  theme_bw() + ylab("") + xlab("CCC (EC)") +
+  geom_vline(xintercept= 0.5, linetype="dashed", color = "red")+ 
+  geom_vline(xintercept= -0.5, linetype="dashed", color ="red")
 
-
+plot.CCC.all
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/CCC_plot_all.png", plot = plot.CCC.all, width = 6, height = 6, units = "in")
 
 # Determine the distribution of sampling pair heights:
 library(tidyverse)
-sitepairs.total <- SITES_One2One_canopy %>% filter(gas == "H2O") %>% select(dLevelsAminusB, Site) 
+sitepairs.total <- SITES_One2One_canopy %>% filter(gas == "H2O") %>% 
+  select(dLevelsAminusB, Site) 
 
-sitepairs.h2o <- SITES_One2One_canopy %>% filter(gas == "H2O", CCC >= 0.5) %>% select(dLevelsAminusB, Site)
-sitepairs.co2 <- SITES_One2One_canopy %>% filter(gas == "CO2", CCC >= 0.5) %>% select(dLevelsAminusB, Site)
+sitepairs.h2o <- SITES_One2One_canopy %>% filter(gas == "H2O", CCC >= 0.5 | CCC <= -0.5 ) %>% select(dLevelsAminusB, Site)
+sitepairs.co2 <- SITES_One2One_canopy %>% filter(gas == "CO2", CCC >= 0.5 | CCC <= -0.5 ) %>% select(dLevelsAminusB, Site)
 
 sitepairs.same <-intersect(sitepairs.h2o, sitepairs.co2) 
 
@@ -187,14 +207,14 @@ p_overall <- ggplot(df_overall, aes(x = category, y = percent)) +
   theme( axis.text.x = element_text(angle = 20, hjust = 1))
  
 # Approach Summary
-df_method <- SITES_One2One_canopy %>% filter( CCC >= 0.5) %>%  mutate( count = 1) %>% reframe(.by= c(gas, Approach), n_pairs = sum(count)) |>
+df_method <- SITES_One2One_canopy %>% filter( CCC >= 0.5  | CCC <= -0.5 ) %>%  mutate( count = 1) %>% reframe(.by= c(gas, Approach), n_pairs = sum(count)) |>
   group_by(gas) |>
   mutate(percent = 100 * n_pairs / sum(n_pairs)) |>
   ungroup()
 
 ## ======================
 
-p_method <- ggplot(df_method, aes(x = gas, y = percent, fill = Approach),alpha=0.05) +
+p_method <- ggplot(df_method, aes(x = gas, y = percent, fill = Approach)) +
   geom_col() +
   geom_text(aes(label = sprintf("%.0f%%", percent)),
             position = position_stack(vjust = 0.5), size = 3) +
@@ -207,12 +227,14 @@ p_method <- ggplot(df_method, aes(x = gas, y = percent, fill = Approach),alpha=0
 ## ======================
 
 # Canopy:
-df_canopy <- SITES_One2One_canopy %>% filter( CCC >= 0.5) %>%  mutate( count.sh = 1) %>% reframe(.by= c(gas, Canopy_L1), n_pairs = sum(count.sh)) |>
+df_canopy <- SITES_One2One_canopy %>% filter( CCC >= 0.5 | CCC <= -0.5 ) %>%  mutate( count.sh = 1) %>% reframe(.by= c(gas, Canopy_L1), n_pairs = sum(count.sh)) |>
   group_by(gas) |>
   mutate(percent = 100 * n_pairs / sum(n_pairs)) |>
   ungroup()
 
 # NOTE: if you revise the counts, you only need to edit df_canopy above.
+my_colors <- c("AA" = "violetred2" , "AW" = "salmon1", "WW" = "khaki")
+
 
 p_canopy <- ggplot(df_canopy, aes(x = gas, y = percent, fill = Canopy_L1)) +
   geom_col() +
@@ -224,7 +246,7 @@ p_canopy <- ggplot(df_canopy, aes(x = gas, y = percent, fill = Canopy_L1)) +
     title = "",
     fill = "Canopy Level"
   )  +
-  theme_bw() +  scale_fill_discrete_sequential(palette = "OrYel")
+  theme_bw() + scale_fill_manual(values= my_colors)
 
 plots.samplingHeights.counts <- ggarrange( p_overall , p_method , p_canopy,
            nrow = 1, labels=c('A', 'B', 'C'))
@@ -232,11 +254,11 @@ plots.samplingHeights.counts <- ggarrange( p_overall , p_method , p_canopy,
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/SamplingHeightPairs.png", plot = plots.samplingHeights.counts, width = 8.5, height = 3, units = "in")
 
 
-SITES_One2One_canopy %>% filter( CCC >= 0.5) %>% mutate( count.sh = 1) %>% 
+SITES_One2One_canopy %>% filter( CCC >= 0.5 | CCC <= -0.5 ) %>% mutate( count.sh = 1) %>% 
   reframe(.by= c(Canopy_L1, gas), total.05 = sum(count.sh ), R2 = mean(R2), CCC = mean(CCC))
 
 # Number of levels across sites:
-mean.counts <- SITES_One2One_canopy %>% filter(gas == "CO2", CCC >= 0.5) %>% mutate( count.sh = 1) %>% reframe(.by= c(Site), Mean.count = sum(count.sh)) 
+mean.counts <- SITES_One2One_canopy %>% filter(gas == "CO2", CCC >= 0.5 | CCC <= -0.5 ) %>% mutate( count.sh = 1) %>% reframe(.by= c(Site), Mean.count = sum(count.sh)) 
 mean.counts$Mean.count %>% mean
 mean.counts$Mean.count %>% sd       
 
@@ -250,3 +272,6 @@ drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/14Ga9sLR
 fileSave <- file.path(paste(localdir, "flow.CCC_VIZ.R", sep="/"))
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
+# Summary CCC and R2 by canopy :
+SITES_One2One_canopy$R2
+SITES_One2One_canopy %>% reframe(.by=c(gas, Canopy_L1), R2 = mean(R2), CCC = mean(CCC))

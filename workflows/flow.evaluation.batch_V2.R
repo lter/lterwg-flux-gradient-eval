@@ -31,8 +31,8 @@ site.list <- metadata$Site_Id.NEON %>% unique
 # ---------------------------------------------
 
 # Download necessary files from Google Drive
-drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3")
-googledrive::drive_auth(email = email) # Likely will not work on RStudio Server. If you get an error, try email=TRUE to open an interactive auth session.
+drive_url <-  googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3")
+googledrive::drive_auth(email = TRUE) # Likely will not work on RStudio Server. If you get an error, try email=TRUE to open an interactive auth session.
 data_folder <- googledrive::drive_ls(path = drive_url)
 
 
@@ -73,10 +73,27 @@ source(fs::path(DirRepo,'workflows/flow.evaluation.SNR.R'))
 message('Running Filter...')
 source(fs::path(DirRepo,'workflows/flow.evaluation.filter.R'))
 
-# Compiles Dataframes into one list: ####
-source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R'))
+# Compiles Data frames into one list: ####
+source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist.R'))
 
-# Application of the CCC Analysis ####
+# 4 Objects are created
+fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata"))
+save( SITE_DATA_FILTERED,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+fileSave <- fs::path(localdir,paste0("SITES_MBR_9min_FILTER.Rdata"))
+save( SITES_MBR_9min_FILTER,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+fileSave <- fs::path(localdir,paste0("SITES_AE_9min_FILTER.Rdata"))
+save( SITES_AE_9min_FILTER ,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+fileSave <- fs::path(localdir,paste0("SITES_WP_9min_FILTER.Rdata"))
+save( SITES_WP_9min_FILTER,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+# Application of the CCC Analysis #### Uses the SiteList by approach
 message('Running  CCC computation for best height...')
 
 # set where you want plots to go:
@@ -87,11 +104,13 @@ fileSave <- fs::path(localdir,paste0("SITES_One2One.Rdata"))
 save( SITES_One2One,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Build a SITE_LIST DATAFRAME: ####
-source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist.R'))
-fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata"))
-save( SITE_DATA_FILTERED,file=fileSave)
-googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+SITES_One2One %>% ggplot( aes( y=Site, x=CCC, col=Approach)) + geom_point() + facet_wrap(~gas)
+
+# Sampling Height Pair Model:
+source(fs::path(DirRepo,'workflows/flow.GoodDrivers.V2.R'))
+fileSave <- fs::path(localdir,paste0("SITES_One2One_canopy_model.Rdata"))
+save( SITES_One2One_canopy_model,file=fileSave )
+
 
 # Evaluate what data is left after filtering summarizing by what sampling pairs are left:
 source(fs::path(DirRepo,'workflows/Results/flow.CCC.VIZ.R'))
@@ -99,24 +118,33 @@ source(fs::path(DirRepo,'workflows/Results/flow.CCC.VIZ.R'))
 # Evaluate what data is left after filtering summarizing by what flux data remains:
 source(fs::path(DirRepo,'workflows/flow.flux.counts.R'))
 
+# Test linear relationship between approaches:
+source(fs::path(DirRepo,'workflows/flow.evaluation.approach.R'))
+
 # Harmonization:
-# This is where I deal with sign changes!
 source(fs::path(DirRepo,'workflows/flow.flux.harmonization.R'))
 
 # Application of the Diel Analysis ####
 # set where you want plots to go:
+# Need to adjust the diel functions to use EC_mean!!!
 dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'
 source(fs::path(DirRepo,'workflows/flow.evaluation.diel.v2.R'))
 
 fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY.RDATA'
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Evaluation of drivers of good sampling height pairs:
-source(fs::path(DirRepo,'workflows/flow.evaluation.GoodDrivers.V2.R'))
+# Diel Plots:
+source(fs::path(DirRepo,'workflows/flow.evaluation.diel.v2.R'))
+
+# How well does the model work at identifying the right sampling height pairs to use?
+
+# How good is the data selected by the model?
 
 # Site based Figure: ####
 source(fs::path(DirRepo,'workflows/flow.evaluation.sitebased.summary.R'))
 
+# Map: Figure 1:
+source(fs::path(DirRepo,'workflows/flow.attr.map.R'))
 
 
 

@@ -18,7 +18,7 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
              YearMon = timeEndA.local %>% format("%Y-%m"),
              Year = timeEndA.local %>% format("%Y"),
              Hour = timeEndA.local %>% format("%H") %>% as.numeric,
-             TowerH = paste(TowerPosition_A, TowerPosition_B, sep="-")) %>% filter(!is.na(FC_turb_interp) == TRUE) %>% reframe(.by=YearMon, min.EC = min(FC_turb_interp, na.rm=T) ) 
+             TowerH = paste(TowerPosition_A, TowerPosition_B, sep="-")) %>% filter(!is.na(EC_mean) == TRUE) %>% reframe(.by=YearMon, min.EC = min(EC_mean, na.rm=T) ) 
   
   dataframe.gs.threshold <-   dataframe.gs$min.EC %>% mean 
   
@@ -142,7 +142,7 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
 
 DIEL.season <- function( dataframe, flux, Gas, flux.other){
   
-  dataframe <- dataframe %>% as.data.frame %>% filter(gas == Gas)
+  dataframe <- dataframe %>% as.data.frame %>% filter(gas == Gas) %>% rename( timeEndA.local = time.rounded)
   
   if(Gas == "CO2"){
     dataframe$flux.other <- ((dataframe[, flux.other]* 44.01)/1000000)*1800 
@@ -160,7 +160,7 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
              YearMon = timeEndA.local %>% format("%Y-%m"),
              Year = timeEndA.local %>% format("%Y"),
              Hour = timeEndA.local %>% format("%H") %>% as.numeric) %>% 
-    filter(!is.na(FC_turb_interp) == TRUE)
+    filter(!is.na(EC_mean) == TRUE)
   
   season <- unique(dataframe.gs$season)
   
@@ -173,7 +173,7 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
      # Remove outliers:
        subset <- dataframe.gs %>% filter(season == i, 
                                          FG_harmonized > -50, FG_harmonized < 50, 
-                                         FC_turb_interp > -50, FC_turb_interp < 50)
+                                         EC_mean > -50, EC_mean < 50)
       
        count <- subset$flux %>% na.omit %>% length
        

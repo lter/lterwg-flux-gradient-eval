@@ -4,26 +4,29 @@ library(tidyverse)
 library(sf)
 library(AOI)
 
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') # has a list of all 
+metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>% 
+  mutate(EcoType = case_when( Vegetation.Abbreviation..IGBP. == 'ENF' ~ 'Forest',
+                               Vegetation.Abbreviation..IGBP. == 'DBF' ~ 'Forest', 
+                               Vegetation.Abbreviation..IGBP. == 'MF' ~ 'Forest',
+                               Vegetation.Abbreviation..IGBP. == 'EBF' ~ 'Forest',
+                               Vegetation.Abbreviation..IGBP. == 'SAV' ~ 'Forest',
+                               Vegetation.Abbreviation..IGBP. == 'WET' ~ 'Wetland',
+                               
+                               Vegetation.Abbreviation..IGBP. == 'GRA' ~ 'Grassland',
+                               
+                               Vegetation.Abbreviation..IGBP. == 'CVM' ~ 'Cropland',
+                               Vegetation.Abbreviation..IGBP. == 'CRO' ~ 'Cropland',
+                               Vegetation.Abbreviation..IGBP. == 'OSH' ~ 'Shrubland')) %>% rename( Site = Site_Id.NEON)
 
 site.att.sf <- st_as_sf(x = metadata,                         
                coords = c("Longitude..degrees.", "Latitude..degrees."),
-               crs = 4326) %>% mutate( Site = Site_Id.NEON)
+               crs = 4326) 
 
-summary.igbp <-  metadata %>% reframe( .by = Vegetation.Abbreviation..IGBP., towers = length(Vegetation.Abbreviation..IGBP.)) %>% 
-  mutate( EcoType = case_when( Vegetation.Abbreviation..IGBP. == 'ENF' ~ 'Forest',
-                              Vegetation.Abbreviation..IGBP. == 'DBF' ~ 'Forest', 
-                              Vegetation.Abbreviation..IGBP. == 'MF' ~ 'Forest',
-                              Vegetation.Abbreviation..IGBP. == 'EBF' ~ 'Forest',
-                              Vegetation.Abbreviation..IGBP. == 'SAV' ~ 'Forest',
-                              Vegetation.Abbreviation..IGBP. == 'WET' ~ 'Wetland',
-                              
-                              Vegetation.Abbreviation..IGBP. == 'GRA' ~ 'Grassland',
-                              
-                              Vegetation.Abbreviation..IGBP. == 'CVM' ~ 'Cropland',
-                              Vegetation.Abbreviation..IGBP. == 'CRO' ~ 'Cropland',
-                              Vegetation.Abbreviation..IGBP. == 'OSH' ~ 'Shrubland')) %>% 
+
+
+summary.igbp <-  metadata %>% reframe( .by = c(Vegetation.Abbreviation..IGBP., EcoType), towers = length(Vegetation.Abbreviation..IGBP.))  %>% 
   reframe( .by = EcoType, towers = sum(towers))
+
 
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
 
@@ -32,14 +35,15 @@ canopy.Ht <- canopy %>% reframe( .by= Site,
 
 canopy.Ht$canopyHeight_m %>% range
 
-plot.tower.counts <- ggplot(data=site.att.sf, aes(x=Vegetation.Abbreviation..IGBP.)) +
+plot.tower.counts <- ggplot(data=site.att.sf, aes(x=EcoType)) +
   geom_bar(stat="count", width=0.7, fill='grey50') + theme_bw() + ylab('Towers') +
-  xlab('IGBP') + scale_y_continuous(breaks = scales::breaks_pretty(n = 5)) 
+  xlab('') + scale_y_continuous(breaks = scales::breaks_pretty(n = 5)) 
 
 site.att.sf.ht <- site.att.sf %>% left_join(canopy.Ht, by = 'Site')
 
 N.America <- aoi.usa <- aoi_get(country = 'North America')
 aoi.usa <- aoi_get(country = c('PR', 'USA'))
+
 library(colorspace)
 plot.map <- ggplot() + geom_sf(data = N.America) + 
   geom_sf(data = site.att.sf.ht,  aes( color = canopyHeight_m )) + 
@@ -78,5 +82,5 @@ bottom.plot <-ggarrange( plot.canopy,plot.tower.counts, common.legend=T,  labels
 
 final.plot <- ggarrange(top.plot , bottom.plot, ncol=1)
 
-ggsave("Figures/Map_plot.png", plot = final.plot, width = 7, height = 7, units = "in")
+ggsave("Figures/Map_plot.png", plot = final.plot, width = 7.6, height = 7, units = "in")
 

@@ -5,7 +5,7 @@ library(sf)
 
 source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
 source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R'))
-
+#38 run this number
 for( site in site.list){
   
   print( site)
@@ -19,7 +19,6 @@ for( site in site.list){
   
   # Change the time to local:
   
-
   # Get NEON sites from the server and find the time zones: https://cran.r-project.org/web/packages/lutz/readme/README.html
   sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
                                                                                                                       crs = "+proj=longlat +datum=WGS84")
@@ -48,7 +47,7 @@ for( site in site.list){
   # Run the filter functions... Report:
   
   # CO2
-  
+
   WP_9min.report.CO2 <-  filter_report(df = WP_9min.df.final %>% filter(gas == "CO2"),
                                        dConcSNR.min = 3,
                                        approach = "WP") %>% mutate(approach = "WP",
@@ -119,20 +118,32 @@ for( site in site.list){
   SITE_9min.report.H2O <- rbind( WP_9min.report.H2O, AE_9min.report.H2O, MBR_9min.report.H2O)
   SITE_9min.report.stability.H2O <- rbind( WP_9min.report.stability.H2O, AE_9min.report.stability.H2O, MBR_9min.report.stability.H2O)
   
-  # Run the filter functions... FILTER data:
+  
+   # Run the filter functions... FILTER data and adjust the GF sign:
+  MBR_9min.df.final$FC_turb_interp
   MBR_9min_FILTER <- filter_fluxes( df = MBR_9min.df.final,
                                     dConcSNR.min = 3,
-                                    approach = "MBR")  
+                                    approach = "MBR") %>% 
+    mutate( EC_mean = case_when(gas == "CO2" ~   FC_turb_interp,
+                                gas == "H2O" ~ FH2O_interp,
+                                gas == "CH4"~ NA))
   
   AE_9min_FILTER <- filter_fluxes( df = AE_9min.df.final,
                                    dConcSNR.min = 3,
-                                   approach = "AE") 
+                                   approach = "AE")%>% 
+    mutate( EC_mean = case_when(gas == "CO2" ~   FC_turb_interp,
+                                gas == "H2O" ~ FH2O_interp,
+                                gas == "CH4"~ NA))
   
   WP_9min_FILTER <- filter_fluxes ( df = WP_9min.df.final,
                                     dConcSNR.min = 3,
-                                    approach = "WP") 
- 
-  # Output the files
+                                    approach = "WP")%>% 
+    mutate( EC_mean = case_when(gas == "CO2" ~   FC_turb_interp,
+                                gas == "H2O" ~ FH2O_interp,
+                                gas == "CH4"~ NA))
+  
+  
+   # Output the files
   localdir.site <- paste(localdir,"/", site, sep = "")
   
   write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,"_9min.report.stability.CO2.csv", sep=""))

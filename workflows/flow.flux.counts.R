@@ -1,6 +1,6 @@
 # This script explores the distribution of fluxes:
-rm(list=ls())
 library(tidyverse)
+library(dplyr)
 library(colorspace)
 library(ggpubr)
 library(ggplot2)
@@ -9,23 +9,20 @@ localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
 load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
+source(fs::path(DirRepo,'workflows/flow.igbp.R'))
 
 # Build the dataset for canopy Information: ####
-canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
+canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% dplyr::distinct()
 
-SITES_One2One$R2 %>% round(2)
 
 Highest.CCC <- SITES_One2One %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T), R2.max = max(R2, na.rm=T) )
-
-Highest.CCC %>% ggplot( aes( x= CCC.max, y= R2.max)) + geom_point()
 
 SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) %>% 
   full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>%
   mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-         Good.CCC = case_when(  CCC >= 0.5 ~ 1, CCC < 0.5 ~ 0) %>% as.factor,
-         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct
-
-                                                                       
+         Good.CCC = case_when(  CCC >= 0.5  ~ 1, CCC < 0.5 ~ 0) %>% as.factor,
+         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct %>% full_join(metadata.igbp , by="Site")
+                                     
 # What is the distribution of fluxes across hours and seasons?
 
 # Explore Seasonal Distribution: ####
@@ -78,6 +75,25 @@ SITE_DATA_FLUX_COUNTS_SEASON_Total <- SITE_DATA_FLUX_COUNTS_Total %>%
             relationship = "many-to-many")  %>%
   mutate( percent = count.season/count.total*100 %>% round(1),
           season = ordered(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% distinct
+
+SITE_DATA_FLUX_COUNTS_Total_EcoType <-SITE_DATA_FLUX_COUNTS_Total %>% full_join(metadata.igbp , by="Site") %>% reframe( .by= c(gas, EcoType), counts = mean(count.total, na.rm=T))
+
+# FLUX COUNTS BYECOTYPE: ####
+plot.flux.count.ecotype <- SITE_DATA_FLUX_COUNTS_Total_EcoType %>%  
+  na.omit() %>% 
+  ggplot() +
+  geom_col( aes( y = counts/10000, x = EcoType), fill="transparent", col="black") + 
+  labs(y = expression(paste("Flux Measurements Site"^-1, "(Counts/10,000)")),
+       x = "Ecosystem Type",
+       title = "",
+       fill = "")  +
+  theme_bw() + facet_wrap(~gas, scales = "free_x")+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        strip.background = element_rect(fill = "transparent"))
+
+
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/SamplingFluxesEcotype.png", plot = ggarrange( plot.flux.count.ecotype, labels="D"), width = 8.5, height = 4, units = "in")
+
 # FLUX COUNTS BY APPROACH: ####
 
 plot.flux.count <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%  
@@ -89,6 +105,7 @@ plot.flux.count <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%
        fill = "Approach")  +
   theme_bw()  + scale_fill_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + facet_wrap(~gas, scales = "free_x")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
+# Summary for Approach: ####
 
 SITE_DATA_FLUX_COUNTS_Approach_Total %>% reframe(.by=c(Approach, gas), 
                                                  count.mean = mean(count.total),
@@ -126,7 +143,7 @@ SITE_DATA_FLUX_COUNTS_HOUR_Season <- SITE_DATA_FLUX_COUNTS_SEASON %>%
 
 SITE_DATA_FLUX_COUNTS_HOUR_Season$season <- factor(SITE_DATA_FLUX_COUNTS_HOUR_Season$season, levels = c("Winter", "Spring", "Summer", "Autumn"))
 
-# PLOTS: 
+# PLOTS for Season: ####
 
 plot.counts.season <- SITE_DATA_FLUX_COUNTS_SEASON_Total %>% distinct %>%  ggplot(aes(x = percent, y = Site, fill = season)) +
   geom_col() + facet_wrap(~ gas) +
@@ -150,14 +167,32 @@ hour.plots <- ggarrange( plot.counts.season.hour.percent.co2,
                          plot.counts.season.hour.percent.h2o,  
                          nrow=2, labels= c('B', 'C'))
 
-final.season.hour.plots <- ggarrange( plot.counts.season, hour.plots, ncol=2,labels="A")
+season.summary <- SITE_DATA_FLUX_COUNTS_SEASON_Total %>% reframe( .by=c(gas, season), percent.mean= mean(percent),  percent.sd= sd(percent) )
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Counts_Fluxes_Season-Hour_Percent.png", plot = final.season.hour.plots , width =9, height = 6, units = "in")
-
-# Summary information:
 SITE_DATA_FLUX_COUNTS_SEASON_Total %>% reframe( .by=c(gas, season), percent.mean= mean(percent),  percent.sd= sd(percent) )
 
-# Hour
+
+p_season <- ggplot(season.summary, aes(x = percent.mean, y = gas, fill = season))  + geom_col() +  scale_fill_discrete_qualitative(palette = "Harmonic")+ geom_text(aes(label = sprintf("%.0f%%", percent.mean)), position = position_stack(vjust = 0.5), size = 3) +
+  labs(
+    y = NULL,
+    x = "Perent Coverage (%)",
+    title = "",
+    fill = "Canopy Level"
+  )  + theme_bw()  + theme(legend.position = "none")
+
+p_season_label <- ggarrange(p_season, labels="D")
+
+final.season.hour.plots <- ggarrange( ggarrange( plot.counts.season, hour.plots, ncol=2,labels="A"), p_season_label ,ncol=1, nrow=2, heights = c(3, 1))
+
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Counts_Fluxes_Season-Hour_Percent.png", plot = final.season.hour.plots , width =9, height = 6.5, units = "in")
+
+# Summary information for Season: ####
+SITE_DATA_FLUX_COUNTS_SEASON_Total %>% names
+SITE_DATA_FLUX_COUNTS_SEASON_Total %>% reframe( .by=c(gas, season), 
+                                                percent.mean= mean(percent),  
+                                                percent.sd= sd(percent))
+
+# Hour Analysis: ####
 SITE_DATA_FLUX_COUNTS_HOUR_Season <- SITE_DATA_FLUX_COUNTS_SEASON %>% 
   full_join(SITE_DATA_FLUX_COUNTS_HOUR, 
             by = c('Site', 'gas', 'season'),
@@ -166,13 +201,12 @@ SITE_DATA_FLUX_COUNTS_HOUR_Season <- SITE_DATA_FLUX_COUNTS_SEASON %>%
 
 library(grDevices)
 
-# Define the anchor colors for the palette
-# Red at the start, yellow in the middle, and red at the end
-# Using hexadecimal color codes for precision
+library(RColorBrewer)
 
+sunset <- brewer.pal(9, "YlOrRd")
 
-# Generate 24 colors from the palette
-sunset <- red_yellow_red_palette <- red_yellow_red_palette_func(24)
+red_yellow_red_palette <- colorRampPalette(c("red", "Yellow", "Red"))
+sunset <- red_yellow_red_palette(24)
 
 plot.counts.season.hour.co2 <- SITE_DATA_FLUX_COUNTS_HOUR_Season  %>% filter(gas == "CO2") %>% 
   ggplot(aes(x = percent, y = Site, fill=hour)) +
@@ -207,7 +241,7 @@ SITE_DATA_FLUX_COUNTS_Overlap <- data.frame()
 for( site in site.list){
   print(site)
   
-  df <-SITE_DATA_FILTERED[[site]] %>% filter(CCC >=0.5, gas != "CH4") %>% 
+  df <-SITE_DATA_FILTERED[[site]] %>% filter(CCC >=0.5 , gas != "CH4") %>% 
     mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
            season = case_when(
              month %in% c(12, 1, 2) ~ "Winter",
@@ -309,10 +343,10 @@ plot.overlap.2 <- SITE_DATA_FLUX_COUNTS_Overlap_Long_summary %>%
 
 
 final.overlap.plot <- ggarrange(plot.overlap.1, plot.overlap.2, 
-          ncol=1, nrow=2, heights = c(3, 0.5))
+          ncol=1, nrow=2, heights = c(3, 0.5), labels=c("A", "B"))
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Counts_Fluxes_Overlap.png", plot = final.overlap.plot, width = 7, height = 7, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Counts_Fluxes_Overlap.png", plot = final.overlap.plot, width = 6, height = 7, units = "in")
 
 
 SITE_DATA_FLUX_COUNTS_Overlap_Long %>% 
@@ -335,9 +369,3 @@ save(
   SITE_DATA_FLUX_COUNTS_Overlap ,
   SITE_DATA_FLUX_COUNTS_Overlap_Long,
   SITE_DATA_FLUX_COUNTS_Overlap_Long_summary, file= paste(data.dir,"/flow.flux.counts.R", sep=""))
-
-
-
-
-
-

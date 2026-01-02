@@ -1,5 +1,5 @@
 # Site based example: 
-
+rm(list=ls())
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
@@ -16,8 +16,8 @@ Highest.CCC %>% ggplot( aes( x= CCC.max, y= R2.max)) + geom_point()
 SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) %>% 
   full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>%
   mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-         Good.CCC = case_when(  CCC >= 0.5 ~ 1, CCC < 0.5 ~ 0) %>% as.factor,
-         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct
+         Good.CCC = case_when(  CCC >= 0.5 | CCC <= -0.5 ~ 1, .default= 0) %>% as.factor,
+         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct 
 
 aoi <- c( 'JORN', 'KONZ', 'GUAN', 'HARV')
 
@@ -72,7 +72,10 @@ method.panel <- ggarrange(plot.method.pairs.JORN,plot.method.pairs.KONZ, plot.me
 
 summarize.canopy.pairs <- function( site){
   
-  df_method <- SITES_One2One_canopy %>% filter( CCC >= 0.5, Site == site) %>%  mutate( count.sh = 1) %>% reframe(.by= c(gas, Canopy_L1), n_pairs = sum(count.sh)) |>
+  df_method <- SITES_One2One_canopy %>% 
+    filter( CCC >= 0.5 | CCC <= -0.5 , Site == site) %>%  
+    mutate( count.sh = 1) %>% 
+    reframe(.by= c(gas, Canopy_L1), n_pairs = sum(count.sh)) |>
     group_by(gas) |>
     mutate(percent = 100 * n_pairs / sum(n_pairs)) |>
     ungroup() 
@@ -89,6 +92,10 @@ df_canopy.HARV <- summarize.canopy.pairs(site ="HARV")
 # NOTE: if you revise the counts, you only need to edit df_canopy above.
 
 summarize.canopy.pairs.plot <- function( df_canopy){
+  
+  my_colors <- c("AA" = "violetred2" , "AW" = "salmon1", "WW" = "khaki")
+  
+  
   p_canopy <- ggplot(df_canopy, aes(x = gas, y = percent, fill = Canopy_L1)) +
     geom_col() +
     geom_text(aes(label = sprintf("%.0f%%", percent)),
@@ -99,7 +106,9 @@ summarize.canopy.pairs.plot <- function( df_canopy){
       title = "",
       fill = "Canopy Level"
     )  +
-    theme_bw() +    scale_fill_discrete_sequential(palette = "OrYel") + theme( legend.position = 'none')
+    theme_bw() +    
+    scale_fill_manual(values= my_colors) + 
+    theme( legend.position = 'none')
   
   
   return(p_canopy )
@@ -153,7 +162,8 @@ season.plots <- ggarrange( plot.counts.season, plot.counts.season.hour.percent.c
 
 # Hour Panel:  #####
 
-red_yellow_red_palette_func <- colorRampPalette(c("#FF0000", "#FFFF00", "#FF0000"))
+red_yellow_red_palette <- colorRampPalette(c("red", "Yellow", "Red"))
+sunset <- red_yellow_red_palette(24)
 
 plot.counts.season.hour.co2.aoi <- SITE_DATA_FLUX_COUNTS_HOUR_Season.aoi  %>% filter(gas == "CO2") %>% 
   ggplot(aes(x = percent, y = fct_relevel(Site,  "HARV","GUAN" ,"KONZ","JORN" ), fill=hour)) +
@@ -195,16 +205,17 @@ plot.overlap.1.aoi <- SITE_DATA_FLUX_COUNTS_Overlap_Long.aoi %>%
 
 # Harmonized Linear Relationship: ####
 
-Harmonized.data <- fs::path(localdir,paste0("SITE_DATA_Harmonized.Rdata"))
+Harmonized.data <- fs::path('/Volumes/MaloneLab/Research/FluxGradient/FluxData/SITE_DATA_Harmonized.Rdata')
+
 load(file=Harmonized.data)
 
-linear.aoi.co2 <- ggarrange(  Linear_Harmonized_plots_CO2$JORN,
+linear.aoi.co2 <- ggarrange(Linear_Harmonized_plots_CO2$JORN,
             Linear_Harmonized_plots_CO2$KONZ,
             Linear_Harmonized_plots_CO2$GUAN,
             Linear_Harmonized_plots_CO2$HARV, ncol=4)
 
 linear.aoi.h2o <- ggarrange(Linear_Harmonized_plots_H2O$JORN,
-          Linear_Harmonized_plots_H2O$KONZ,
+                            Linear_Harmonized_plots_H2O$KONZ,
           Linear_Harmonized_plots_H2O$GUAN,
           Linear_Harmonized_plots_H2O$HARV, ncol=4)
 
