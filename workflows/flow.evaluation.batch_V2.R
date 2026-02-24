@@ -11,8 +11,8 @@ library(sf)
 
 # -------------- Change this stuff -------------
 #DirRepo <- 'C:/Users/csturtevant/Documents/Git/lterwg-flux-gradient' # Relative or absolute path to lterwg-flux-gradient git repo on your local machine. Make sure you've pulled the latest from main!
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-setwd(DirRepo)
+DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+setwd(DirRepo.eval)
 #localdir <- 'C:/Users/csturtevant/OneDrive - Battelle Ecology/FluxGradient/filterTesting' # We'll deposit output files here prior to uploading to Google Drive
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
@@ -63,18 +63,19 @@ if(DnldFromGoogleDrive == TRUE){
   
   }
   } }
-
+#______________________________________________________________________________
 # Evaluation of SNR Threshold: (ETA 1 Hour) ####
 SNR.plot.dir <- '/Volumes/MaloneLab/Research/FluxGradient/SNR_plot' # Where do you want to save the plots
 SNR.summary.dir <-"/Volumes/MaloneLab/Research/FluxGradient/SNR_Summary/" # Where to save the summary file
-source(fs::path(DirRepo,'workflows/flow.evaluation.SNR.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.SNR.R'))
+#______________________________________________________________________________
 
 # Application of Filter Functions: #### 
 message('Running Filter...')
-source(fs::path(DirRepo,'workflows/flow.evaluation.filter.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.filter.R'))
 
 # Compiles Data frames into one list: ####
-source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist.R'))
+source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist_FILTER.R'))
 
 # 4 Objects are created
 fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata"))
@@ -93,58 +94,53 @@ fileSave <- fs::path(localdir,paste0("SITES_WP_9min_FILTER.Rdata"))
 save( SITES_WP_9min_FILTER,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Application of the CCC Analysis #### Uses the SiteList by approach
-message('Running  CCC computation for best height...')
-
-# set where you want plots to go:
-dir.one2one <- '/Volumes/MaloneLab/Research/FluxGradient/One2One_Plots'
+# Calculation of the CCC Analysis #### Uses the SiteList by approach:
+message('Running  CCC computation for samplingheight pairs')
 source(fs::path(DirRepo,'workflows/flow.evaluation.One2One.CCC.R'))
-
+# Products:
+drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3") # The
 fileSave <- fs::path(localdir,paste0("SITES_One2One.Rdata"))
 save( SITES_One2One,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 SITES_One2One %>% ggplot( aes( y=Site, x=CCC, col=Approach)) + geom_point() + facet_wrap(~gas)
 
+# Compile Data with the CCC in it:
+source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist_CCC.R')) # ENSURE all SUBSEQUENT FILES ARE USING THE FILES PRODUCED HERE:
+fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata"))
+save( SITE_DATA_FILTERED_CCC,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
 # Sampling Height Pair Model:
-source(fs::path(DirRepo,'workflows/flow.GoodDrivers.V2.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.GoodDrivers.V2.R'))
 fileSave <- fs::path(localdir,paste0("SITES_One2One_canopy_model.Rdata"))
-save( SITES_One2One_canopy_model,file=fileSave )
-
-
-# Evaluate what data is left after filtering summarizing by what sampling pairs are left:
-source(fs::path(DirRepo,'workflows/Results/flow.CCC.VIZ.R'))
-
-# Evaluate what data is left after filtering summarizing by what flux data remains:
-source(fs::path(DirRepo,'workflows/flow.flux.counts.R'))
+save( SITES_One2One_model,file=fileSave )
 
 # Test linear relationship between approaches:
-source(fs::path(DirRepo,'workflows/flow.evaluation.approach.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.approach.R'))
+
+# Evaluate what data is left after filtering summarizing by what sampling pairs are left:
+source(fs::path(DirRepo.eval,'workflows/Results/flow.CCC.VIZ.R'))
+
+# Evaluate what data is left after filtering summarizing by what flux data remains:
+source(fs::path(DirRepo.eval,'workflows/flow.flux.counts.R'))
+
 
 # Harmonization:
 source(fs::path(DirRepo,'workflows/flow.flux.harmonization.R'))
 
 # Application of the Diel Analysis ####
-# set where you want plots to go:
-# Need to adjust the diel functions to use EC_mean!!!
-dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'
+#dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'# set where you want plots to go:
 source(fs::path(DirRepo,'workflows/flow.evaluation.diel.v2.R'))
 
 fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY.RDATA'
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Diel Plots:
-source(fs::path(DirRepo,'workflows/flow.evaluation.diel.v2.R'))
-
-# How well does the model work at identifying the right sampling height pairs to use?
-
-# How good is the data selected by the model?
+# Map: Figure 1:
+source(fs::path(DirRepo.eval,'workflows/flow.attr.map.R'))
 
 # Site based Figure: ####
 source(fs::path(DirRepo,'workflows/flow.evaluation.sitebased.summary.R'))
-
-# Map: Figure 1:
-source(fs::path(DirRepo,'workflows/flow.attr.map.R'))
 
 
 

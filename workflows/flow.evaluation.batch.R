@@ -1,4 +1,5 @@
 # flow.evaluation:
+## This Evaluation follows the workflow for CCC_EC:
 
 # The Evaluation dataframe is made in "lterwg-flux-gradient-eval" by the file flow.evaluation_dataframe
 
@@ -11,7 +12,7 @@ library(sf)
 
 # -------------- Change this stuff -------------
 #DirRepo <- 'C:/Users/csturtevant/Documents/Git/lterwg-flux-gradient' # Relative or absolute path to lterwg-flux-gradient git repo on your local machine. Make sure you've pulled the latest from main!
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 setwd(DirRepo)
 #localdir <- 'C:/Users/csturtevant/OneDrive - Battelle Ecology/FluxGradient/filterTesting' # We'll deposit output files here prior to uploading to Google Drive
 
@@ -67,58 +68,80 @@ if(DnldFromGoogleDrive == TRUE){
 # Evaluation of SNR Threshold: (ETA 1 Hour) ####
 SNR.plot.dir <- '/Volumes/MaloneLab/Research/FluxGradient/SNR_plot' # Where do you want to save the plots
 SNR.summary.dir <-"/Volumes/MaloneLab/Research/FluxGradient/SNR_Summary/" # Where to save the summary file
-source(fs::path(DirRepo,'workflows/flow.evaluation.SNR.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.SNR.R'))
 
 # Application of Filter Functions: ####
 message('Running Filter...')
-source(fs::path(DirRepo,'workflows/flow.evaluation.filter.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.filter.R'))
 
 # Compiles Dataframes into one list: ####
-source(fs::path(DirRepo,'workflows/flow.evaluation_SITELIST.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation_SITELIST.R'))
 
-# Application of the CCC Analysis ####
+# 4 Objects are created
+fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata"))
+save( SITE_DATA_FILTERED,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+fileSave <- fs::path(localdir,paste0("SITES_MBR_9min_FILTER.Rdata"))
+save( SITES_MBR_9min_FILTER,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+fileSave <- fs::path(localdir,paste0("SITES_AE_9min_FILTER.Rdata"))
+save( SITES_AE_9min_FILTER ,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+fileSave <- fs::path(localdir,paste0("SITES_WP_9min_FILTER.Rdata"))
+save( SITES_WP_9min_FILTER,file=fileSave)
+googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+
+# Application of the CCC (EC) Analysis ####
 message('Running  CCC computation for best height...')
 
 # set where you want plots to go:
 dir.one2one <- '/Volumes/MaloneLab/Research/FluxGradient/One2One_Plots'
-source(fs::path(DirRepo,'workflows/flow.evaluation.One2One.CCC.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.One2One.CCC.R'))
 
 fileSave <- fs::path(localdir,paste0("SITES_One2One.Rdata"))
 save( SITES_One2One,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Build a SITE_LIST DATAFRAME: ####
-source(fs::path(DirRepo,'workflows/flow.evaluation.sitelist.R'))
-fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata"))
-save( SITE_DATA_FILTERED,file=fileSave)
+# Compile Data with the CCC in it:
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.sitelist_CCC.R')) # ENSURE all SUBSEQUENT FILES ARE USING THE FILES PRODUCED HERE:
+fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata"))
+save( SITE_DATA_FILTERED_CCC,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
+# Reliable Sampling Height Pairs (CCC_GF):
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.RSHP.R'))
+
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.PreEnsemble.R'))
+
+# Sampling Height Pair Model:
+source(fs::path(DirRepo.eval,'workflows/flow.GoodDrivers.V2.R'))
+fileSave <- fs::path(localdir,paste0("SITES_One2One_canopy_model.Rdata"))
+save( SITES_One2One_model,file=fileSave )
+
+
+# RESULTS #### Update Below to produce the same files!
+
+# THese files already use the CCC > 0.5:
 # Evaluate what data is left after filtering summarizing by what sampling pairs are left:
-source(fs::path(DirRepo,'workflows/Results/flow.CCC.VIZ.R'))
+source(fs::path(DirRepo.eval,'workflows/Results/flow.CCC.VIZ.R'))
 
 # Evaluate what data is left after filtering summarizing by what flux data remains:
-source(fs::path(DirRepo,'workflows/flow.flux.counts.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.flux.counts.R'))
 
-# Harmonization:
+
+# Ensemble GF:
 # This is where I deal with sign changes!
-source(fs::path(DirRepo,'workflows/flow.flux.harmonization.R'))
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.ensemble_V1.R'))
 
 # Application of the Diel Analysis ####
-# set where you want plots to go:
-dir.diel <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_Plots'
-source(fs::path(DirRepo,'workflows/flow.evaluation.diel.v2.R'))
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.diel_V1.R'))
 
-fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY.RDATA'
+fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1.RDATA'
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# Evaluation of drivers of good sampling height pairs:
-source(fs::path(DirRepo,'workflows/flow.evaluation.GoodDrivers.V2.R'))
 
 # Site based Figure: ####
-source(fs::path(DirRepo,'workflows/flow.evaluation.sitebased.summary.R'))
-
-
-
-
-
-
+source(fs::path(DirRepo.eval,'workflows/flow.evaluation.sitebased.summary.R'))

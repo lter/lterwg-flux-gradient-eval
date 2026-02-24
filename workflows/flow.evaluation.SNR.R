@@ -3,8 +3,8 @@ library(tidyverse)
 library(sf)
 library(lutz)
 
-source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
-source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R' ))
+source(fs::path(DirRepo.eval,'functions/calc.filter_FG.R' ))
+source(fs::path(DirRepo.eval,'functions/calc.SITELIST_FORMATTING.R' ))
 
 for( site in site.list){
   

@@ -1,5 +1,5 @@
 # Source the CCC calculation function
-source(fs::path(DirRepo,"./functions/calc.lins.ccc.R"))
+source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R"))
 
 # Define get_facet_stats as a global function
 get_facet_stats <- function(df, facet_level, x_col, y_col) {
@@ -210,6 +210,10 @@ ccc.parms <- function(Y, X, DF, TYPE) {
   return(ccc.parms)
 }
 
+
+  
+ 
+
 ccc.parms.height <- function(MBR.DF, AE.DF, WP.DF, gas) {   
   
   MBR.DF <- MBR.DF %>% as.data.frame
@@ -360,3 +364,127 @@ ccc.parms.site <- function(MBR.tibble, AE.tibble, WP.tibble, gas) {
   
   return(site.tibble_parms) 
 }
+
+
+ccc.parms.site.val <- function(sites.tibble, GAS) {
+  
+  sites <- names(sites.tibble)
+  
+  site.tibble_parms <- data.frame(Intercept = as.numeric(),
+                                  Slope = as.numeric(),
+                                  CCC = as.numeric(),
+                                  RMSE = as.numeric(),
+                                  R2 = as.numeric(),
+                                  Approach = as.character(),
+                                  dLevelsAminusB = as.character(), 
+                                  Site = as.character(),
+                                  count = as.numeric(),
+                                  Season =  as.character())
+  
+  for(i in sites) {
+    print(i)
+    season.list <- sites.tibble[[i]]$Season %>% unique()
+    
+    for( s in season.list){
+      print(s)
+      MBR.tibble <- sites.tibble[[i]] %>% filter( Approach == "MBR" , gas == GAS, Season == s)
+      AE.tibble <- sites.tibble[[i]] %>% filter( Approach == "AE", gas == GAS, Season == s)
+      WP.tibble <- sites.tibble[[i]] %>% filter( Approach == "WP", gas == GAS, Season == s)
+      
+      
+      df.parms <- ccc.parms.height.val(MBR.DF = MBR.tibble, 
+                                       AE.DF = AE.tibble, 
+                                       WP.DF = WP.tibble, GAS = GAS) %>%
+        mutate(Site = i, Season = s)
+      
+      site.tibble_parms <- rbind(site.tibble_parms, df.parms)
+    }
+    
+  }
+  
+  return(site.tibble_parms) 
+}
+ccc.parms.height.val <- function(MBR.DF, AE.DF, WP.DF, GAS) {   
+  
+  MBR.DF <- MBR.DF %>% as.data.frame
+  AE.DF <- AE.DF %>% as.data.frame
+  WP.DF <- WP.DF %>% as.data.frame
+  
+  
+  ccc.parms.final <- data.frame(Intercept = as.numeric(),
+                                Slope = as.numeric(),
+                                CCC = as.numeric(),
+                                RMSE = as.numeric(), 
+                                R2 = as.numeric(),
+                                Approach = as.character(), 
+                                dLevelsAminusB = as.character(),
+                                count=as.numeric())
+  
+  dLevelsAll <- unique(c(unique(AE.DF$dLevelsAminusB), unique(WP.DF$dLevelsAminusB), unique(MBR.DF$dLevelsAminusB)))
+  
+  
+  for(a in dLevelsAll) {
+    print(a)
+    
+    if(any(a %in% MBR.DF$dLevelsAminusB)) {
+      ccc.parms.mbr <- ccc.parms(Y = 'FG_mean', 
+                                 X = 'EC_mean', 
+                                 DF = MBR.DF %>% 
+                                   filter(dLevelsAminusB == a),
+                                 TYPE = 'MBR') 
+    } else {
+      ccc.parms.mbr <- NULL
+    }
+    
+    if(any(a %in% AE.DF$dLevelsAminusB)) {
+      ccc.parms.AE <- ccc.parms(Y = 'FG_mean', 
+                                X = 'EC_mean', 
+                                DF = AE.DF %>% 
+                                  filter(dLevelsAminusB == a),
+                                TYPE = 'AE')
+    } else {
+      ccc.parms.AE <- NULL
+    }
+    
+    if(any(a %in% WP.DF$dLevelsAminusB)) {
+      ccc.parms.WP <- ccc.parms(Y = 'FG_mean', 
+                                X = 'EC_mean', 
+                                DF = WP.DF %>% 
+                                  filter(dLevelsAminusB == a),
+                                TYPE = 'WP')
+    } else {
+      ccc.parms.WP <- NULL
+    }  
+    
+    ccc.parms.data <- rbind(ccc.parms.mbr, ccc.parms.AE, ccc.parms.WP) %>% 
+      as.data.frame %>% 
+      mutate(dLevelsAminusB = a) 
+    
+    ccc.parms.final <- rbind(ccc.parms.final, ccc.parms.data)
+  }
+  
+  
+  ccc.parms.final <- ccc.parms.final %>% mutate(gas=GAS)
+  
+  
+  
+  return(ccc.parms.final)
+}
+ccc.val <- function( sites.tibble){
+  # Calculate CCC parameters for CO2
+  SITESval_CCC_CO2 <- ccc.parms.site.val(sites.tibble = sites.tibble , GAS = "CO2")
+  SITESval_CCC_H2O <- ccc.parms.site.val(sites.tibble = sites.tibble , GAS = "H2O")
+  SITESval_CCC_CH4 <- ccc.parms.site.val(sites.tibble = sites.tibble , GAS = "CH4")
+  
+  # Combine all CCC data with gas indicator
+  SITESval_One2One_gas_CGF <- SITESval_CCC_CO2 %>% 
+    mutate(gas = "CO2") %>% 
+    rbind(
+      SITESval_CCC_H2O %>% 
+        mutate(gas = "H2O"))%>% 
+    rbind(
+      SITESval_CCC_CH4 %>% 
+        mutate(gas = "CH4")) %>% select(Approach, dLevelsAminusB, gas,   Site, CCC, R2, Season )
+  
+}
+

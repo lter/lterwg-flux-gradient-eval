@@ -284,7 +284,7 @@ ENSEMBLE_DIELS_EVAL_canopy <- ENSEMBLE_DIELS_EVAL %>% rename(Site = site) %>% fu
  
  plot.23 <- ggarrange(   plot.2,  plot.3 , nrow=2 , heights= c(3,1))
 
- ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/DIEL_PLOTS_SEASON_Final.png", 
+ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_Final_V1.png", 
         plot =  plot.23, width = 8, height =8, units = "in")
  
 # Figure: EVAL by Ecotype: #### 
@@ -307,13 +307,12 @@ Plot_ENSEMBLE_DIEL_Eco_EVAL_Season <- ENSEMBLE_DIELS_EVAL_canopy %>%  ggplot() +
          strip.background = element_rect(fill = "transparent", size = 0.5),
          legend.position = "top")+ ylab("") +  xlab(expression(paste("Ensemble GF R"^2)))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/DIEL_PLOTS_SEASON_EcoType_EVAL.png", 
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_EcoType_EVAL_V1.png", 
        plot = Plot_ENSEMBLE_DIEL_Eco_EVAL, width = 9, height =4, units = "in")
 
 # Text Summary: ####
-
-load( file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE.RDATA')
-
+# This is saved below:
+load( file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1.RDATA')
 
 ENSEMBLE_DIELS_Site %>% names
 ENSEMBLE_DIELS_Site %>% summary
@@ -341,7 +340,7 @@ ENSEMBLE_DIELS_Site %>% reframe( .by=c( gas),
                                    total.diff.sd = sd(total.diff, na.rm=T))
 
 save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,
-      file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE.RDATA')
+      file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1.RDATA')
 
 
 ENSEMBLE_DIELS_EVAL_canopy$Site[ENSEMBLE_DIELS_EVAL_canopy$R2 < 0.45] %>% unique

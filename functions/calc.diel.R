@@ -172,7 +172,7 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
       
      # Remove outliers:
        subset <- dataframe.gs %>% filter(season == i, 
-                                         FG_harmonized > -50, FG_harmonized < 50, 
+                                         FG_ENSEMBLE > -50, FG_ENSEMBLE < 50, 
                                          EC_mean > -50, EC_mean < 50)
       
        count <- subset$flux %>% na.omit %>% length
@@ -207,7 +207,7 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
   
 }
 
-DIEL.COMPILE.Harmonized <- function( dataframe, FG_flux, EC_flux, Gas){
+DIEL.COMPILE.ENSEMBLE <- function( dataframe, FG_flux, EC_flux, Gas){
   
   try({
     FG.DIEL <- DIEL.season( dataframe = dataframe, flux = FG_flux, Gas, flux.other = EC_flux)
@@ -319,7 +319,6 @@ DIEL.COMPILE.FINAL <- function( dataframe, FG_flux, EC_flux, Gas){
       
       
     } }
-
 
 # Depreciated:
 

@@ -3,8 +3,8 @@
 library(lutz)
 library(sf)
 
-source(fs::path(DirRepo,'functions/calc.filter_FG.R' ))
-source(fs::path(DirRepo,'functions/calc.SITELIST_FORMATTING.R'))
+source(fs::path(DirRepo.eval,'functions/calc.filter_FG.R' ))
+source(fs::path(DirRepo.eval,'functions/calc.SITELIST_FORMATTING.R'))
 #38 run this number
 
 for( site in site.list){

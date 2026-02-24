@@ -1,5 +1,5 @@
 # Good levels:
-
+library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(ggridges)
@@ -7,46 +7,29 @@ library(ggpubr)
 library(VSURF)
 library(randomForest)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
-dir <- DirRepo
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
+dir <- DirRepo.eval
 
 # Stop.vsurf:
 stop <- 'yes' # change this to no is you want to re-run variable selection
 
-# Build the dataset for canopy Information: ####
-canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
-
-SITES_One2One$R2 %>% round(2)
-
-Highest.CCC <- SITES_One2One %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T), R2.max = max(R2, na.rm=T) )
-
-Highest.CCC %>% ggplot( aes( x= CCC.max, y= R2.max)) + geom_point()
-
-SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) %>% 
-  full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>%
-  mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-         Good.CCC = case_when(  CCC >= 0.5 ~ 1, .default= 0) %>% as.factor,
-         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct
-
-
 # Set up VSURF ####
 # Divide into test and training datasets:
 if( stop == 'no'){
-  train <- SITES_One2One_canopy %>% 
+  train <- SITES_One2One %>% 
     sample_frac(0.80) 
   
-  test <- anti_join(SITES_One2One_canopy, train )
+  test <- anti_join(SITES_One2One, train )
   
-  SITES_One2One_canopy %>% summary
+  SITES_One2One %>% summary
   train  %>% summary
   test  %>% summary
   
   # Variable Selection : ####
   
-  SITES_One2One_canopy %>% names
+  SITES_One2One %>% names
   train[, c(7, 10,73, 81, 82)] %>% names
   
   rf_index.sdesign.vsurf <- VSURF(train[, c(7, 10,73, 82)], 
@@ -116,36 +99,35 @@ train$rf_model <- predict(rf_model , train)
 confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
-save(train, test,rf_model, final.vars, SITES_One2One_canopy, 
+save(train, test,rf_model, final.vars, SITES_One2One, 
      file= paste(localdir, "Good_Fluxes.Rdata", sep="") )
 }
 
 # Sensitivity Analysis: ####
 load(file= paste(localdir, "Good_Fluxes.Rdata", sep="") )
 
+SITES_One2One$Approach %>% unique
+SITES_One2One$Canopy_L1 %>% unique
+SITES_One2One$gas %>% unique
 
-SITES_One2One_canopy$Approach %>% unique
-SITES_One2One_canopy$Canopy_L1 %>% unique
-SITES_One2One_canopy$gas %>% unique
+SITES_One2One$RelativeDistB %>% summary
+SITES_One2One$RelativeDistA %>% summary
+SITES_One2One$Cutoff05.SDSDH %>% summary
+SITES_One2One$LAI.sd %>% summary
 
-SITES_One2One_canopy$RelativeDistB %>% summary
-SITES_One2One_canopy$RelativeDistA %>% summary
-SITES_One2One_canopy$Cutoff05.SDSDH %>% summary
-SITES_One2One_canopy$LAI.sd %>% summary
-
-mean.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L1, gas), 
+mean.df <- SITES_One2One %>% reframe( .by=c(Approach, Canopy_L1, gas), 
                                              RelativeDistB = mean(RelativeDistB, na.rm=T),
                                              #RelativeDistA = mean(RelativeDistA, na.rm=T),
                                              Cutoff05.SDSDH  = mean(Cutoff05.SDSDH ,na.rm=T),
                                              CHM.mean= mean(CHM.mean,na.rm=T))
 
-min.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L1, gas), 
+min.df <- SITES_One2One %>% reframe( .by=c(Approach, Canopy_L1, gas), 
                                              RelativeDistB = min(RelativeDistB, na.rm=T),
                                              #RelativeDistA = min(RelativeDistA, na.rm=T),
                                              Cutoff05.SDSDH  = min(Cutoff05.SDSDH ,na.rm=T),
                                             CHM.mean = min(CHM.mean,na.rm=T))
 
-max.df <- SITES_One2One_canopy %>% reframe( .by=c(Approach, Canopy_L1, gas), 
+max.df <- SITES_One2One %>% reframe( .by=c(Approach, Canopy_L1, gas), 
                                              RelativeDistB = max(RelativeDistB, na.rm=T),
                                              #RelativeDistA = max(RelativeDistA, na.rm=T),
                                              Cutoff05.SDSDH  = max(Cutoff05.SDSDH ,na.rm=T),
@@ -155,10 +137,10 @@ summary.df <- rbind( mean.df, min.df, max.df)
 
 summary.df %>% summary
 
-RelativeDistB.df <- data.frame(  RelativeDistB = seq(SITES_One2One_canopy$ RelativeDistB %>% min(na.rm=T), SITES_One2One_canopy$ RelativeDistB %>% max(na.rm=T), 2) )
-#RelativeDistA.df <- data.frame(  RelativeDistA = seq(SITES_One2One_canopy$RelativeDistA %>% min(na.rm=T), SITES_One2One_canopy$RelativeDistA %>% max(na.rm=T), 2) )
-Cutoff05.SDSDH.df <- data.frame( Cutoff05.SDSDH = seq(SITES_One2One_canopy$Cutoff05.SDSDH %>% min(na.rm=T), SITES_One2One_canopy$Cutoff05.SDSDH %>% max(na.rm=T), 0.2) )
-CHM.mean.df <- data.frame( CHM.mean = seq(SITES_One2One_canopy$CHM.mean %>% min(na.rm=T), SITES_One2One_canopy$CHM.mean %>% max(na.rm=T), 0.01) )
+RelativeDistB.df <- data.frame(  RelativeDistB = seq(SITES_One2One$ RelativeDistB %>% min(na.rm=T), SITES_One2One$ RelativeDistB %>% max(na.rm=T), 2) )
+#RelativeDistA.df <- data.frame(  RelativeDistA = seq(SITES_One2One$RelativeDistA %>% min(na.rm=T), SITES_One2One$RelativeDistA %>% max(na.rm=T), 2) )
+Cutoff05.SDSDH.df <- data.frame( Cutoff05.SDSDH = seq(SITES_One2One$Cutoff05.SDSDH %>% min(na.rm=T), SITES_One2One$Cutoff05.SDSDH %>% max(na.rm=T), 0.2) )
+CHM.mean.df <- data.frame( CHM.mean = seq(SITES_One2One$CHM.mean %>% min(na.rm=T), SITES_One2One$CHM.mean %>% max(na.rm=T), 0.01) )
 
 # Format Factors
 
@@ -184,7 +166,8 @@ RelativeDistB.final$model <-  predict(rf_model  , RelativeDistB.final,'prob')[,2
 Sensitivity_plot <- function(df, approach, label, var, col){
 
  
-  plot <-  ggplot() + geom_smooth(data= df %>% filter(Approach == approach),
+  plot <-  ggplot() + geom_smooth(data= df %>% 
+                                    filter(Approach == approach),
                                   aes_string( x= var , y = 'model', col= 'Canopy_L2'), alpha=0.2) + 
     scale_color_manual(values=c("goldenrod4", "goldenrod2",
                                 "green1","green3", "aquamarine2","aquamarine4",
@@ -198,7 +181,7 @@ Sensitivity_plot2 <- function(df, approach, label, var, col){
   
   plot <-  ggplot() + geom_smooth(data= df %>% filter(Approach == approach), col=col,
                                   aes_string( x= var , y = 'model', linetype= 'Canopy_L1'), alpha=0.2)+
-    theme_bw() + xlab(label) + ylab( "P(CCC > |0.5|)")
+    theme_bw() + xlab(label) + ylab( "P(CCC ≥ 0.5)")
   
   return(plot)
 }
@@ -234,10 +217,10 @@ gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c( "G", "H","I"
 
 final.gd.plot <- ggarrange( gd.plot.mbr, gd.plot.ae, gd.plot.wp, nrow=3, ncol=1, common.legend = TRUE)
 
-setwd(DirRepo )
+setwd(DirRepo.eval )
 ggsave("Figures/GoodData_plot.png", plot = final.gd.plot, width = 11, height = 9, units = "in")
 
-
+# Model Results: ####
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
 site.list <- metadata$Site_Id.NEON %>% unique
 
@@ -253,11 +236,11 @@ caret::confusionMatrix(train$rf_model, train$Good.CCC)
 
 load(file= paste(localdir, "Good_Fluxes.Rdata", sep="") )
 
-SITES_One2One_canopy$rf_model <- predict(rf_model , SITES_One2One_canopy, type = "prob")[,2]
+SITES_One2One$rf_model <- predict(rf_model , SITES_One2One, type = "prob")[,2]
 
 library(cutpointr)
 
-optimal_cutoff <- cutpointr(data = SITES_One2One_canopy, 
+optimal_cutoff <- cutpointr(data = SITES_One2One, 
                             x = rf_model, 
                             class = Good.CCC, 
                             method = minimize_metric, metric=sum_sens_spec, na.rm =T,
@@ -265,14 +248,14 @@ optimal_cutoff <- cutpointr(data = SITES_One2One_canopy,
 
 plot_metric(optimal_cutoff) # 'sum_sens_spec' maximizes sensitivity + specificity; other metrics are available
 
-custom_cutoff <- 0.52
+custom_cutoff <- 0.5
 
 
-SITES_One2One_canopy <- SITES_One2One_canopy %>% mutate(
+SITES_One2One <- SITES_One2One %>% mutate(
   predicted = case_when( rf_model >= custom_cutoff ~ 1, .default= 0) %>% as.factor %>% replace_na( '0'),
   Good.CCC = Good.CCC %>% factor( levels=c("0", "1")))
 
-confusio.matrix <- caret::confusionMatrix(SITES_One2One_canopy$predicted, SITES_One2One_canopy$Good.CCC) 
+confusio.matrix <- caret::confusionMatrix(SITES_One2One$predicted, SITES_One2One$Good.CCC) 
 
 confusio.matrix.df <- confusio.matrix$table %>% as.data.frame()
 
@@ -281,24 +264,26 @@ plot.Cmatrix <- ggplot(data = confusio.matrix.df, aes(x = Reference, y = Predict
   geom_text(aes(label = Freq), vjust = .5, fontface = "bold") + labs(fill = "Frequency")+
   scale_fill_gradient(low = "white", high = "skyblue") + # Customize fill color
   labs(title = "Confusion Matrix",
-       x = "CCC > 0.5 (EC)",
+       x = "CCC ≥ 0.5 (EC)",
        y = "Predicted Class") +
   theme_minimal() + # Use a minimal theme
   theme(plot.title = element_text(hjust = 0.5)) # Center the title
 
-plot.approach <- SITES_One2One_canopy %>% drop_na(predicted)%>%  ggplot( aes(x=Approach, y =CCC, col=predicted %>% as.factor)) + 
+plot.approach <- SITES_One2One %>% drop_na(predicted)%>%  ggplot( aes(x=Approach, y =CCC, col=predicted %>% as.factor)) + 
   geom_boxplot() + theme_bw() + scale_color_manual(values = c("0" = "skyblue", "1" = "navy")) + 
   geom_hline( yintercept=0.5, col="red") + labs( x = "Approach",
                                                 y = "CCC (EC)",
                                                 colour="Prediction") 
 
-plot.canopylevels <-SITES_One2One_canopy %>% drop_na(predicted)%>%  ggplot( aes(x=Canopy_L1, y =CCC, col=predicted %>% as.factor)) + 
+plot.canopylevels <-SITES_One2One %>% drop_na(predicted)%>%  ggplot( aes(x=Canopy_L1, y =CCC, col=predicted %>% as.factor)) + 
   geom_boxplot() + theme_bw() + scale_color_manual(values = c("0" = "skyblue", "1" = "navy")) +
   geom_hline( yintercept=0.5, col="red")+ labs( x = "Canopy Level",
                                                 y = "CCC (EC)",
                                                 colour="Prediction") 
 
-SITES_One2One_canopy_model <- SITES_One2One_canopy 
+SITES_One2One_model <- SITES_One2One 
+
+
 
 final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.canopylevels, nrow= 1, common.legend = T,
                                    labels=c("B", "C")), nrow=1,
@@ -306,6 +291,14 @@ final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.can
 
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix.png", plot =  final.model.plots, width = 9, height = 3, units = "in")
 
-save(train, test,rf_model, final.vars, SITES_One2One_canopy, SITES_One2One_canopy_model,
-     file= paste(localdir, "SITES_One2One_canopy_model.Rdata", sep="") )
-          
+save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
+     file= paste(localdir, "SITES_One2One_model.Rdata", sep="") )
+  
+# Results
+SITES_One2One_EC.summary <- 
+  SITES_One2One_model %>% filter( CCC >= 0.5)
+SITES_One2One_EC.summary$Site %>% unique %>% length
+SITES_One2One_model.summary <- 
+  SITES_One2One_model %>% filter( rf_model >= 0.52)
+
+SITES_One2One_model.summary$Site %>% unique %>% length

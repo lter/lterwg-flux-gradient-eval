@@ -11,19 +11,13 @@ DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/l
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3")
-
-email <- 'sparklelmalone@gmail.com'
-googledrive::drive_auth(email = TRUE) 
-
-googledrive::drive_auth(email = email) # Likely will not work on RStudio Server. If you get an error, try email=TRUE to open an interactive auth session.
-data_folder <- googledrive::drive_ls(path = drive_url)
 
 load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
 load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
 load(file= paste(localdir, "SITES_One2One_canopy_model.Rdata", sep="" ))
+load(  file= paste(localdir, "SITE_RSHP_MODEL.Rdata", sep="") )
 
-canopy.adj <- val.SHP.resample %>% select( Site, Approach, gas, dLevelsAminusB, Good.CCC.FG.rf, Good.CCC.EC ,Good.CCC.GF) %>% rename( Good.CCC.EC.FG = Good.CCC.FG.rf)
+canopy.adj <- val.SHP.total.canopy.summary %>% select( Site, Approach, gas, dLevelsAminusB, Good.CCC) %>% rename( Good.CCC.EC = Good.CCC)
 
 # Build the dataset for canopy Information: ####
 
@@ -33,13 +27,13 @@ metadata.igbp <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NE
 
 # What is the distribution of fluxes across hours and seasons?
 
-# Harmonize Data
+# Ensemble GF Data
 
 site.list <- SITE_DATA_FILTERED_CCC %>% names()
-Linear_Harmonized_plots_CO2 <- list()
-Linear_Harmonized_plots_H2O <- list()
-Linear_Harmonized_Stats <- data.frame()
-SITE_DATA_Harmonized <- list()
+Linear_ENSEMBLE_plots_CO2 <- list()
+Linear_ENSEMBLE_plots_H2O <- list()
+Linear_ENSEMBLE_Stats <- data.frame()
+SITE_DATA_ENSEMBLE <- list()
 
 for( site in site.list){
   print(site)
@@ -56,30 +50,30 @@ for( site in site.list){
                              TRUE ~ 0)) %>% distinct
   
   
-  canopy.sub <- canopy.adj %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC.FG) %>% filter( Site == site)
+  canopy.sub <- canopy.adj %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC) %>% filter( Site == site)
   
-  df.harmonized <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
+  df.ENSEMBLE <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
                                 relationship = "many-to-many") %>% 
     mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
-    filter( Good.CCC.EC.FG  == '1') %>%
+    filter( Good.CCC.EC  == '1') %>%
     reframe( .by= c( gas, time.rounded), 
              EC_mean = mean(EC_mean, na.rm=T), 
-             FG_harmonized = mean(FG_mean, na.rm=T))
+             FG_ENSEMBLE = mean(FG_mean, na.rm=T))
 
   
-  SITE_DATA_Harmonized[[site]] <-  df.harmonized
+  SITE_DATA_ENSEMBLE[[site]] <-  df.ENSEMBLE
   
   
-  if( df.harmonized %>% filter(gas == "CO2") %>% nrow > 20 ){
-    co2.df <- df.harmonized %>% filter(gas== "CO2")
-    df.h.lm.co2 <- lm( data =co2.df,  EC_mean ~FG_harmonized)%>% summary
-    ccc_result.co2 <- calc.lins.ccc(co2.df$EC_mean, co2.df$FG_harmonized)
+  if( df.ENSEMBLE %>% filter(gas == "CO2") %>% nrow > 20 ){
+    co2.df <- df.ENSEMBLE %>% filter(gas== "CO2")
+    df.h.lm.co2 <- lm( data =co2.df,  EC_mean ~FG_ENSEMBLE)%>% summary
+    ccc_result.co2 <- calc.lins.ccc(co2.df$EC_mean, co2.df$FG_ENSEMBLE)
     summary.co2.df <- data.frame( Site = site, R2= df.h.lm.co2$r.squared, 
                                   intercept = df.h.lm.co2$coefficients[1],
                                   slope = df.h.lm.co2$coefficients[2],
                                   CCC=ccc_result.co2$rho.c$est) %>% mutate(gas = "CO2")
     
-  }else if(df.harmonized %>% filter(gas == "CO2") %>% nrow <= 20 ){
+  }else if(df.ENSEMBLE %>% filter(gas == "CO2") %>% nrow <= 20 ){
     
     summary.co2.df <- data.frame( Site = site, 
                                   R2= NA, 
@@ -90,10 +84,10 @@ for( site in site.list){
 
     
        
-  if( df.harmonized %>% filter(gas == "H2O") %>% nrow > 20 ){
-  h2o.df <- df.harmonized %>% filter(gas== "H2O")
-  df.h.lm.h2o <- lm( data =h2o.df,  EC_mean ~ FG_harmonized)%>% summary
-  ccc_result.h2o <- calc.lins.ccc(h2o.df$EC_mean, h2o.df$FG_harmonized)
+  if( df.ENSEMBLE %>% filter(gas == "H2O") %>% nrow > 20 ){
+  h2o.df <- df.ENSEMBLE %>% filter(gas== "H2O")
+  df.h.lm.h2o <- lm( data =h2o.df,  EC_mean ~ FG_ENSEMBLE)%>% summary
+  ccc_result.h2o <- calc.lins.ccc(h2o.df$EC_mean, h2o.df$FG_ENSEMBLE)
   
   summary.h2o.df <- data.frame( Site = site, 
                                 R2= df.h.lm.h2o$r.squared, 
@@ -101,7 +95,7 @@ for( site in site.list){
                                 slope = df.h.lm.h2o$coefficients[2],
                                 CCC=ccc_result.h2o$rho.c$est) %>% mutate(gas = "H2O")
   
-  } else if( df.harmonized %>% filter(gas == "H2O") %>% nrow <= 20 ){
+  } else if( df.ENSEMBLE %>% filter(gas == "H2O") %>% nrow <= 20 ){
     
     summary.h2o.df <- data.frame( Site = site, 
                                   R2= NA, 
@@ -112,44 +106,44 @@ for( site in site.list){
   
   
   # Store information about Harmonization Fit here
-  Linear_Harmonized_Stats <- rbind(Linear_Harmonized_Stats, summary.co2.df, summary.h2o.df )  
+  Linear_ENSEMBLE_Stats <- rbind(Linear_ENSEMBLE_Stats, summary.co2.df, summary.h2o.df )  
   
   rm(df.h.lm.co2 ,   df.h.lm.h20)
   
-  Linear_Harmonized_plots_CO2[[site]] <- df.harmonized %>% filter(gas=="CO2") %>% 
-    ggplot( aes( x= FG_harmonized, y = EC_mean)) + 
+  Linear_ENSEMBLE_plots_CO2[[site]] <- df.ENSEMBLE %>% filter(gas=="CO2") %>% 
+    ggplot( aes( x= FG_ENSEMBLE, y = EC_mean)) + 
     geom_point(size=0.1, alpha=0.1) + theme_bw() + xlim(-40, 40) + ylim(-40, 40) +
     geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
     geom_smooth(method = "lm", se = FALSE, size=0.5) +
     #stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~`,`~")), label.x = 2, label.y = c(40, 35, 30)) + xlab('GF') + ylab('EC') + 
     ggtitle(site) + xlab("GF") + ylab("EC")
   
-  Linear_Harmonized_plots_H2O[[site]] <- df.harmonized %>% filter(gas =="H2O") %>% 
-    ggplot( aes( x= FG_harmonized, y = EC_mean)) + 
+  Linear_ENSEMBLE_plots_H2O[[site]] <- df.ENSEMBLE %>% filter(gas =="H2O") %>% 
+    ggplot( aes( x= FG_ENSEMBLE, y = EC_mean)) + 
     geom_point(size=0.1, alpha=0.1) + theme_bw() + xlim(-40, 40) + ylim(-40, 40) +
     geom_abline(intercept = 0, slope = 1, color = "black", linetype = "dashed") +
     geom_smooth(method = "lm", se = FALSE, size=0.5) +
     #stat_regline_equation(aes(label = paste(..eq.label.., ..rr.label.., sep = "~`,`~")), label.x = 2, label.y = c(40, 35, 30)) + xlab('GF') + ylab('EC') + 
     ggtitle(site) + xlab("GF") + ylab("EC")
   
-  rm(df.harmonized, df )
+  rm(df.ENSEMBLE, df )
 }
 
 # Linear plots by site: ####
-plots.linear.co2.1 <- ggarrange(plotlist = Linear_Harmonized_plots_CO2[1:25], common.legend = TRUE)
-plots.linear.co2.2 <- ggarrange(plotlist = Linear_Harmonized_plots_CO2[26:50], common.legend = TRUE)
+plots.linear.co2.1 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_CO2[1:25], common.legend = TRUE)
+plots.linear.co2.2 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_CO2[26:50], common.legend = TRUE)
 
-plots.linear.h2o.1 <- ggarrange(plotlist = Linear_Harmonized_plots_H2O[1:25], common.legend = TRUE)
-plots.linear.h2o.2 <- ggarrange(plotlist = Linear_Harmonized_plots_H2O[26:50], common.legend = TRUE)
+plots.linear.h2o.1 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_H2O[1:25], common.legend = TRUE)
+plots.linear.h2o.2 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_H2O[26:50], common.legend = TRUE)
 
 plots.linear.co2 <- ggarrange( plots.linear.co2.1, plots.linear.co2.2, ncol=1)
 plots.linear.h2o <- ggarrange( plots.linear.h2o.1, plots.linear.h2o.2, ncol=1)
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Linear_plots_co2.png", plot = plots.linear.co2, width = 8, height = 16, units = "in")
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Linear_plots_h2o.png", plot = plots.linear.h2o, width = 8, height = 16, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2.png", plot = plots.linear.co2, width = 8, height = 16, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o.png", plot = plots.linear.h2o, width = 8, height = 16, units = "in")
 
-# Harmonized linear plots #####
-Linear_Harmonized_Stats %>% 
+# ENSEMBLE_ linear plots #####
+Linear_ENSEMBLE_Stats %>% 
   ggplot(aes(x = CCC, y = Site)) +
   geom_col() +
   theme_bw() +
@@ -157,7 +151,7 @@ Linear_Harmonized_Stats %>%
 
 # Seasonal Analysis: ####
 season <- c("Winter", "Spring", "Summer", "Autumn")
-Linear_Harmonized_Season_Stats <-list()
+Linear_ENSEMBLE_Season_Stats <-list()
 
 for( site in site.list){
   
@@ -177,43 +171,43 @@ for( site in site.list){
                              TRUE ~ 0)) %>% distinct %>% filter( season == i)
   
   
-  canopy.sub <- canopy.adj %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC.FG) %>% filter( Site == site)
+  canopy.sub <- canopy.adj %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC) %>% filter( Site == site)
   
-  df.harmonized <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
+  df.ENSEMBLE <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
                                     relationship = "many-to-many") %>% 
     mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
-    filter( Good.CCC.EC.FG  == '1') %>%
+    filter( Good.CCC.EC  == '1') %>%
     reframe( .by= c( gas, time.rounded), 
              EC_mean = mean(EC_mean, na.rm=T), 
-             FG_harmonized = mean(FG_mean, na.rm=T))
+             FG_ENSEMBLE = mean(FG_mean, na.rm=T))
   
   
-  threshold.co2 <- df.harmonized$FG_harmonized[ df.harmonized$gas == "CO2"] %>% length
-  threshold.h2o <- df.harmonized$FG_harmonized[ df.harmonized$gas == "H2O"] %>% length
+  threshold.co2 <- df.ENSEMBLE$FG_ENSEMBLE[ df.ENSEMBLE$gas == "CO2"] %>% length
+  threshold.h2o <- df.ENSEMBLE$FG_ENSEMBLE[ df.ENSEMBLE$gas == "H2O"] %>% length
   
   if( threshold.co2 > 20){
-    co2.df <- df.harmonized %>% filter(gas== "CO2")
-    df.h.lm.co2 <- lm( data =co2.df,  EC_mean ~FG_harmonized)%>% summary
-    ccc_result.co2 <- calc.lins.ccc(co2.df$EC_mean, co2.df$FG_harmonized)
+    co2.df <- df.ENSEMBLE %>% filter(gas== "CO2")
+    df.h.lm.co2 <- lm( data =co2.df,  EC_mean ~FG_ENSEMBLE)%>% summary
+    ccc_result.co2 <- calc.lins.ccc(co2.df$EC_mean, co2.df$FG_ENSEMBLE)
     summary.co2.df <- data.frame( Site = site, R2= df.h.lm.co2$r.squared, CCC=ccc_result.co2$rho.c$est) %>% mutate(gas = "CO2", season=i, count = threshold.co2)
-    Linear_Harmonized_Season_Stats <- rbind(Linear_Harmonized_Season_Stats, summary.co2.df)  
+    Linear_ENSEMBLE_Season_Stats <- rbind(Linear_ENSEMBLE_Season_Stats, summary.co2.df)  
   }
    
   if( threshold.h2o >20){
-    h2o.df <- df.harmonized %>% filter(gas== "H2O")
-    df.h.lm.h2o <- lm( data =h2o.df,  EC_mean ~ FG_harmonized)%>% summary
-    ccc_result.h2o <- calc.lins.ccc(h2o.df$EC_mean, h2o.df$FG_harmonized)
+    h2o.df <- df.ENSEMBLE %>% filter(gas== "H2O")
+    df.h.lm.h2o <- lm( data =h2o.df,  EC_mean ~ FG_ENSEMBLE)%>% summary
+    ccc_result.h2o <- calc.lins.ccc(h2o.df$EC_mean, h2o.df$FG_ENSEMBLE)
     summary.h2o.df <- data.frame( Site = site, R2= df.h.lm.h2o$r.squared, 
                                   CCC=ccc_result.h2o$rho.c$est) %>% 
       mutate(gas = "H2O", season=i, count = threshold.h2o)
     
-    Linear_Harmonized_Season_Stats <- rbind(Linear_Harmonized_Season_Stats, summary.h2o.df )  
+    Linear_ENSEMBLE_Season_Stats <- rbind(Linear_ENSEMBLE_Season_Stats, summary.h2o.df )  
   }
   rm(df.h.lm.co2 ,   df.h.lm.h20)
   
   }}
 
-plot.CCC.sites <- Linear_Harmonized_Season_Stats %>%
+plot.CCC.sites <- Linear_ENSEMBLE_Season_Stats %>%
   ggplot(aes(x = CCC, y = Site, col=gas)) +
   geom_point(alpha = 0.5, size =2, shape=15) +
   theme_bw() +
@@ -225,7 +219,7 @@ plot.CCC.sites <- Linear_Harmonized_Season_Stats %>%
          legend.position = "top")+ 
   ylab("") +  xlab(expression(paste("Ensemble CCC (EC)"))) 
 
-plot.CCC.density <- Linear_Harmonized_Season_Stats %>% ggplot( aes(x = CCC, col=gas)) +
+plot.CCC.density <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = CCC, col=gas)) +
   geom_density() + theme_bw() + ylab("Density" ) + facet_wrap(~season, ncol=4) +
   scale_color_manual(values = c('darkgreen', "blue")) +
   theme( legend.text = element_text(size = 14),
@@ -234,37 +228,37 @@ plot.CCC.density <- Linear_Harmonized_Season_Stats %>% ggplot( aes(x = CCC, col=
          legend.position = "none")+ ylab("") +  xlab(expression(paste("Ensemble CCC (EC)"))) +
   ylab("Density")
 
-Linear_Harmonized_Season_Stats %>% reframe(.by=c(gas), 
+Linear_ENSEMBLE_Season_Stats %>% reframe(.by=c(gas), 
                                            min.CCC= min(CCC), 
                                            mean.CCC= mean(CCC),
                                            max.CCC= max(CCC),
                                            sd.CCC= sd(CCC))
 
-Linear_Harmonized_Season_Stats %>% reframe(.by=c(gas, season), 
+Linear_ENSEMBLE_Season_Stats %>% reframe(.by=c(gas, season), 
                                            min.CCC= min(CCC), 
                                            mean.CCC= mean(CCC),
                                            max.CCC= max(CCC))
 
 
 
-plot.CCC.season <- Linear_Harmonized_Season_Stats %>% ggplot( aes(x = season, y= CCC, col=gas)) +
+plot.CCC.season <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = season, y= CCC, col=gas)) +
   geom_boxplot()  +theme_bw() + xlab("Season") +
   scale_color_manual(values = c('#009966', "#000CCC"))  +  
   ylab(expression(paste("Ensemble CCC (EC)"))) + theme( legend.position = "top", legend.title = element_blank()) + ylim(-1,1)
 
-# Plots for Harmonized : ####
+# Plots for ENSEMBLE : ####
 sub.sites =c("HARV", "GUAN", "KONZ", "JORN")
 
-SITES_HARMONIZED_canopy <- val.SHP.resample %>% 
-  filter( Good.CCC.FG.rf == '1') %>% 
-  full_join(Linear_Harmonized_Season_Stats %>% 
-              rename( CCC.harmonized = CCC), 
+SITES_ENSEMBLE_canopy <- val.SHP.total.canopy.summary %>% 
+  filter( Good.CCC == '1') %>% 
+  full_join(Linear_ENSEMBLE_Season_Stats %>% 
+              rename( CCC.ENSEMBLE = CCC), 
             by=c("Site", "gas"), relationship = "many-to-many") %>%  distinct %>% left_join( SITES_One2One_canopy_model %>% select(Site, canopyHeight_m) %>% distinct, by="Site")
 
 
 
-plot.CCC.canopy <- SITES_HARMONIZED_canopy %>% select(Canopy_L1,  CCC.harmonized, gas) %>% na.omit %>%  ggplot( ) + 
-  geom_boxplot( aes( x= Canopy_L1, y = CCC.harmonized, col=Canopy_L1)) + 
+plot.CCC.canopy <- SITES_ENSEMBLE_canopy %>% select(Canopy_L1,  CCC.ENSEMBLE, gas) %>% na.omit %>%  ggplot( ) + 
+  geom_boxplot( aes( x= Canopy_L1, y = CCC.ENSEMBLE, col=Canopy_L1)) + 
   facet_wrap(~gas) + theme_bw() + 
   scale_colour_discrete_sequential(palette = "OrYel")+
   ylab(expression(paste('Ensemble CCC (EC)'))) + xlab('Canopy Level')+
@@ -273,8 +267,8 @@ plot.CCC.canopy <- SITES_HARMONIZED_canopy %>% select(Canopy_L1,  CCC.harmonized
          strip.background = element_rect(fill = "transparent", size = 0.5),
          legend.position = "none") + ylim(-1,1)
 
-plot.CCC.canopy.subsites <- SITES_HARMONIZED_canopy %>% filter(Site %in% sub.sites) %>% select(Site , Canopy_L1,  CCC.harmonized, gas) %>% na.omit %>%  ggplot( ) + 
-  geom_boxplot( aes( x= Canopy_L1, y = CCC.harmonized, col=Canopy_L1)) + 
+plot.CCC.canopy.subsites <- SITES_ENSEMBLE_canopy %>% filter(Site %in% sub.sites) %>% select(Site , Canopy_L1,  CCC.ENSEMBLE, gas) %>% na.omit %>%  ggplot( ) + 
+  geom_boxplot( aes( x= Canopy_L1, y = CCC.ENSEMBLE, col=Canopy_L1)) + 
   facet_wrap(~ factor(Site, levels=sub.sites), ncol=1) + theme_bw() + 
   scale_colour_discrete_sequential(palette = "OrYel")+
   ylab('') + xlab('Canopy Level')+
@@ -290,7 +284,7 @@ plot.CCC.canopy.subsites <- SITES_HARMONIZED_canopy %>% filter(Site %in% sub.sit
   )
 
 
-plot.CCC.canopyHt <- SITES_HARMONIZED_canopy %>% ggplot(aes( x= canopyHeight_m, y = CCC.harmonized) ) + 
+plot.CCC.canopyHt <- SITES_ENSEMBLE_canopy %>% ggplot(aes( x= canopyHeight_m, y = CCC.ENSEMBLE) ) + 
   geom_point( ) + facet_wrap(~gas) + geom_smooth(method="lm") + theme_bw() + xlab('Canopy Height (m)') +
   ylab(expression(paste("Ensemble CCC (EC)"))) +
   theme( legend.text = element_text(size = 14),
@@ -299,7 +293,7 @@ plot.CCC.canopyHt <- SITES_HARMONIZED_canopy %>% ggplot(aes( x= canopyHeight_m, 
          legend.position = "none") + ylim(-1,1)
 
 
-# Harmonized plots R2 by Site Plot: ####
+# ENSEMBLE_ plots R2 by Site Plot: ####
 
 final.plot.CCC <- ggarrange(plot.CCC.sites ,plot.CCC.density , ncol= 1, heights = c(2.5, 1), 
           labels=c("A", "B"))
@@ -308,38 +302,38 @@ final.plot.CCC.support <- ggarrange( plot.CCC.canopy,plot.CCC.canopyHt,  ncol=1,
            labels=c("A", "B"), heights=c(1, 1)) 
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Harmonized_Eval_R2.png", plot = final.plot.CCC, width = 7, height = 8, units = "in")
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Harmonized_Eval_R2_Canopy.png", plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1.png", plot = final.plot.CCC, width = 7, height = 8, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1.png", plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
 
 # Save the data: #####
 
-fileSave <- fs::path(localdir,paste0("SITE_DATA_Harmonized.Rdata"))
+fileSave <- fs::path(localdir,paste0("SITE_DATA_ENSEMBLE_V1.Rdata"))
 
-save( SITE_DATA_Harmonized,
-      Linear_Harmonized_plots_H2O, 
-      Linear_Harmonized_plots_CO2,  
-      Linear_Harmonized_Stats,
-      Linear_Harmonized_Season_Stats,
+save( SITE_DATA_ENSEMBLE,
+      Linear_ENSEMBLE_plots_H2O, 
+      Linear_ENSEMBLE_plots_CO2,  
+      Linear_ENSEMBLE_Stats,
+      Linear_ENSEMBLE_Season_Stats,
       file=fileSave)
 
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # Linear terms versus canopy:
-Linear_Harmonized_Stats_canopy <- Linear_Harmonized_Stats %>% 
+Linear_ENSEMBLE_Stats_canopy <- Linear_ENSEMBLE_Stats %>% 
   full_join(SITES_One2One_canopy_model , by=c('Site', 'gas'))
 
-Linear_Harmonized_Stats_canopy %>% 
+Linear_ENSEMBLE_Stats_canopy %>% 
   ggplot(aes(x = Cutoff05.SDSDH, y =slope )) +
   geom_point() +
   theme_bw() +
   facet_wrap(~gas)
 
-# Harmonized MS by IGBP : ####
+# ENSEMBLE_ MS by IGBP : ####
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
 SITES_One2One_canopy_summary <- SITES_One2One_canopy_model %>% 
   full_join(canopy.adj, by=c('Site', 'Approach', 'gas', 'dLevelsAminusB')) %>% 
-  filter( Good.CCC.EC.FG =="1") %>% 
+  filter( Good.CCC.EC =="1") %>% 
   select( Site, Approach, gas, dLevelsAminusB, R2, Cutoff05.TopRugosity, count, Cutoff05.SDSDH, CCC) %>% reframe( .by= c(Site, gas), 
            CCC= mean(CCC) %>% round(2), 
            count = sum(count),
@@ -348,12 +342,12 @@ SITES_One2One_canopy_summary <- SITES_One2One_canopy_model %>%
 
 # Plots: 
 
-Linear_Harmonized_Stats_Canopy <- 
-  Linear_Harmonized_Stats %>% rename(CCC.Harmonized = CCC) %>% 
+Linear_ENSEMBLE_Stats_Canopy <- 
+  Linear_ENSEMBLE_Stats %>% rename(CCC.ENSEMBLE = CCC) %>% 
   full_join(SITES_One2One_canopy_summary, by=c("Site", "gas"), relationship = "many-to-many") %>% full_join(metadata.igbp , by="Site")
  
-plot_harmonized_siteLevel.CCC.sub.subsites  <- Linear_Harmonized_Stats_Canopy %>% filter(Site %in% sub.sites)  %>% 
-  ggplot() + geom_point( aes( x=CCC, y=CCC.Harmonized, col=gas)) +
+plot_ENSEMBLE_siteLevel.CCC.sub.subsites  <- Linear_ENSEMBLE_Stats_Canopy %>% filter(Site %in% sub.sites)  %>% 
+  ggplot() + geom_point( aes( x=CCC, y=CCC.ENSEMBLE, col=gas)) +
   geom_abline( slope = 1, color = "red", linetype = "dashed") + theme_bw() + xlab("CCC") + ylab("Ensemble CCC (EC)") + ylim(-1, 1)+ xlim(-1, 1) + 
   scale_color_manual(values = c('#009966', "#000CCC", ""))+ 
   facet_wrap( ~ factor(Site, levels=sub.sites), ncol=1) +
@@ -363,37 +357,37 @@ plot_harmonized_siteLevel.CCC.sub.subsites  <- Linear_Harmonized_Stats_Canopy %>
 
 
 
-plot_harmonized_siteLevel.CCC <- Linear_Harmonized_Stats_Canopy  %>% ggplot() + geom_point( aes( x=CCC, y=CCC.Harmonized, col=gas)) +
+plot_ENSEMBLE_siteLevel.CCC <- Linear_ENSEMBLE_Stats_Canopy  %>% ggplot() + geom_point( aes( x=CCC, y=CCC.ENSEMBLE, col=gas)) +
   geom_abline( slope = 1, color = "red", linetype = "dashed") + theme_bw() + xlab("CCC (EC)") + ylab("Ensemble CCC (EC)") + ylim(-1, 1)+ xlim(-1, 1) + 
   scale_color_manual(values = c('#009966', "#000CCC", "")) +
   theme(legend.title = element_blank()) 
 
-plot_harmonized_siteLevel_sampleSize <-Linear_Harmonized_Stats_Canopy %>% drop_na(gas) %>% ggplot() + geom_point( aes( x=count, y=CCC.Harmonized, col=gas))  + theme_bw() + xlab("Sample Size") + ylab("Ensemble CCC (EC)")+ scale_color_manual(values = c('#009966', "#000CCC")) +theme(legend.title = element_blank())+geom_smooth(method="lm", aes(  x=count, y=CCC.Harmonized),col="purple" )
+plot_ENSEMBLE_siteLevel_sampleSize <-Linear_ENSEMBLE_Stats_Canopy %>% drop_na(gas) %>% ggplot() + geom_point( aes( x=count, y=CCC.ENSEMBLE, col=gas))  + theme_bw() + xlab("Sample Size") + ylab("Ensemble CCC (EC)")+ scale_color_manual(values = c('#009966', "#000CCC")) +theme(legend.title = element_blank())+geom_smooth(method="lm", aes(  x=count, y=CCC.ENSEMBLE),col="purple" )
 
-plot_harmonized_siteLevelR2_Rugosity <-Linear_Harmonized_Stats_Canopy %>% 
-  ggplot(aes( x=Rugosity, y=CCC.Harmonized, col=gas)) + 
+plot_ENSEMBLE_siteLevelR2_Rugosity <-Linear_ENSEMBLE_Stats_Canopy %>% 
+  ggplot(aes( x=Rugosity, y=CCC.ENSEMBLE, col=gas)) + 
   geom_point(alpha=0.5)  + theme_bw() + xlab("Rugosity") + 
   ylab(" Ensemble CCC (EC)") + geom_smooth( method="lm", col="red", linetype = "dashed") + 
          scale_color_manual(values = c('#009966', "#000CCC", "")) + ylim(-1,1)
 
-plot.CCC.EcoType <- Linear_Harmonized_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=CCC.Harmonized, col=gas))  + theme_bw() + xlab("") + ylab("Ensemble CCC (EC)")+ scale_color_manual(values = c('#009966', "#000CCC", "")) +theme(legend.title = element_blank(), legend.position="none")+ ylim(-1,1)
+plot.CCC.EcoType <- Linear_ENSEMBLE_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=CCC.ENSEMBLE, col=gas))  + theme_bw() + xlab("") + ylab("Ensemble CCC (EC)")+ scale_color_manual(values = c('#009966', "#000CCC", "")) +theme(legend.title = element_blank(), legend.position="none")+ ylim(-1,1)
 
-plot.CCC.EcoType.samplesize <- Linear_Harmonized_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=count, col=gas))  + theme_bw() + ylab("Sample Size") + xlab("") 
+plot.CCC.EcoType.samplesize <- Linear_ENSEMBLE_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=count, col=gas))  + theme_bw() + ylab("Sample Size") + xlab("") 
 
 
-plot.CCC.season <- Linear_Harmonized_Season_Stats %>% ggplot( aes(x = season, y= R2, col=gas)) +
+plot.CCC.season <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = season, y= R2, col=gas)) +
   geom_boxplot()  +theme_bw() + xlab("Season") +
   scale_color_manual(values = c('#009966', "#000CCC"))  +  
   ylab("Ensemble CCC (EC)") + 
   theme( legend.position = "top", legend.title = element_blank() ) + ylim(-1,1)
 
 
-# Harmonized Figure Configuration: ####
+# ENSEMBLE_ Figure Configuration: ####
 
 
 
-plots.1.final <- ggarrange( plot_harmonized_siteLevel.CCC,
-                            plot_harmonized_siteLevelR2_Rugosity,
+plots.1.final <- ggarrange( plot_ENSEMBLE_siteLevel.CCC,
+                            plot_ENSEMBLE_siteLevelR2_Rugosity,
                              ncol=2, nrow=1, labels = c("A", "B"), common.legend = T)
 
 plots.2.final <- ggarrange(plot.CCC.EcoType ,
@@ -403,18 +397,18 @@ plots.2.final <- ggarrange(plot.CCC.EcoType ,
 
 plots.3.final <- ggarrange(plot.CCC.season, labels = "E")
 
-harmonized.plot.final <-ggarrange(plots.1.final,plots.2.final,plots.3.final,  ncol=1 , heights= c(1,1,1) )
+ENSEMBLE_.plot.final <-ggarrange(plots.1.final,plots.2.final,plots.3.final,  ncol=1 , heights= c(1,1,1) )
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Harmonized_Eval_R2_Summary.png", plot = harmonized.plot.final, width =8, height = 9, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Summary_V1.png", plot = ENSEMBLE_.plot.final, width =8, height = 9, units = "in")
 
 
-Linear_Harmonized_Stats_Canopy  %>% 
-  reframe(.by=gas, CCC.mean = CCC.Harmonized %>% mean(na.rm=T),
-          CC.sd = CCC.Harmonized %>% sd(na.rm=T))
+Linear_ENSEMBLE_Stats_Canopy  %>% 
+  reframe(.by=gas, CCC.mean = CCC.ENSEMBLE %>% mean(na.rm=T),
+          CC.sd = CCC.ENSEMBLE %>% sd(na.rm=T))
 
-plot.insert <- ggarrange( plot_harmonized_siteLevel.CCC.sub.subsites,
+plot.insert <- ggarrange( plot_ENSEMBLE_siteLevel.CCC.sub.subsites,
                           plot.CCC.canopy.subsites, ncol=2,
                           widths = c(1, 0.74))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Harmonized_Insert.png", plot =plot.insert, width =3, height = 5, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Insert_V1.png", plot =plot.insert, width =3, height = 5, units = "in")
 

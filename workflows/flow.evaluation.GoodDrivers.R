@@ -15,8 +15,6 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
 load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
 
@@ -167,7 +165,40 @@ confusionMatrix(train$rf_model, train$Good.CCC)
 save(train, test,rf_model, final.vars, SITES_One2One_canopy, file= paste(dir, "Good_Fluxes.Rdata", sep="") )
 
 
-# Sensitivity Analysis: ####
+# Sensitivity Analysis: # Build file with all fluxes and information of interest.
+Site_Fluxes <- data.frame()
+for( site in site.list){
+  
+  print(paste("Working on " ,site))
+  localdir.site <- paste(localdir,"/", site, sep = "")
+  
+  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+  
+  
+  canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, Canopy_L1, dLevelsAminusB)
+  
+  SITES_One2One_sub <- SITES_One2One_canopy  %>% 
+    select( Site, Good.CCC, dLevelsAminusB, Approach, RelativeDistB) %>% filter(Site == site) %>% left_join(canopy.sub , by= c('Site', 'dLevelsAminusB')) 
+  
+  
+  MBR_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "MBR") %>% full_join( MBR_9min_FILTER , by = c('dLevelsAminusB'))  %>% select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local,  time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB  )
+  
+  WP_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "WP") %>% full_join( WP_9min_FILTER , by = c('dLevelsAminusB'))   %>%  select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local, time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB )
+  
+  AE_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "AE") %>% full_join( AE_9min_FILTER , by = c('dLevelsAminusB')) %>% select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local, time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB )
+  
+  
+  Data <- rbind(MBR_9min_FILTER_CCC,  AE_9min_FILTER_CCC, WP_9min_FILTER_CCC) %>% as.data.frame() %>% mutate(Site = site)
+  
+  Site_Fluxes <- rbind( Site_Fluxes ,Data)
+  
+  rm(  Data, WP_9min_FILTER_CCC, AE_9min_FILTER_CCC,  MBR_9min_FILTER_CCC,   canopy.sub, SITES_One2One_sub)
+  
+  
+}
+
+
+####
 
 load(file= paste(dir, "Good_Fluxes.Rdata", sep="") )
 final.vars
@@ -292,38 +323,3 @@ site.list <- metadata$Site_Id.NEON %>% unique
 
 rf_model 
 
-# Build file with all fluxes and information of interest.
-Site_Fluxes <- data.frame()
-for( site in site.list){
-  
-  print(paste("Working on " ,site))
-  localdir.site <- paste(localdir,"/", site, sep = "")
-  
-  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
-  
-  
-  canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, Canopy_L1, dLevelsAminusB)
-
-  SITES_One2One_sub <- SITES_One2One_canopy  %>% 
-    select( Site, Good.CCC, dLevelsAminusB, Approach, RelativeDistB) %>% filter(Site == site) %>% left_join(canopy.sub , by= c('Site', 'dLevelsAminusB')) 
-  
-
-  MBR_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "MBR") %>% full_join( MBR_9min_FILTER , by = c('dLevelsAminusB'))  %>% select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local,  time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB  )
-  
-  WP_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "WP") %>% full_join( WP_9min_FILTER , by = c('dLevelsAminusB'))   %>%  select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local, time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB )
-  
-  AE_9min_FILTER_CCC <- SITES_One2One_sub %>% filter( Approach == "AE") %>% full_join( AE_9min_FILTER , by = c('dLevelsAminusB')) %>% select( timeEndA.local,FG_mean ,Good.CCC , Approach, Canopy_L1, gas, TowerPosition_A, TowerPosition_B,  FC_turb_interp, cross_grad_flag, timeEndA.local, time.local, hour.local,dConcSNR, dConcTSNR, roughLength_calc, Stability_100, Stability_500, Stability_Exteme, RelativeDistB )
-  
-  
-  Data <- rbind(MBR_9min_FILTER_CCC,  AE_9min_FILTER_CCC, WP_9min_FILTER_CCC) %>% as.data.frame() %>% mutate(Site = site)
-  
-  Site_Fluxes <- rbind( Site_Fluxes ,Data)
-  
-  rm(  Data, WP_9min_FILTER_CCC, AE_9min_FILTER_CCC,  MBR_9min_FILTER_CCC,   canopy.sub, SITES_One2One_sub)
- 
-  
-}
-
-
-# Next : #####
-message('run flow.bhatt')

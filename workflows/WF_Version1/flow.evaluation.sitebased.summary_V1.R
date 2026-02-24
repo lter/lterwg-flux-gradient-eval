@@ -2,19 +2,17 @@
 rm(list=ls())
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
 load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
 
 # Build the dataset for canopy Information: ####
-
 aoi <- c( 'JORN', 'KONZ', 'GUAN', 'HARV')
-
 
 # Methods Panel ####
 summarize.method.pairs <- function( site){
-  
-  df_method <- SITES_One2One_CCC %>% filter( CCC >= 0.5, Site == site ) %>%  mutate( count = 1) %>% reframe(.by= c(gas, Approach), n_pairs = sum(count)) |>
+
+  df_method <- SITES_One2One %>% filter( CCC >= 0.5, Site == site ) %>%  mutate( count = 1) %>% reframe(.by= c(gas, Approach), n_pairs = sum(count)) |>
     group_by(gas) |>
     mutate(percent = 100 * n_pairs / sum(n_pairs)) |>
     ungroup()
@@ -61,7 +59,7 @@ method.panel <- ggarrange(plot.method.pairs.JORN,plot.method.pairs.KONZ, plot.me
 
 summarize.canopy.pairs <- function( site){
   
-  df_method <- SITES_One2One_canopy %>% 
+  df_method <- SITES_One2One %>% 
     filter( CCC >= 0.5 | CCC <= -0.5 , Site == site) %>%  
     mutate( count.sh = 1) %>% 
     reframe(.by= c(gas, Canopy_L1), n_pairs = sum(count.sh)) |>
@@ -113,9 +111,9 @@ canopy.panel <- ggarrange(plot.canopy.pairs.JORN,plot.canopy.pairs.KONZ, plot.ca
 
 
 #Number of sampling level pairs :
-mean.counts.co2 <- SITES_One2One_canopy %>% filter(gas == "CO2", CCC >= 0.5, Site %in% aoi) %>% mutate( count.sh = 1) %>% reframe(.by= c(Site), Mean.count.co2 = sum(count.sh)) 
+mean.counts.co2 <- SITES_One2One %>% filter(gas == "CO2", CCC >= 0.5, Site %in% aoi) %>% mutate( count.sh = 1) %>% reframe(.by= c(Site), Mean.count.co2 = sum(count.sh)) 
 
-mean.counts.h20 <- SITES_One2One_canopy %>% filter(gas == "H2O", CCC >= 0.5, Site %in% aoi) %>% mutate( count.sh = 1) %>% reframe(.by= c(Site), Mean.count.h20 = sum(count.sh)) 
+mean.counts.h20 <- SITES_One2One %>% filter(gas == "H2O", CCC >= 0.5, Site %in% aoi) %>% mutate( count.sh = 1) %>% reframe(.by= c(Site), Mean.count.h20 = sum(count.sh)) 
 
 # Season Sampling Panel:  #####
 
@@ -192,30 +190,30 @@ plot.overlap.1.aoi <- SITE_DATA_FLUX_COUNTS_Overlap_Long.aoi %>%
   xlab('Temporal Overlap (%)') + ylab('')
 
 
-# Harmonized Linear Relationship: ####
+# ENSEMBLE Linear Relationship: ####
 
-Harmonized.data <- fs::path('/Volumes/MaloneLab/Research/FluxGradient/FluxData/SITE_DATA_Harmonized.Rdata')
+ENSEMBLE.data <- fs::path('/Volumes/MaloneLab/Research/FluxGradient/FluxData/SITE_DATA_ENSEMBLE_V1.Rdata')
 
-load(file=Harmonized.data)
+load(file=ENSEMBLE.data)
 
-linear.aoi.co2 <- ggarrange(Linear_Harmonized_plots_CO2$JORN,
-            Linear_Harmonized_plots_CO2$KONZ,
-            Linear_Harmonized_plots_CO2$GUAN,
-            Linear_Harmonized_plots_CO2$HARV, ncol=4)
+linear.aoi.co2 <- ggarrange(Linear_ENSEMBLE_plots_CO2$JORN,
+            Linear_ENSEMBLE_plots_CO2$KONZ,
+            Linear_ENSEMBLE_plots_CO2$GUAN,
+            Linear_ENSEMBLE_plots_CO2$HARV, ncol=4)
 
-linear.aoi.h2o <- ggarrange(Linear_Harmonized_plots_H2O$JORN,
-                            Linear_Harmonized_plots_H2O$KONZ,
-          Linear_Harmonized_plots_H2O$GUAN,
-          Linear_Harmonized_plots_H2O$HARV, ncol=4)
+linear.aoi.h2o <- ggarrange(Linear_ENSEMBLE_plots_H2O$JORN,
+                            Linear_ENSEMBLE_plots_H2O$KONZ,
+          Linear_ENSEMBLE_plots_H2O$GUAN,
+          Linear_ENSEMBLE_plots_H2O$HARV, ncol=4)
 
 linear.aoi <- ggarrange(linear.aoi.co2 , linear.aoi.h2o , ncol=1)
 
 # DIEL Plots:####
 
-load(file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_Harmonized.RDATA')
+load(file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1.RDATA')
 
 
-plot.diel.gas.season.regression.aoi <-Harmonized_DIELS  %>% filter(site %in% aoi) %>%   ggplot(aes(x = FG , y = EC, col=season))+
+plot.diel.gas.season.regression.aoi <-ENSEMBLE_DIELS  %>% filter(site %in% aoi) %>%   ggplot(aes(x = FG , y = EC, col=season))+
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, size=0.5, col='black') +
   stat_regline_equation(aes(label = paste(..rr.label.., sep = "~`,`~")), col='black') +
@@ -237,24 +235,26 @@ diel.plot <- function(DF, Site, label, Gas ){
   return(plot.diels )
 }
 
-plot.diels.co2.JORN <-diel.plot(DF =  Harmonized_DIELS, Site = 'JORN', 
+
+
+plot.diels.co2.JORN <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'JORN', 
           label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "CO2" )
 
-plot.diels.co2.KONZ <-diel.plot(DF =  Harmonized_DIELS, Site = 'KONZ', 
+plot.diels.co2.KONZ <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'KONZ', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "CO2" )
-plot.diels.co2.GUAN <-diel.plot(DF =  Harmonized_DIELS, Site = 'GUAN', 
+plot.diels.co2.GUAN <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'GUAN', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "CO2" )
-plot.diels.co2.HARV <-diel.plot(DF =  Harmonized_DIELS, Site = 'HARV', 
+plot.diels.co2.HARV <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'HARV', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "CO2" )
 
-plot.diels.h2o.JORN <-diel.plot(DF =  Harmonized_DIELS, Site = 'JORN', 
+plot.diels.h2o.JORN <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'JORN', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "H2O" )
 
-plot.diels.h2o.KONZ <-diel.plot(DF =  Harmonized_DIELS, Site = 'KONZ', 
+plot.diels.h2o.KONZ <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'KONZ', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "H2O" )
-plot.diels.h2o.GUAN <-diel.plot(DF =  Harmonized_DIELS, Site = 'GUAN', 
+plot.diels.h2o.GUAN <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'GUAN', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "H2O" )
-plot.diels.h2o.HARV <-diel.plot(DF =  Harmonized_DIELS, Site = 'HARV', 
+plot.diels.h2o.HARV <-diel.plot(DF =  ENSEMBLE_DIELS, Site = 'HARV', 
                                 label= expression(paste( "CO"[2]," (g m"^2, ")")) , Gas = "H2O" )
 
 

@@ -5,29 +5,14 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
-source(fs::path(DirRepo,'workflows/flow.igbp.R'))
-
-# Build the dataset for canopy Information: ####
-canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% dplyr::distinct()
-
-
-Highest.CCC <- SITES_One2One %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T), R2.max = max(R2, na.rm=T) )
-
-SITES_One2One_canopy <- SITES_One2One %>% full_join(canopy, by=c("Site", "dLevelsAminusB" ) ) %>% 
-  full_join( Highest.CCC,by = c("Site", "gas", "Approach")) %>%
-  mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-         Good.CCC = case_when(  CCC >= 0.5  ~ 1, CCC < 0.5 ~ 0) %>% as.factor,
-         RelativeDistB = MeasurementHeight_m_B - CanopyHeight ) %>% distinct %>% full_join(metadata.igbp , by="Site")
-                                     
-# What is the distribution of fluxes across hours and seasons?
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
+source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
 # Explore Seasonal Distribution: ####
 
-site.list <- SITE_DATA_FILTERED %>% names()
+site.list <- SITE_DATA_FILTERED_CCC %>% names()
 
 SITE_DATA_FLUX_COUNTS_SEASON <- data.frame()
 SITE_DATA_FLUX_COUNTS_Approach <- data.frame()
@@ -37,7 +22,7 @@ SITE_DATA_FLUX_COUNTS_HOUR <- data.frame()
 for( site in site.list){
   print(site)
  
-  df <-SITE_DATA_FILTERED[[site]] %>% filter(CCC >=0.5, gas != "CH4") %>% 
+  df <-SITE_DATA_FILTERED_CCC[[site]] %>% filter(CCC >=0.5, gas != "CH4") %>% 
     mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
            season = case_when(
              month %in% c(12, 1, 2) ~ "Winter",
@@ -76,13 +61,20 @@ SITE_DATA_FLUX_COUNTS_SEASON_Total <- SITE_DATA_FLUX_COUNTS_Total %>%
   mutate( percent = count.season/count.total*100 %>% round(1),
           season = ordered(season, levels = c("Winter", "Spring", "Summer", "Autumn"))) %>% distinct
 
-SITE_DATA_FLUX_COUNTS_Total_EcoType <-SITE_DATA_FLUX_COUNTS_Total %>% full_join(metadata.igbp , by="Site") %>% reframe( .by= c(gas, EcoType), counts = mean(count.total, na.rm=T))
+SITE_DATA_FLUX_COUNTS_Total_EcoType <-SITE_DATA_FLUX_COUNTS_Total %>% full_join(metadata.igbp , by="Site") %>% 
+  reframe( .by= c(gas, EcoType), 
+           counts = mean(count.total, na.rm=T),
+           counts.SD = sd(count.total, na.rm=T),
+           counts.min = counts - counts.SD, 
+           counts.max = counts + counts.SD, )
 
 # FLUX COUNTS BYECOTYPE: ####
 plot.flux.count.ecotype <- SITE_DATA_FLUX_COUNTS_Total_EcoType %>%  
   na.omit() %>% 
-  ggplot() +
+  ggplot(aes( y = counts/10000, x = EcoType)) +
   geom_col( aes( y = counts/10000, x = EcoType), fill="transparent", col="black") + 
+  geom_errorbar(aes(ymin = counts.min/10000, ymax = counts.max/10000), width = 0.2,
+                col="red") +
   labs(y = expression(paste("Flux Measurements Site"^-1, "(Counts/10,000)")),
        x = "Ecosystem Type",
        title = "",
@@ -104,6 +96,8 @@ plot.flux.count <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%
        title = "",
        fill = "Approach")  +
   theme_bw()  + scale_fill_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + facet_wrap(~gas, scales = "free_x")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Counts_Fluxes_Approach.png", plot = plot.flux.count , width =5, height = 6, units = "in")
 
 # Summary for Approach: ####
 
@@ -149,7 +143,8 @@ plot.counts.season <- SITE_DATA_FLUX_COUNTS_SEASON_Total %>% distinct %>%  ggplo
   geom_col() + facet_wrap(~ gas) +
   theme_bw() +  scale_fill_discrete_qualitative(palette = "Harmonic") + theme(legend.position = "top") + labs(fill='Season') + xlab('Percent Coverage (%)')
 
-plot.counts.season.hour.percent.h2o <- SITE_DATA_FLUX_COUNTS_HOUR_Season  %>% filter(gas == "H2O") %>%
+plot.counts.season.hour.percent.h2o <- 
+  SITE_DATA_FLUX_COUNTS_HOUR_Season  %>% filter(gas == "H2O") %>%
   reframe( .by= c(hour,season), percent.mean = mean(percent)) %>% 
   ggplot(aes( x = hour, y = percent.mean, col=season)) +
   geom_point( ) + geom_line(aes( x = hour, y = percent.mean, group=season)) + 
@@ -234,14 +229,14 @@ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-fl
 
 
 # Measure the overlap: #####
-site.list <- SITE_DATA_FILTERED %>% names()
+site.list <- SITE_DATA_FILTERED_CCC %>% names()
 
 SITE_DATA_FLUX_COUNTS_Overlap <- data.frame()
 
 for( site in site.list){
   print(site)
   
-  df <-SITE_DATA_FILTERED[[site]] %>% filter(CCC >=0.5 , gas != "CH4") %>% 
+  df <-SITE_DATA_FILTERED_CCC[[site]] %>% filter(CCC >=0.5 , gas != "CH4") %>% 
     mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
            season = case_when(
              month %in% c(12, 1, 2) ~ "Winter",
@@ -356,7 +351,7 @@ SITE_DATA_FLUX_COUNTS_Overlap_Long %>%
 # Save the files: ####
 data.dir <- '/Volumes/MaloneLab/Research/FluxGradient' # Where do you want to save the plots
 save(
-  SITES_One2One_canopy, 
+  SITES_One2One, 
   SITE_DATA_FLUX_COUNTS_SEASON, 
   SITE_DATA_FLUX_COUNTS_Approach ,
   SITE_DATA_FLUX_COUNTS_Total,
@@ -369,3 +364,4 @@ save(
   SITE_DATA_FLUX_COUNTS_Overlap ,
   SITE_DATA_FLUX_COUNTS_Overlap_Long,
   SITE_DATA_FLUX_COUNTS_Overlap_Long_summary, file= paste(data.dir,"/flow.flux.counts.R", sep=""))
+

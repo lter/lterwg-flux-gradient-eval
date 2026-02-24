@@ -1,5 +1,6 @@
 library(tidyverse)
-source(fs::path(DirRepo,"./functions/calc.lins.ccc.R"))
+try(source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R")), silent=T)
+#source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R"))
 
 linear_terms <- function( x_col, y_col , df, site, var1, var2){
   
