@@ -144,6 +144,12 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
   
   dataframe <- dataframe %>% as.data.frame %>% filter(gas == Gas) %>% rename( timeEndA.local = time.rounded)
   
+  if(Gas == "CH4"){
+    dataframe$flux.other <- ((dataframe[, flux.other]* 16.042)/1000000)*1800 
+    dataframe$flux <- ((dataframe[, flux]* 16.042)/1000000)*1800 
+  }
+  
+  
   if(Gas == "CO2"){
     dataframe$flux.other <- ((dataframe[, flux.other]* 44.01)/1000000)*1800 
     dataframe$flux <- ((dataframe[, flux]* 44.01)/1000000)*1800 

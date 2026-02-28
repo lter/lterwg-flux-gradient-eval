@@ -88,18 +88,19 @@ save(val.SHP.total.canopy ,val.SHP.total.canopy.summary, file=fileSave)
 
 # Detect RSHP with CCC.GF: RANDOM FOREST MODEL DEVELOPMENT ####
 
-# load('SITE_RSHP.Rdata')
+load(fs::path(localdir,paste0("SITE_RSHP.Rdata")))
 
 train <- val.SHP.total.canopy.summary %>% 
   sample_frac(0.80) 
 
 test <- anti_join(val.SHP.total.canopy.summary, train )
 dict_weights = c(1, 100)
+
 rf.good.ccc.ec <- randomForest::randomForest(Good.CCC ~ CCC.GF.mean + CCC.GF.range + CCC.GF.min , 
                                              data = train, ntree= 1000,
                                              strata=train$Good.CCC,
                                              classwt = dict_weights,
-                                             sampsize = rep(380, nlevels(train$Good.CCC)))
+                                             sampsize = rep(379, nlevels(train$Good.CCC)))
 
 rf.good.ccc.ec
 
@@ -304,5 +305,5 @@ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-fl
 
 
 # Save this file for use:
-save(val.SHP.total.canopy.summary ,
+save(val.SHP.total.canopy.summary ,rf.good.ccc.ec,
      file= paste(localdir, 'SITE_RSHP_MODEL.Rdata', sep="") )
