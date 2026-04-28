@@ -2,9 +2,10 @@ drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77
 
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
 
-load(fs::path(localdir,paste0("SITES_MBR_9min_FILTER.Rdata")))
-load(fs::path(localdir,paste0("SITES_AE_9min_FILTER.Rdata")))
-load(fs::path(localdir,paste0("SITES_WP_9min_FILTER.Rdata")))
+load(fs::path(localdir,paste0("SITES_MBR_9min_FILTER_AA_AW.Rdata")))
+load(fs::path(localdir,paste0("SITES_AE_9min_FILTER_AA_AW.Rdata")))
+load(fs::path(localdir,paste0("SITES_WP_9min_FILTER_AA_AW.Rdata")))
+
 
 # Calculate CCC parameters for CO2
 SITES_CCC_CO2 <- ccc.parms.site(MBR.tibble = SITES_MBR_9min_FILTER,
@@ -25,8 +26,8 @@ SITES_One2One_gas <- SITES_CCC_CO2 %>%
     SITES_CCC_H2O %>% 
       mutate(gas = "H2O"))
 
-canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
-canopy$Canopy_L1 %>% unique
+canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct %>% 
+  filter(Canopy_L1 !="WW")
 
 # Data Prep:
 Highest.CCC <- SITES_One2One_gas %>% reframe(.by= c(Site, gas, Approach), CCC.max = max(CCC, na.rm=T))
@@ -36,5 +37,5 @@ SITES_One2One <- SITES_One2One_gas %>% full_join(canopy, by=c("Site", "dLevelsAm
   mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
          RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
          RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
-         MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_A,
+         MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_B,
          Good.CCC = case_when(  CCC >= 0.5 ~ 1, CCC < 0.5 ~ 0) %>% as.factor)

@@ -69,13 +69,13 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
     p.1 <- ggplot(data = MBR.DF, aes(x = EC_mean, y = FG_mean)) + 
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
-      facet_wrap(~ dLevelsAminusB, ncol = length(unique(MBR.DF$dLevelsAminusB)),
-                 labeller = function(variable, value) {
-                   if(variable == "dLevelsAminusB") {
-                     return(mbr_labels[as.character(value)])
-                   }
-                   return(value)
-                 }) +
+      facet_wrap(~ dLevelsAminusB, ncol = length(unique(WP.DF$dLevelsAminusB)),
+           labeller = function(variable, value) {
+             if (variable == "dLevelsAminusB") {
+               return(wp_labels[as.character(value)])
+             }
+             return(value)
+           }) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("MBR") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -85,10 +85,10 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
     p.2 <- ggplot(data = WP.DF, aes(x = EC_mean, y = FG_mean)) + 
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
-      facet_wrap(~ dLevelsAminusB, ncol = length(unique(MBR.DF$dLevelsAminusB)),
+      facet_wrap(~ dLevelsAminusB, ncol = length(unique(WP.DF$dLevelsAminusB)),
                  labeller = function(variable, value) {
-                   if(variable == "dLevelsAminusB") {
-                     return(mbr_labels[as.character(value)])
+                   if (variable == "dLevelsAminusB") {
+                     return(wp_labels[as.character(value)])
                    }
                    return(value)
                  }) +
@@ -98,13 +98,12 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
     p.3 <- ggplot(data = AE.DF, aes(x = EC_mean, y = FG_mean)) + 
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
-      facet_wrap(~ dLevelsAminusB, ncol = length(unique(MBR.DF$dLevelsAminusB)),
+      facet_wrap(~ dLevelsAminusB, ncol = length(unique(AE.DF$dLevelsAminusB)),
                  labeller = function(variable, value) {
-                   if(variable == "dLevelsAminusB") {
-                     return(mbr_labels[as.character(value)])
+                   if (variable == "dLevelsAminusB") {
+                     return(ae_labels[as.character(value)])
                    }
-                   return(value)
-                 }) +
+                   return(value)}) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("AE") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -187,11 +186,15 @@ ccc.parms <- function(Y, X, DF, TYPE) {
                             R2= as.numeric(NA),
                             count = as.numeric(NA)) %>% 
       mutate(Approach = TYPE)
+    
+    
     return(ccc.parms)
   }
   
   # Calculate linear model parameters (same as in linear.parms)
-  model <- lm(data = DF, DF[,Y] ~ DF[, X])
+  data <- DF[, c(X, Y)] %>% na.omit
+  model <- lm(data = data, DF[,Y] ~ DF[, X])
+  
   DF <- DF[,c(X, Y)] %>% na.omit
   predicted <- predict(model, DF)
   rmse <- sqrt(mean((DF[,Y] %>% na.omit - predicted)^2))
@@ -210,9 +213,6 @@ ccc.parms <- function(Y, X, DF, TYPE) {
   return(ccc.parms)
 }
 
-
-  
- 
 
 ccc.parms.height <- function(MBR.DF, AE.DF, WP.DF, gas) {   
   
@@ -336,7 +336,6 @@ ccc.parms.height <- function(MBR.DF, AE.DF, WP.DF, gas) {
   
   return(ccc.parms.final)
 }
-
 ccc.parms.site <- function(MBR.tibble, AE.tibble, WP.tibble, gas) {
   
   sites <- names(MBR.tibble)
@@ -470,6 +469,8 @@ ccc.parms.height.val <- function(MBR.DF, AE.DF, WP.DF, GAS) {
   
   return(ccc.parms.final)
 }
+
+
 ccc.val <- function( sites.tibble){
   # Calculate CCC parameters for CO2
   SITESval_CCC_CO2 <- ccc.parms.site.val(sites.tibble = sites.tibble , GAS = "CO2")
@@ -487,4 +488,3 @@ ccc.val <- function( sites.tibble){
         mutate(gas = "CH4")) %>% select(Approach, dLevelsAminusB, gas,   Site, CCC, R2, Season )
   
 }
-

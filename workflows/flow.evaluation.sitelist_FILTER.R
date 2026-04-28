@@ -18,14 +18,15 @@ canopy.info <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/
 # Data Prep:
 approach.df <- data.frame( Approach=c("MBR", "AE", "WP"))
 
-canopy <- canopy.info %>% cross_join(approach.df) %>% mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-                                                                       RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
-                                                                       RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
-                                                                       MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_A)
+canopy <- canopy.info %>% cross_join(approach.df) %>% 
+  mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
+         RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
+         RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
+         MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_B) %>% 
+  filter(Canopy_L1 != "WW")
 
 
 SITE_DATA_FILTERED <- list() # Save all the data here:
-
 SITES_MBR_9min_FILTER <- list()
 SITES_AE_9min_FILTER <- list()
 SITES_WP_9min_FILTER <- list()
@@ -38,9 +39,9 @@ for( site in site.list){
   message( paste("Importing the data for ", site))
   
   localdir.site <- paste(localdir,"/", site, sep = "")
-  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+  load(paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
   
-  canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, Canopy_L1, dLevelsAminusB, Approach)
+  canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, dLevelsAminusB, Approach)
   
   MBR_9min_FILTER_canopy <- canopy.sub %>% filter( Approach == "MBR") %>% 
     full_join( MBR_9min_FILTER , by = c('dLevelsAminusB'), relationship = "many-to-many")  %>% 
@@ -86,17 +87,13 @@ for( site in site.list){
   # Load the files:
   localdir.site <- paste(localdir,"/", site, sep = "")
   
-  #files <- paste(site, "_FILTER.Rdata", sep = "")
-  
-  #load(paste(localdir.site, "/", files, sep=""))
-  
-  files.CO2 <- paste(site, "_9min.report.CO2.csv", sep = "")
+  files.CO2 <- paste(site, "_9min.report.CO2_AA_AW.csv", sep = "")
   
   report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))
   
   filter.report.CO2 <- rbind(filter.report.CO2,  report.CO2 )
   
-  files.H2O <- paste(site, "_9min.report.H2O.csv", sep = "")
+  files.H2O <- paste(site, "_9min.report.H2O_AA_AW.csv", sep = "")
   
   report.H2O <- read.csv( paste( localdir.site,"/", files.H2O, sep="" ))
   
@@ -112,11 +109,11 @@ for( site in site.list){
   # Load the files:
   localdir.site <- paste(localdir,"/", site, sep = "")
   
-  files.CO2 <- paste(site, "_9min.report.stability.CO2.csv", sep = "")
+  files.CO2 <- paste(site, "_9min.report.stability.CO2_AA_AW.csv", sep = "")
   report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))
   filter.report.stability.CO2 <- rbind(filter.report.stability.CO2,  report.CO2 )
   
-  files.H2O <- paste(site, "_9min.report.stability.H2O.csv", sep = "")
+  files.H2O <- paste(site, "_9min.report.stability.H2O_AA_AW.csv", sep = "")
   report.H2O <- read.csv( paste( localdir.site,"/", files.H2O, sep="" ))
   filter.report.stability.H2O <- rbind(filter.report.stability.H2O,  report.H2O )
   

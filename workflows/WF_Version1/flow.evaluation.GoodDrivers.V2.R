@@ -8,20 +8,26 @@ library(VSURF)
 library(randomForest)
 
 
-load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
+load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 dir <- DirRepo.eval
 
+SITES_One2One.nona <- SITES_One2One %>% drop_na("Good.CCC") %>% 
+  mutate(MeasurementDist =  MeasurementHeight_m_A - MeasurementHeight_m_B)
+
+SITES_One2One.nona %>% summary
+
 # Stop.vsurf:
-stop <- 'yes' # change this to no is you want to re-run variable selection
+stop <- 'yes' # change this to no if you want to re-run variable selection
 
 # Set up VSURF ####
 # Divide into test and training datasets:
 if( stop == 'no'){
-  train <- SITES_One2One %>% 
-    sample_frac(0.80) 
   
-  test <- anti_join(SITES_One2One, train )
+ 
+  train <- SITES_One2One.nona %>% sample_frac(0.80) 
+  
+  test <- anti_join(SITES_One2One , train )
   
   SITES_One2One %>% summary
   train  %>% summary
@@ -29,11 +35,13 @@ if( stop == 'no'){
   
   # Variable Selection : ####
   
-  SITES_One2One %>% names
-  train[, c(7, 10,73, 81, 82)] %>% names
+  train %>% names
+  train[, c(7, 10,73, 80, 81, 82, 83)] %>% names
   
-  rf_index.sdesign.vsurf <- VSURF(train[, c(7, 10,73, 82)], 
-                                  train[["Good.CCC"]],
+  train.sub <-  train[, c(7, 10,73, 80, 81, 82, 83)] %>% na.omit()
+  
+  rf_index.sdesign.vsurf <- VSURF(train.sub[, c(1:6)], 
+                                  train.sub[["Good.CCC"]],
                                   ntree = 5000,
                                   RFimplem = "randomForest", 
                                   clusterType = "PSOCK", 
@@ -41,11 +49,11 @@ if( stop == 'no'){
                                   ncores = parallelly::availableCores() - 2, parallel= TRUE)
   
   rf_index.sdesign.vsurf$varselect.pred
-  rf_index.sdesign.vars <-names( train[, c(7, 10,73, 82)]) [rf_index.sdesign.vsurf$varselect.interp] 
-  rf_index.sdesign.vars <- train[, c(7, 10,73, 82)] %>% names
+  rf_index.sdesign.vars <-names( train.sub) [rf_index.sdesign.vsurf$varselect.pred] 
+
   
-  train %>% names
-  train.sub <- train[, c(21:34, 36:38,81)] %>% na.omit
+
+  train.sub <- train[, c(21:34, 36:38,83)] %>% na.omit
   train.sub %>% names()
   rf_index.Cspec.vsurf <- VSURF(train.sub[,-18], 
                                 train.sub[["Good.CCC"]],
@@ -61,7 +69,7 @@ if( stop == 'no'){
   
   
   
-  train.sub <- train[, c(40:51, 61:64,81)] %>% na.omit
+  train.sub <- train[, c(40:51, 61:64,83)] %>% na.omit
   rf_index.Cstructure.vsurf <- VSURF(train.sub[-17], 
                                      train.sub[["Good.CCC"]],
                                      ntree = 500,
@@ -76,12 +84,12 @@ if( stop == 'no'){
   
   final.vars <- c(rf_index.sdesign.vars, rf_index.Cspec.vars,rf_index.Cstructure.vars) 
   
-  save(final.vars, file= paste(dir, "FinalVarsSelection.Rdata", sep="") )
+  save(final.vars, file= paste(dir, "FinalVarsSelection_AA_AW.Rdata", sep="") )
 }
 
 # Final Model Fit : ####
 if( stop == 'no'){
-load( file= paste(dir, "FinalVarsSelection.Rdata", sep="") )
+load( file= paste(dir, "FinalVarsSelection_AA_AW.Rdata", sep="") )
 
 final.vars[final.vars != 'gas'] 
 rf_model <- randomForest( Good.CCC ~ .,
@@ -100,15 +108,14 @@ confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
 save(train, test,rf_model, final.vars, SITES_One2One, 
-     file= paste(localdir, "Good_Fluxes.Rdata", sep="") )
+     file= paste(localdir, "Good_Fluxes.Rdata_AA_AW", sep="") )
 }
 
 # Sensitivity Analysis: ####
-load(file= paste(localdir, "Good_Fluxes.Rdata", sep="") )
+load(file= paste(localdir, "Good_Fluxes.Rdata_AA_AW", sep="") )
 
 SITES_One2One$Approach %>% unique
-SITES_One2One$Canopy_L1 %>% unique
-SITES_One2One$gas %>% unique
+SITES_One2One$Canopy_L1 %>% unique#
 
 SITES_One2One$RelativeDistB %>% summary
 SITES_One2One$RelativeDistA %>% summary
@@ -117,36 +124,36 @@ SITES_One2One$LAI.sd %>% summary
 
 mean.df <- SITES_One2One %>% reframe( .by=c(Approach, Canopy_L1, gas), 
                                              RelativeDistB = mean(RelativeDistB, na.rm=T),
-                                             #RelativeDistA = mean(RelativeDistA, na.rm=T),
+                                             RelativeDistA = mean(RelativeDistA, na.rm=T),
                                              Cutoff05.SDSDH  = mean(Cutoff05.SDSDH ,na.rm=T),
-                                             CHM.mean= mean(CHM.mean,na.rm=T))
+                                             CHM.sd= mean(CHM.sd,na.rm=T))
 
 min.df <- SITES_One2One %>% reframe( .by=c(Approach, Canopy_L1, gas), 
                                              RelativeDistB = min(RelativeDistB, na.rm=T),
-                                             #RelativeDistA = min(RelativeDistA, na.rm=T),
+                                             RelativeDistA = min(RelativeDistA, na.rm=T),
                                              Cutoff05.SDSDH  = min(Cutoff05.SDSDH ,na.rm=T),
-                                            CHM.mean = min(CHM.mean,na.rm=T))
+                                            CHM.sd = min(CHM.sd,na.rm=T))
 
 max.df <- SITES_One2One %>% reframe( .by=c(Approach, Canopy_L1, gas), 
                                              RelativeDistB = max(RelativeDistB, na.rm=T),
-                                             #RelativeDistA = max(RelativeDistA, na.rm=T),
+                                             RelativeDistA = max(RelativeDistA, na.rm=T),
                                              Cutoff05.SDSDH  = max(Cutoff05.SDSDH ,na.rm=T),
-                                            CHM.mean = max(CHM.mean,na.rm=T))
+                                            CHM.sd = max(CHM.sd,na.rm=T))
 
 summary.df <- rbind( mean.df, min.df, max.df)
 
 summary.df %>% summary
 
 RelativeDistB.df <- data.frame(  RelativeDistB = seq(SITES_One2One$ RelativeDistB %>% min(na.rm=T), SITES_One2One$ RelativeDistB %>% max(na.rm=T), 2) )
-#RelativeDistA.df <- data.frame(  RelativeDistA = seq(SITES_One2One$RelativeDistA %>% min(na.rm=T), SITES_One2One$RelativeDistA %>% max(na.rm=T), 2) )
+RelativeDistA.df <- data.frame(  RelativeDistA = seq(SITES_One2One$RelativeDistA %>% min(na.rm=T), SITES_One2One$RelativeDistA %>% max(na.rm=T), 2) )
 Cutoff05.SDSDH.df <- data.frame( Cutoff05.SDSDH = seq(SITES_One2One$Cutoff05.SDSDH %>% min(na.rm=T), SITES_One2One$Cutoff05.SDSDH %>% max(na.rm=T), 0.2) )
-CHM.mean.df <- data.frame( CHM.mean = seq(SITES_One2One$CHM.mean %>% min(na.rm=T), SITES_One2One$CHM.mean %>% max(na.rm=T), 0.01) )
+CHM.sd.df <- data.frame( CHM.sd = seq(SITES_One2One$CHM.sd %>% min(na.rm=T), SITES_One2One$CHM.sd %>% max(na.rm=T), 0.01) )
 
 # Format Factors
 
 format.factors <- function( data){
   data$Approach <- factor( data$Approach , levels = c("MBR", "AE", "WP"))
-  data$Canopy_L1 <- factor( data$Canopy_L1 , levels = c("AA" , "AW", "WW"))
+  data$Canopy_L1 <- factor( data$Canopy_L1 , levels = c("AA" , "AW"))
   
   return(data)
 }
@@ -154,14 +161,14 @@ format.factors <- function( data){
 
 Cutoff05.SDSDH.final <- summary.df %>% select(!Cutoff05.SDSDH) %>% cross_join(Cutoff05.SDSDH.df )
 RelativeDistB.final <- summary.df %>% select(! RelativeDistB) %>% cross_join(RelativeDistB.df )
-#RelativeDistA.final <- summary.df %>% select(! RelativeDistA) %>% cross_join(RelativeDistA.df )
-CHM.mean.final <- summary.df %>% select(! CHM.mean) %>% cross_join(CHM.mean.df )
+RelativeDistA.final <- summary.df %>% select(! RelativeDistA) %>% cross_join(RelativeDistA.df )
+CHM.sd.final <- summary.df %>% select(! CHM.sd) %>% cross_join(CHM.sd.df )
 
 
 Cutoff05.SDSDH.final$model <-  predict(rf_model  , Cutoff05.SDSDH.final,'prob')[,2]
-CHM.mean.final$model <-  predict(rf_model  , CHM.mean.final,'prob')[,2]
+CHM.sd.final$model <-  predict(rf_model  , CHM.sd.final,'prob')[,2]
 RelativeDistB.final$model <-  predict(rf_model  , RelativeDistB.final,'prob')[,2]
-#RelativeDistA.final$model <-  predict(rf_model  , RelativeDistA.final,'prob')[,2]
+RelativeDistA.final$model <-  predict(rf_model  , RelativeDistA.final,'prob')[,2]
 
 Sensitivity_plot <- function(df, approach, label, var, col){
 
@@ -199,26 +206,26 @@ if( approach == "MBR"){
   
   plot.mbr.4 <- Sensitivity_plot2(df = RelativeDistB.final, approach = approach, label= "Relative Dist B", var='RelativeDistB' , col =col)+ theme(legend.title = element_blank())
   
-  #plot.mbr.5 <- Sensitivity_plot2(df = RelativeDistA.final, approach = approach, label= "Relative Dist A", var='RelativeDistA', col =col )+ theme(legend.title = element_blank())
+  plot.mbr.5 <- Sensitivity_plot2(df = RelativeDistA.final, approach = approach, label= "Relative Dist A", var='RelativeDistA', col =col )+ theme(legend.title = element_blank())
   
-  plot.mbr.3 <- Sensitivity_plot2(df = CHM.mean.final , approach = approach, label= "Canopy Height (m)", var='CHM.mean' , col =col)+ theme(legend.title = element_blank())
+  plot.mbr.3 <- Sensitivity_plot2(df = CHM.sd.final , approach = approach, label= "Canopy Height (m)", var='CHM.sd' , col =col)+ theme(legend.title = element_blank())
   
   
-  gd.plot.mbr <- ggarrange(plot.mbr.4,
+  gd.plot.mbr <- ggarrange(plot.mbr.3,
                            plot.mbr.2,
-                          # plot.mbr.5,
-                           plot.mbr.3, common.legend = TRUE , nrow=1, labels=labels)
+                          plot.mbr.5,
+                           plot.mbr.4, common.legend = TRUE , nrow=1, labels=labels)
   return( gd.plot.mbr )
 }
 
-gd.plot.mbr <-Sensitivity_approach_plot(approach = "MBR", labels = c("A", "B", "C"))
-gd.plot.ae <-Sensitivity_approach_plot(approach = "AE", labels = c( "D", "E", "F"))
-gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c( "G", "H","I"))
+gd.plot.mbr <-Sensitivity_approach_plot(approach = "MBR", labels = c("A", "B", "C", "D"))
+gd.plot.ae <-Sensitivity_approach_plot(approach = "AE", labels = c( "E", "F", "G", "H"))
+gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c( "I", "J","K", "L"))
 
 final.gd.plot <- ggarrange( gd.plot.mbr, gd.plot.ae, gd.plot.wp, nrow=3, ncol=1, common.legend = TRUE)
 
 setwd(DirRepo.eval )
-ggsave("Figures/GoodData_plot.png", plot = final.gd.plot, width = 11, height = 9, units = "in")
+ggsave("Figures/WF_Version1/GoodData_plot_AA_AW.png", plot = final.gd.plot, width = 11, height = 9, units = "in")
 
 # Model Results: ####
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
@@ -234,25 +241,13 @@ caret::confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Model Use: #####
 
-load(file= paste(localdir, "Good_Fluxes.Rdata", sep="") )
+load(file= paste(localdir, "Good_Fluxes.Rdata_AA_AW", sep="") )
 
 SITES_One2One$rf_model <- predict(rf_model , SITES_One2One, type = "prob")[,2]
 
-library(cutpointr)
-
-optimal_cutoff <- cutpointr(data = SITES_One2One, 
-                            x = rf_model, 
-                            class = Good.CCC, 
-                            method = minimize_metric, metric=sum_sens_spec, na.rm =T,
-                            direction = ">=", pos_class = "1") 
-
-plot_metric(optimal_cutoff) # 'sum_sens_spec' maximizes sensitivity + specificity; other metrics are available
-
-custom_cutoff <- 0.5
-
 
 SITES_One2One <- SITES_One2One %>% mutate(
-  predicted = case_when( rf_model >= custom_cutoff ~ 1, .default= 0) %>% as.factor %>% replace_na( '0'),
+  predicted = case_when( .data$rf_model >= 0.5 ~ 1, .default= 0) %>% as.factor %>% replace_na( '0'),
   Good.CCC = Good.CCC %>% factor( levels=c("0", "1")))
 
 confusio.matrix <- caret::confusionMatrix(SITES_One2One$predicted, SITES_One2One$Good.CCC) 
@@ -289,16 +284,17 @@ final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.can
                                    labels=c("B", "C")), nrow=1,
           widths = c(1, 2, 2), labels="A")
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix.png", plot =  final.model.plots, width = 9, height = 3, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix_AA_AW.png", plot =  final.model.plots, width = 9, height = 3, units = "in")
 
 save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file= paste(localdir, "SITES_One2One_model.Rdata", sep="") )
+     file= paste(localdir, "SITES_One2One_model_AA_AW.Rdata", sep="") )
+
+# Save the AA_AW canopy model artifact expected by downstream RSHP scripts.
+save(train, test, rf_model, final.vars, SITES_One2One, SITES_One2One_model,
+     file = paste(localdir, "SITES_One2One_canopy_model_AA_AW.Rdata", sep = ""))
   
 # Results
 SITES_One2One_EC.summary <- 
-  SITES_One2One_model %>% filter( CCC >= 0.5)
-SITES_One2One_EC.summary$Site %>% unique %>% length
-SITES_One2One_model.summary <- 
-  SITES_One2One_model %>% filter( rf_model >= 0.52)
+  SITES_One2One_model %>% filter( CCC >= 0.5, gas == "H2O")
 
-SITES_One2One_model.summary$Site %>% unique %>% length
+SITES_One2One_EC.summary$Site %>% unique %>% length

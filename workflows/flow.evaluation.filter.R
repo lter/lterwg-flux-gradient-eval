@@ -5,12 +5,19 @@ library(sf)
 
 source(fs::path(DirRepo.eval,'functions/calc.filter_FG.R' ))
 source(fs::path(DirRepo.eval,'functions/calc.SITELIST_FORMATTING.R'))
-#38 run this number
 
 for( site in site.list){
   
   print( site)
-
+  
+  # Canopy information:
+  canopy.sub <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% 
+    distinct %>% mutate(RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
+                        RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
+                        MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_B) %>% 
+    filter(Site == site, Canopy_L1 != "WW") %>% select(Site, Canopy_L1, dLevelsAminusB)
+  
+  
   # Load the files:
   localdir.site <- paste(localdir,"/", site, sep = "")
   
@@ -18,11 +25,19 @@ for( site in site.list){
   
   load(paste(localdir.site, "/", files, sep=""))
   
+  # Add the canopy information to the file:
+  MBR_9min.df.final <- MBR_9min.df.final  %>% 
+    full_join( canopy.sub , by = c('dLevelsAminusB'), relationship = "many-to-many") %>% filter(Canopy_L1 != "WW")
+  AE_9min.df.final <- AE_9min.df.final  %>% 
+    full_join( canopy.sub , by = c('dLevelsAminusB'), relationship = "many-to-many") %>% filter(Canopy_L1 != "WW")
+  WP_9min.df.final <- WP_9min.df.final  %>% 
+    full_join( canopy.sub , by = c('dLevelsAminusB'), relationship = "many-to-many") %>% filter(Canopy_L1 != "WW")
+  
   # Change the time to local:
   
   # Get NEON sites from the server and find the time zones: https://cran.r-project.org/web/packages/lutz/readme/README.html
   sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
-                                                                                                                      crs = "+proj=longlat +datum=WGS84")
+                                           crs = "+proj=longlat +datum=WGS84")
   
   sites.location$TZ <- tz_lookup(sites.location, method = "accurate")
   sites.location.sub <- sites.location %>%  select( "Site_Id.NEON" , "TZ")
@@ -34,8 +49,8 @@ for( site in site.list){
   WP_9min.df.final$timeEndA.local <- WP_9min.df.final$timeEnd_A %>%  as.POSIXlt( tz = site.tz)
   
   MBR_9min.df.final$Month.local <- MBR_9min.df.final$timeEndA.local %>% format("%m")
-  MBR_9min.df.final$Month.local <- MBR_9min.df.final$timeEndA.local %>% format("%m")
-  MBR_9min.df.final$Month.local <- MBR_9min.df.final$timeEndA.local %>% format("%m")
+  AE_9min.df.final$Month.local  <- AE_9min.df.final$timeEndA.local %>% format("%m")
+  WP_9min.df.final$Month.local  <- WP_9min.df.final$timeEndA.local %>% format("%m")
   
   MBR_9min.df.final$time.local <- MBR_9min.df.final$timeEndA.local %>% format("%H:%M")
   AE_9min.df.final$time.local <- AE_9min.df.final$timeEndA.local %>% format("%H:%M")
@@ -47,6 +62,7 @@ for( site in site.list){
   
   # Run the filter functions... Report:
   # CO2
+  
   WP_9min.report.CO2 <-  filter_report(df = WP_9min.df.final %>% filter(gas == "CO2"),
                                        dConcSNR.min = 3,
                                        approach = "WP") %>% mutate(approach = "WP",
@@ -57,7 +73,7 @@ for( site in site.list){
                                          approach = "AE") %>% mutate(approach = "AE",
                                                                      site =site)
   
-
+  
   MBR_9min.report.CO2  <-  filter_report( df = MBR_9min.df.final %>% filter(gas == "CO2"),
                                           dConcSNR.min = 3,
                                           approach = "MBR") %>% mutate(approach = "MBR",
@@ -119,7 +135,7 @@ for( site in site.list){
   SITE_9min.report.stability.H2O <- rbind( WP_9min.report.stability.H2O, AE_9min.report.stability.H2O, MBR_9min.report.stability.H2O)
   
   
-   # Run the filter functions... FILTER data and adjust the GF sign:
+  # Run the filter functions... FILTER data and adjust the GF sign:
   MBR_9min_FILTER <- filter_fluxes( df = MBR_9min.df.final,
                                     dConcSNR.min = 3,
                                     approach = "MBR") %>% 
@@ -142,40 +158,40 @@ for( site in site.list){
                                 gas == "CH4"~ NA))
   
   
-   # Output the files
+  # Output the files
   localdir.site <- paste(localdir,"/", site, sep = "")
   
-  write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,"_9min.report.stability.CO2.csv", sep=""))
-  write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,"_9min.report.CO2.csv", sep=""))
+  write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,"_9min.report.stability.CO2_AA_AW.csv", sep=""))
+  write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,"_9min.report.CO2_AA_AW.csv", sep=""))
   
-  write.csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,"_9min.report.stability.H2O.csv", sep=""))
-  write.csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,"_9min.report.H2O.csv", sep=""))
+  write.csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,"_9min.report.stability.H2O_AA_AW.csv", sep=""))
+  write.csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,"_9min.report.H2O_AA_AW.csv", sep=""))
   
   
   save( AE_9min_FILTER,
         WP_9min_FILTER,
-        MBR_9min_FILTER, file = paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+        MBR_9min_FILTER, file = paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
   
-
+  
   # Upload files to the google
   
   site_folder <-data_folder$id[data_folder$name==site]
   
-  fileSave <- paste(localdir.site, "/", site, "_FILTER.Rdata", sep="")
+  fileSave <- paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path = site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.CO2.csv", sep="")
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.CO2_AA_AW.csv", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.CO2.csv", sep="")
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.CO2_AA_AW.csv", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.H2O.csv", sep="")
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.H2O_AA_AW.csv", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.H2O.csv", sep="")
+  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.H2O_AA_AW.csv", sep="")
   googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
-
+  
   message( paste("Done with filtering", site))
   
   rm( AE_9min_FILTER,

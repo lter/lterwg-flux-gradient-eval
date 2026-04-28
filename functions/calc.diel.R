@@ -49,14 +49,22 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
           subset$flux <-subset[,flux]
           count <- subset$flux %>% na.omit %>% length
           
-          if(count > 48){
+          if(count > 36){
           model <- loess( flux ~ Hour , data = subset )
           model %>% plot
           Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
           pred <- predict(model, newdata = Diel.df, se=TRUE)
       
-          new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
-                                         DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df)) %>% mutate(data="all")
+         # new.data  <- Diel.df %>% mutate(DIEL = pred$fit,  DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df)) %>% mutate(data="all")
+          
+          crit <- qt(0.95 / 2 + 0.5, pred$df)
+          
+          new.data <- Diel.df %>%
+            mutate(
+              DIEL = pred$fit,
+              DIEL.SE = pred$se.fit * crit
+            ) %>%
+            mutate(data = "all")
           
           new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
           Peak <- new.data$DIEL %>% max(na.rm=T)
@@ -81,15 +89,21 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
       subset <- dataframe.GrowS %>% filter(Year == i, Good.CCC == 1)
       count <- subset[,flux] %>% na.omit %>% length
       
-      if(count > 48){
+      if(count > 36){
       subset$flux <-subset[,flux]
       model <- loess( flux ~ Hour , data = subset )
       model %>% plot
       Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
       pred <- predict(model, newdata = Diel.df, se=TRUE)
       
-      new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
-                                      DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df)) %>% mutate(data="good")
+      crit <- qt(0.95 / 2 + 0.5, pred$df)
+      
+      new.data <- Diel.df %>%
+        mutate(
+          DIEL = pred$fit,
+          DIEL.SE = pred$se.fit * crit
+        ) %>%
+        mutate(data = "good")
       
       new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
       Peak <- new.data$DIEL %>% max(na.rm=T)
@@ -111,15 +125,21 @@ DIEL <- function( dataframe, flux, Gas, flux.other){
     try({
       subset <- dataframe.GrowS %>% filter(Year == i, Good.CCC == 0)
       count <- subset[,flux] %>% na.omit %>% length
-      if(count > 48){
+      if(count > 36){
       subset$flux <-subset[,flux]
       model <- loess( flux ~ Hour , data = subset )
       model %>% plot
       Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
       pred <- predict(model, newdata = Diel.df, se=TRUE)
       
-      new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
-                                      DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df))%>% mutate(data="bad")
+      crit <- qt(0.95 / 2 + 0.5, pred$df)
+      
+      new.data <- Diel.df %>%
+        mutate(
+          DIEL = pred$fit,
+          DIEL.SE = pred$se.fit * crit
+        ) %>%
+        mutate(data = "bad")
       
       new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
       Peak <- new.data$DIEL %>% max(na.rm=T)
@@ -145,19 +165,19 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
   dataframe <- dataframe %>% as.data.frame %>% filter(gas == Gas) %>% rename( timeEndA.local = time.rounded)
   
   if(Gas == "CH4"){
-    dataframe$flux.other <- ((dataframe[, flux.other]* 16.042)/1000000)*1800 
-    dataframe$flux <- ((dataframe[, flux]* 16.042)/1000000)*1800 
+    dataframe$flux.other <- dataframe[, flux.other]*0.0000288872 # g C 30 minutes
+    dataframe$flux <- dataframe[, flux]*0.0000288872 # g C 30 minutes
   }
   
   
   if(Gas == "CO2"){
-    dataframe$flux.other <- ((dataframe[, flux.other]* 44.01)/1000000)*1800 
+    dataframe$flux.other <- ((dataframe[, flux.other]*44.01)/1000000)*1800 
     dataframe$flux <- ((dataframe[, flux]* 44.01)/1000000)*1800 
   }
   
   if(Gas == "H2O"){
-    dataframe$flux.other <- ((dataframe[, flux.other]*16)/1000000)*1800 
-    dataframe$flux <- ((dataframe[, flux]* 16)/1000000)*1800 
+    dataframe$flux.other <- dataframe[, flux.other]* 0.018015*1800 # g H2O m-2 30min-1
+    dataframe$flux <- dataframe[, flux]* 0.018015*1800 
   }
   
 # Make sure season is in the dataframe:
@@ -176,22 +196,24 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
     print(i)
     try({
       
-     # Remove outliers:
-       subset <- dataframe.gs %>% filter(season == i, 
-                                         FG_ENSEMBLE > -50, FG_ENSEMBLE < 50, 
-                                         EC_mean > -50, EC_mean < 50)
+      subset <- dataframe.gs %>% filter(season == i)
       
        count <- subset$flux %>% na.omit %>% length
        
-       if(count > 48){
+       if(count > 36){
          model <- loess( flux ~ Hour , data = subset )
          model %>% plot
          Diel.df <- data.frame(Hour = seq(0, 23), season = i)
          pred <- predict(model, newdata = Diel.df, se=TRUE)
          
-         new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
-                                         DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, 
-                                                               pred$df)) %>% mutate(data="all")
+         crit <- qt(0.95 / 2 + 0.5, pred$df)
+         
+         new.data <- Diel.df %>%
+           mutate(
+             DIEL = pred$fit,
+             DIEL.SE = pred$se.fit * crit
+           ) %>%
+           mutate(data = "all")
       
       
         Peak <- new.data$DIEL %>% max(na.rm=T)
@@ -260,15 +282,21 @@ DIEL.FINAL <- function( dataframe, flux, Gas){
       subset <- dataframe %>% filter(YearMon == i)
       count <- subset[,flux] %>% na.omit %>% length
       
-      if(count > 48){
+      if(count > 36){
         
         model <- loess( flux ~ Hour , data = subset )
         model %>% plot
         Diel.df <- data.frame(Hour = seq(0, 23), Year = i)
         pred <- predict(model, newdata = Diel.df, se=TRUE)
         
-        new.data  <- Diel.df %>% mutate(DIEL = pred$fit, 
-                                        DIEL.SE =pred$fit* qt(0.95 / 2 + 0.5, pred$df)) %>% mutate(data="good")
+        crit <- qt(0.95 / 2 + 0.5, pred$df)
+        
+        new.data <- Diel.df %>%
+          mutate(
+            DIEL = pred$fit,
+            DIEL.SE = pred$se.fit * crit
+          ) %>%
+          mutate(data = "good")
         
         new.data %>% ggplot( aes(x=Hour, y=DIEL)) +geom_point()
         Peak <- new.data$DIEL %>% max(na.rm=T)

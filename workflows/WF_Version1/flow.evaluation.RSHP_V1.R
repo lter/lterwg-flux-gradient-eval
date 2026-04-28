@@ -12,20 +12,23 @@ library(rpart)
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 
-load(file= paste(localdir, "SITES_One2One_canopy_model.Rdata", sep="" ))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
+load(file= fs::path(localdir,paste0("SITES_One2One_canopy_model_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 source(fs::path(DirRepo.eval,"./functions/calc_validation.R"))
 source(fs::path(DirRepo.eval,"./functions/calc.linear.terms.R"))
 source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R"))
        
 # Canopy Information:
-canopy <- SITES_One2One_canopy_model %>% select( Site, rf_model, predicted, Good.CCC, CCC, dLevelsAminusB, Approach, gas, Canopy_L1) %>% rename(CCC.EC = CCC )
+canopy <- SITES_One2One_model %>% 
+  select( Site, rf_model, predicted, Good.CCC, CCC, 
+          dLevelsAminusB, Approach, gas, Canopy_L1) %>% rename(CCC.EC = CCC )
+
+SITES_One2One_canopy_model <- SITES_One2One_model
 
 # Calculate CCC.GF: #### 
-
-# See how all levels compare to each other regardless of the CCC.EC:
-# Define the threshold for this workflow ('rf_model.1' or 'rf_model.all' or 'CCC.0.5') :
-threshold.workflow ='CCC.0.5'
+#
+threshold.workflow <- "CCC.0.5"
+ccc.primary.threshold <- parse_ccc_threshold(threshold.workflow)
 
 val.SHP <- Compare.SamplingHeightPairs(threshold = threshold.workflow ) %>% 
   mutate( Approach.1 = sapply(strsplit(var1, "-"), `[`, 1),
@@ -64,43 +67,44 @@ val.SHP.total.summary <- val.SHP.total %>% na.omit %>%
            CCC.GF.mean = mean(CCC.GF, na.rm=T),
            CCC.GF.max = max(CCC.GF, na.rm=T),
            CCC.GF.median = median(CCC.GF, na.rm=T),
-           CCC.GF.range = range(CCC.GF, na.rm=T)) %>% distinct
+           CCC.GF.range = CCC.GF.max-CCC.GF.min) %>% distinct
 
 # Canopy information with CCC.EC
 canopy.sub <- canopy %>% select(Site, Approach, gas, Canopy_L1, dLevelsAminusB, CCC.EC, Good.CCC) %>% distinct()
 
 val.SHP.total.canopy <- val.SHP.total %>% full_join(canopy.sub, by = c("Site", 'Approach', 'gas', 'dLevelsAminusB')) %>% full_join(val.SHP.total.summary, by = c("Site", 'gas', 'var'))
 
-val.SHP.total.canopy %>% names()
-val.SHP.total.canopy.summary <- val.SHP.total.canopy %>% reframe(.by= c(Site, gas, Approach,dLevelsAminusB, var,Canopy_L1 ), 
+val.SHP.total.canopy.summary <- val.SHP.total.canopy %>% reframe(.by= c(Site, gas, Approach,dLevelsAminusB, 
+                                                                        var,Canopy_L1 ), 
                                                                  CCC.EC = mean(CCC.EC),
-                                                                 Good.CCC = case_when( CCC.EC >= 0.5 ~1, CCC.EC < 0.5 ~ 0) %>% as.factor,
+                                                                 Good.CCC = case_when( CCC.EC >= ccc.primary.threshold ~1, CCC.EC < ccc.primary.threshold ~ 0) %>% as.factor,
                                                                  CCC.GF.min = mean(CCC.GF.min),
                                                                  CCC.GF.mean = mean(CCC.GF.mean),
                                                                  CCC.GF.max = mean(CCC.GF.max),
                                                                  CCC.GF.median = mean(CCC.GF.median),
                                                                  CCC.GF.range = mean(CCC.GF.range),
                                                                  CCC.GF = mean(CCC.GF))
-  
-  
-fileSave <- fs::path(localdir,paste0("SITE_RSHP.Rdata"))
+
+fileSave <- fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata"))
 save(val.SHP.total.canopy ,val.SHP.total.canopy.summary, file=fileSave)
 
 # Detect RSHP with CCC.GF: RANDOM FOREST MODEL DEVELOPMENT ####
 
-load(fs::path(localdir,paste0("SITE_RSHP.Rdata")))
+load(fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata")))
 
-train <- val.SHP.total.canopy.summary %>% 
+
+train <- val.SHP.total.canopy.summary %>% na.omit() %>% 
   sample_frac(0.80) 
 
 test <- anti_join(val.SHP.total.canopy.summary, train )
 dict_weights = c(1, 100)
 
+train %>% summary
 rf.good.ccc.ec <- randomForest::randomForest(Good.CCC ~ CCC.GF.mean + CCC.GF.range + CCC.GF.min , 
                                              data = train, ntree= 1000,
-                                             strata=train$Good.CCC,
+                                             strata=train$Good.CCC %>% as.factor,
                                              classwt = dict_weights,
-                                             sampsize = rep(379, nlevels(train$Good.CCC)))
+                                             sampsize = rep(305, nlevels(train$Good.CCC)))
 
 rf.good.ccc.ec
 
@@ -110,7 +114,6 @@ test$Predictions <-  predict(object = rf.good.ccc.ec , test )
 train$Predictions <- predict(rf.good.ccc.ec , train)
 
 confusionMatrix(train$Predictions, train$Good.CCC)
-confusionMatrix(test$Predictions, test$Good.CCC)
 
 # Detect Breakpoints:
 
@@ -127,6 +130,7 @@ tree_surrogate <- rpart(Prob ~ CCC.GF.mean + CCC.GF.min + CCC.GF.range,
 
 rpart.plot::rpart.plot(tree_surrogate)
 tree.plot <- gridGraphics::echoGrob()
+
 library(ggdendro)
 tree_data <- dendro_data(tree_surrogate)
 
@@ -155,29 +159,16 @@ tree.plot <- ggplot() +
   
 
 val.SHP.total.canopy.summary <- val.SHP.total.canopy.summary %>% 
-  mutate( Thresholds = case_when( CCC.GF.mean > 0.23 &
-                                    CCC.GF.mean < 0.35 &
-                                    CCC.GF.min < -0.17 ~ 1,
+  mutate( Thresholds = case_when( CCC.GF.mean < 0.24 &
+                                    CCC.GF.mean > 0.15 &
+                                    CCC.GF.range > 1.2 ~ 1,
                                   
-                                  CCC.GF.mean > 0.23 &
-                                    CCC.GF.mean < 0.35 &
-                                    CCC.GF.min >= -0.17 ~ 1,
-    
-                                  CCC.GF.mean > 0.23 &
-                                    CCC.GF.mean >= 0.35 &
-                                    CCC.GF.range < 0.44 ~ 1,
+                                  CCC.GF.mean > 0.24 &
+                                  CCC.GF.mean > 0.36  ~ 1,
                                   
-                                  CCC.GF.mean > 0.23 &
-                                    CCC.GF.mean >= 0.35 &
-                                    CCC.GF.range >= 0.44 &
-                                    CCC.GF.min < -0.22  ~ 1,
-                                  
-                                  CCC.GF.mean > 0.23 &
-                                    CCC.GF.mean >= 0.35 &
-                                    CCC.GF.range >= 0.44 &
-                                    CCC.GF.min >= -0.22 &
-                                    CCC.GF.mean > 0.31 ~ 1,
-
+                                  CCC.GF.mean > 0.24 &
+                                    CCC.GF.mean < 0.36 &
+                                  CCC.GF.range > 0.94~ 1,
                                   TRUE ~ 0) %>% as.factor,
           Thresholds.prob = case_when(Prob >= 0.65 ~ 1,
                                       TRUE ~ 0) %>% as.factor)
@@ -215,50 +206,11 @@ plot.Model.matrix.gf <- ggplot(data = Model.matrix.df,
   theme(plot.title = element_text(hjust = 0.5)) # Center the title
 
 
-#Sensitivity Analysis:
-sensitive.focus.df <- function( data, model){
-  
-  vars <-  model$importance %>% data.frame %>% row.names
-  
-  
-  sensitivity.summary <- data %>% select( all_of(vars)) %>%
-    reframe(across(where(is.numeric), quantile, na.rm = TRUE, probs = seq(0, 1, 0.05))) %>% mutate(summary = seq(0, 1, 0.05) %>% as.factor)
-  
-  vars.df <- data.frame()
-  for( i in vars){
-    minimum <- data[,i] %>% min
-    maximum <- data[,i] %>% max
-    var <- data.frame( new =seq(minimum, maximum, maximum/30) )
-    var[, i] <-  seq(minimum, maximum, maximum/30)
-    sensitivity.mean.df.var <- sensitivity.summary %>% select(-c(i)) %>% cross_join(var %>% select(i)) %>% mutate(focus = i)
-    vars.df <- rbind( vars.df, sensitivity.mean.df.var)
-  }
-  return(vars.df)
-}
-
-sensitivity.df <- sensitive.focus.df( data = val.SHP.total.canopy.summary,
-                                      model=rf.good.ccc.ec)  %>% as.data.frame
-
-sensitivity.df$Predictions <- predict(object = rf.good.ccc.ec, sensitivity.df) 
-
-sensitivity.df %>% filter(focus == 'CCC.GF.mean') %>% ggplot() + geom_point( aes(x= summary, col= Predictions, y =CCC.GF.mean)) 
-
-sensitivity.df %>% filter(focus == 'CCC.GF.mean',
-                          Predictions == 1) %>% ggplot() + geom_point( aes(x= summary, col= Predictions, y =CCC.GF.mean)) 
-
-sensitivity.df %>% filter(focus == 'CCC.GF.range') %>% ggplot() + geom_point( aes(x= summary, col= Predictions, y =CCC.GF.range)) 
-sensitivity.df %>% filter(focus == 'CCC.GF.min') %>% ggplot() + geom_point( aes(x= summary, col= Predictions, y =CCC.GF.min))
-
-sensitivity.df %>% ggplot() + geom_point( aes(x= CCC.GF.min, y =CCC.GF.mean, col=Predictions))
-
-
-sensitivity.df %>% filter(focus == 'CCC.GF.mean') %>% ggplot() + geom_point( aes(x= summary, col= Predictions, y =CCC.GF.mean)) 
-sensitivity.df %>% filter(focus == 'CCC.GF.mean') %>% ggplot() + geom_point( aes(x= summary, col= Thresholds, y =CCC.GF.mean)) 
 
 # UPDATE BELOW: ####
 
 # matrix for overlap"
-confusion.matrix.RSHP <- confusionMatrix(val.SHP.total.canopy.summary$Thresholds., val.SHP.total.canopy.summary$Good.CCC)
+confusion.matrix.RSHP <- confusionMatrix(val.SHP.total.canopy.summary$Thresholds, val.SHP.total.canopy.summary$Good.CCC)
 confusio.matrix.df <- confusion.matrix.RSHP$table %>% as.data.frame()
 
 plot.boxplot.approach.gf <- val.SHP.total.canopy.summary %>%  
@@ -300,10 +252,14 @@ model.plots.gf <- ggarrange(ggarrange(plot.Model.matrix.gf,
 
 final.model.plots.gf <- ggarrange(tree.plot.grid, model.plots.gf, ncol=2 )
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/RSHP_V1.png", 
-       plot =  final.model.plots.gf, width = 10, height = 5, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/RSHP_V1_AA_AW.png", 
+       plot =  final.model.plots.gf, width = 12, height = 5, units = "in")
 
 
 # Save this file for use:
-save(val.SHP.total.canopy.summary ,rf.good.ccc.ec,
-     file= paste(localdir, 'SITE_RSHP_MODEL.Rdata', sep="") )
+save(val.SHP.total.canopy.summary ,rf.good.ccc.ec,tree_surrogate , confusion.matrix.RSHP ,
+     tree_surrogate ,
+     file= paste(localdir, 'SITE_RSHP_MODEL_AA_AW.Rdata', sep="") )
+
+# Reults: 
+load(fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata")))

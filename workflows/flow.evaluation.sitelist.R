@@ -1,5 +1,4 @@
 # Builds the Filtered dataframe:
-rm(list=ls())
 
 # The Diel analysis is currently set up by CCC threshold:
 library(ggpubr)
@@ -9,10 +8,10 @@ library(gtools)
 library(ggplot2)
 library(ggpmisc)
 
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 
-source(fs::path(DirRepo,'functions/calc.diel.R' ))
+source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))
 load(fs::path(localdir,paste0("SITES_One2One.Rdata"))) # Import CCC results
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
 site.list <- metadata$Site_Id.NEON %>% unique

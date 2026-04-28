@@ -33,8 +33,8 @@ for( site in site.list){
   WP_9min.df.final$timeEndA.local <- WP_9min.df.final$timeEnd_A %>%  as.POSIXlt( tz = site.tz)
   
   MBR_9min.df.final$Month.local <- MBR_9min.df.final$timeEndA.local %>% format("%m")
-  MBR_9min.df.final$Month.local <- MBR_9min.df.final$timeEndA.local %>% format("%m")
-  MBR_9min.df.final$Month.local <- MBR_9min.df.final$timeEndA.local %>% format("%m")
+  AE_9min.df.final$Month.local  <- AE_9min.df.final$timeEndA.local %>% format("%m")
+  WP_9min.df.final$Month.local  <- WP_9min.df.final$timeEndA.local %>% format("%m")
   
   MBR_9min.df.final$time.local <- MBR_9min.df.final$timeEndA.local %>% format("%H:%M")
   AE_9min.df.final$time.local <- AE_9min.df.final$timeEndA.local %>% format("%H:%M")

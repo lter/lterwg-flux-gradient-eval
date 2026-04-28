@@ -1,10 +1,14 @@
 # Site based example... Final Figure: 
 rm(list=ls())
 
+library(tidyverse)
+library(ggpubr)
+library(colorspace)
+
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
+load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 
 # Build the dataset for canopy Information: ####
 aoi <- c( 'JORN', 'KONZ', 'GUAN', 'HARV')
@@ -60,7 +64,7 @@ method.panel <- ggarrange(plot.method.pairs.JORN,plot.method.pairs.KONZ, plot.me
 summarize.canopy.pairs <- function( site){
   
   df_method <- SITES_One2One %>% 
-    filter( CCC >= 0.5 | CCC <= -0.5 , Site == site) %>%  
+    filter((CCC >= 0.5 | CCC <= -0.5), Site == site, Canopy_L1 != "WW") %>%  
     mutate( count.sh = 1) %>% 
     reframe(.by= c(gas, Canopy_L1), n_pairs = sum(count.sh)) |>
     group_by(gas) |>
@@ -80,7 +84,7 @@ df_canopy.HARV <- summarize.canopy.pairs(site ="HARV")
 
 summarize.canopy.pairs.plot <- function( df_canopy){
   
-  my_colors <- c("AA" = "violetred2" , "AW" = "salmon1", "WW" = "khaki")
+  my_colors <- c("AA" = "violetred2" , "AW" = "salmon1")
   
   
   p_canopy <- ggplot(df_canopy, aes(x = gas, y = percent, fill = Canopy_L1)) +
@@ -192,7 +196,7 @@ plot.overlap.1.aoi <- SITE_DATA_FLUX_COUNTS_Overlap_Long.aoi %>%
 
 # ENSEMBLE Linear Relationship: ####
 
-ENSEMBLE.data <- fs::path('/Volumes/MaloneLab/Research/FluxGradient/FluxData/SITE_DATA_ENSEMBLE_V1.Rdata')
+ENSEMBLE.data <- fs::path('/Volumes/MaloneLab/Research/FluxGradient/FluxData/SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata')
 
 load(file=ENSEMBLE.data)
 
@@ -210,7 +214,7 @@ linear.aoi <- ggarrange(linear.aoi.co2 , linear.aoi.h2o , ncol=1)
 
 # DIEL Plots:####
 
-load(file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1.RDATA')
+load(file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
 
 
 plot.diel.gas.season.regression.aoi <-ENSEMBLE_DIELS  %>% filter(site %in% aoi) %>%   ggplot(aes(x = FG , y = EC, col=season))+

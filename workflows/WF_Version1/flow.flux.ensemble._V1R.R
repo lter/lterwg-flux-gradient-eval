@@ -1,4 +1,5 @@
 # Harmonization
+
 # This script explores the distribution of fluxes:
 library(ggforce)
 library(tidyverse)
@@ -9,27 +10,46 @@ library(ggplot2)
 DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
+source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 
-load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
-load(file= paste(localdir, "SITES_One2One_canopy_model.Rdata", sep="" ))
-load(  file= paste(localdir, "SITE_RSHP_MODEL.Rdata", sep="") )
+load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata")))
 
-canopy.adj <- val.SHP.total.canopy.summary %>% select( Site, Approach, gas, dLevelsAminusB, Good.CCC) %>% rename( Good.CCC.EC = Good.CCC)
+canopy.adj <- SITES_One2One %>% 
+  select( Site, Approach, gas, dLevelsAminusB, Good.CCC, Canopy_L1, canopyHeight_m) %>% 
+  rename( Good.CCC.EC = Good.CCC) 
 
-# Build the dataset for canopy Information: ####
+ensemble_method_name <- "inverse_rmse_weighted"
 
-metadata.igbp <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>% 
-  rename(igbp = Vegetation.Abbreviation..IGBP.,
-         Site = Site_Id.NEON) %>% select(Site, igbp)
+weighted_mean_or_mean <- function(x, w) {
+  keep <- !is.na(x) & is.finite(x)
+  x <- x[keep]
+  w <- w[keep]
+  
+  if(length(x) == 0) {
+    return(NA_real_)
+  }
+  
+  w[is.na(w) | !is.finite(w) | w < 0] <- 0
+  
+  if(sum(w) <= 0) {
+    return(mean(x, na.rm = TRUE))
+  }
+  
+  weighted.mean(x, w = w, na.rm = TRUE)
+}
 
-# What is the distribution of fluxes across hours and seasons?
+rshp_index <- val.SHP.total.canopy.summary %>% 
+  filter(Good.CCC == 1) %>% 
+  distinct(Site, gas, Approach, dLevelsAminusB, Canopy_L1)
 
 # Ensemble GF Data
 
 site.list <- SITE_DATA_FILTERED_CCC %>% names()
+
 Linear_ENSEMBLE_plots_CO2 <- list()
 Linear_ENSEMBLE_plots_H2O <- list()
 Linear_ENSEMBLE_Stats <- data.frame()
@@ -37,8 +57,8 @@ SITE_DATA_ENSEMBLE <- list()
 
 for( site in site.list){
   print(site)
-  SITE_DATA_FILTERED_CCC[[site]] %>% summary
-  df <-SITE_DATA_FILTERED_CCC[[site]] %>% 
+  
+  df.ENSEMBLE <-SITE_DATA_FILTERED_CCC[[site]] %>% 
     mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
            season = case_when(
              month %in% c(12, 1, 2) ~ "Winter",
@@ -47,18 +67,14 @@ for( site in site.list){
              TRUE ~ "Autumn"),
            hour = format(timeEndA.local,'%H'),
            count= case_when( is.na(FG_mean) == FALSE ~ 1,
-                             TRUE ~ 0)) %>% distinct
-  
-  
-  canopy.sub <- canopy.adj %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC) %>% filter( Site == site)
-  
-  df.ENSEMBLE <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
-                                relationship = "many-to-many") %>% 
-    mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
-    filter( Good.CCC.EC  == '1') %>%
+                             TRUE ~ 0)) %>% distinct %>% 
+    inner_join(rshp_index, by = c("Site", "gas", "Approach", "dLevelsAminusB", "Canopy_L1")) %>% 
+    mutate(weight.rmse = if_else(!is.na(RMSE) & is.finite(RMSE) & RMSE > 0, 1 / RMSE, 0)) %>% 
+    filter(CCC >= 0.5 , Canopy_L1 != "WW") %>% 
+    mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>%
     reframe( .by= c( gas, time.rounded), 
              EC_mean = mean(EC_mean, na.rm=T), 
-             FG_ENSEMBLE = mean(FG_mean, na.rm=T))
+             FG_ENSEMBLE = weighted_mean_or_mean(FG_mean, weight.rmse))
 
   
   SITE_DATA_ENSEMBLE[[site]] <-  df.ENSEMBLE
@@ -139,8 +155,8 @@ plots.linear.h2o.2 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_H2O[26:50], com
 plots.linear.co2 <- ggarrange( plots.linear.co2.1, plots.linear.co2.2, ncol=1)
 plots.linear.h2o <- ggarrange( plots.linear.h2o.1, plots.linear.h2o.2, ncol=1)
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2.png", plot = plots.linear.co2, width = 8, height = 16, units = "in")
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o.png", plot = plots.linear.h2o, width = 8, height = 16, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2_AA_AW.png", plot = plots.linear.co2, width = 8, height = 16, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o_AA_AW.png", plot = plots.linear.h2o, width = 8, height = 16, units = "in")
 
 # ENSEMBLE_ linear plots #####
 Linear_ENSEMBLE_Stats %>% 
@@ -159,7 +175,7 @@ for( site in site.list){
     print(site)
   print(i)
   
-  df <-SITE_DATA_FILTERED_CCC[[site]] %>% filter(gas != "CH4") %>% 
+  df.ENSEMBLE <-SITE_DATA_FILTERED_CCC[[site]] %>% 
     mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
            season = case_when(
              month %in% c(12, 1, 2) ~ "Winter",
@@ -168,19 +184,14 @@ for( site in site.list){
              TRUE ~ "Autumn"),
            hour = format(timeEndA.local,'%H'),
            count= case_when( is.na(FG_mean) == FALSE ~ 1,
-                             TRUE ~ 0)) %>% distinct %>% filter( season == i)
-  
-  
-  canopy.sub <- canopy.adj %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC) %>% filter( Site == site)
-  
-  df.ENSEMBLE <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
-                                    relationship = "many-to-many") %>% 
-    mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
-    filter( Good.CCC.EC  == '1') %>%
+                             TRUE ~ 0)) %>% distinct %>% 
+    inner_join(rshp_index, by = c("Site", "gas", "Approach", "dLevelsAminusB", "Canopy_L1")) %>% 
+    mutate(weight.rmse = if_else(!is.na(RMSE) & is.finite(RMSE) & RMSE > 0, 1 / RMSE, 0)) %>% 
+    filter(CCC >= 0.5, season == i, Canopy_L1 != "WW") %>% 
+    mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>%
     reframe( .by= c( gas, time.rounded), 
              EC_mean = mean(EC_mean, na.rm=T), 
-             FG_ENSEMBLE = mean(FG_mean, na.rm=T))
-  
+             FG_ENSEMBLE = weighted_mean_or_mean(FG_mean, weight.rmse))
   
   threshold.co2 <- df.ENSEMBLE$FG_ENSEMBLE[ df.ENSEMBLE$gas == "CO2"] %>% length
   threshold.h2o <- df.ENSEMBLE$FG_ENSEMBLE[ df.ENSEMBLE$gas == "H2O"] %>% length
@@ -217,7 +228,7 @@ plot.CCC.sites <- Linear_ENSEMBLE_Season_Stats %>%
          strip.background = element_rect(fill = "transparent", 
                                          size = 0.5),
          legend.position = "top")+ 
-  ylab("") +  xlab(expression(paste("Ensemble CCC (EC)"))) 
+  ylab("") +  xlab(expression(paste("Ensemble CCC"))) 
 
 plot.CCC.density <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = CCC, col=gas)) +
   geom_density() + theme_bw() + ylab("Density" ) + facet_wrap(~season, ncol=4) +
@@ -225,7 +236,7 @@ plot.CCC.density <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = CCC, col=ga
   theme( legend.text = element_text(size = 14),
          legend.title = element_text(size = 14),
          strip.background = element_rect(fill = "transparent", size = 0.5),
-         legend.position = "none")+ ylab("") +  xlab(expression(paste("Ensemble CCC (EC)"))) +
+         legend.position = "none")+ ylab("") +  xlab(expression(paste("Ensemble CCC"))) +
   ylab("Density")
 
 Linear_ENSEMBLE_Season_Stats %>% reframe(.by=c(gas), 
@@ -244,16 +255,15 @@ Linear_ENSEMBLE_Season_Stats %>% reframe(.by=c(gas, season),
 plot.CCC.season <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = season, y= CCC, col=gas)) +
   geom_boxplot()  +theme_bw() + xlab("Season") +
   scale_color_manual(values = c('#009966', "#000CCC"))  +  
-  ylab(expression(paste("Ensemble CCC (EC)"))) + theme( legend.position = "top", legend.title = element_blank()) + ylim(-1,1)
+  ylab(expression(paste("Ensemble CCC"))) + theme( legend.position = "top", legend.title = element_blank()) + ylim(-1,1)
 
 # Plots for ENSEMBLE : ####
-sub.sites =c("HARV", "GUAN", "KONZ", "JORN")
+sub.sites = c("HARV", "GUAN", "KONZ", "JORN")
 
-SITES_ENSEMBLE_canopy <- val.SHP.total.canopy.summary %>% 
-  filter( Good.CCC == '1') %>% 
+SITES_ENSEMBLE_canopy <- canopy.adj %>% 
   full_join(Linear_ENSEMBLE_Season_Stats %>% 
               rename( CCC.ENSEMBLE = CCC), 
-            by=c("Site", "gas"), relationship = "many-to-many") %>%  distinct %>% left_join( SITES_One2One_canopy_model %>% select(Site, canopyHeight_m) %>% distinct, by="Site")
+            by=c("Site", "gas"), relationship = "many-to-many") %>% distinct
 
 
 
@@ -261,32 +271,15 @@ plot.CCC.canopy <- SITES_ENSEMBLE_canopy %>% select(Canopy_L1,  CCC.ENSEMBLE, ga
   geom_boxplot( aes( x= Canopy_L1, y = CCC.ENSEMBLE, col=Canopy_L1)) + 
   facet_wrap(~gas) + theme_bw() + 
   scale_colour_discrete_sequential(palette = "OrYel")+
-  ylab(expression(paste('Ensemble CCC (EC)'))) + xlab('Canopy Level')+
+  ylab(expression(paste('Ensemble CCC'))) + xlab('Canopy Level')+
   theme( legend.text = element_text(size = 14),
          legend.title = element_text(size = 14),
          strip.background = element_rect(fill = "transparent", size = 0.5),
          legend.position = "none") + ylim(-1,1)
 
-plot.CCC.canopy.subsites <- SITES_ENSEMBLE_canopy %>% filter(Site %in% sub.sites) %>% select(Site , Canopy_L1,  CCC.ENSEMBLE, gas) %>% na.omit %>%  ggplot( ) + 
-  geom_boxplot( aes( x= Canopy_L1, y = CCC.ENSEMBLE, col=Canopy_L1)) + 
-  facet_wrap(~ factor(Site, levels=sub.sites), ncol=1) + theme_bw() + 
-  scale_colour_discrete_sequential(palette = "OrYel")+
-  ylab('') + xlab('Canopy Level')+
-  theme( legend.text = element_text(size = 14),
-         legend.title = element_text(size = 14),
-         strip.background = element_rect(fill = "transparent", size = 0.5),
-         legend.position = "none") + ylim(-1,1) +
-  theme(
-    axis.title.y = element_blank(), # Removes the axis title
-    axis.text.y = element_blank(),  # Removes the tick labels
-    axis.ticks.y = element_blank(), # Removes the tick marks
-    axis.line.y = element_blank()   # Removes the axis line
-  )
-
-
 plot.CCC.canopyHt <- SITES_ENSEMBLE_canopy %>% ggplot(aes( x= canopyHeight_m, y = CCC.ENSEMBLE) ) + 
   geom_point( ) + facet_wrap(~gas) + geom_smooth(method="lm") + theme_bw() + xlab('Canopy Height (m)') +
-  ylab(expression(paste("Ensemble CCC (EC)"))) +
+  ylab(expression(paste("Ensemble CCC"))) +
   theme( legend.text = element_text(size = 14),
          legend.title = element_text(size = 14),
          strip.background = element_rect(fill = "transparent", size = 0.5),
@@ -302,12 +295,12 @@ final.plot.CCC.support <- ggarrange( plot.CCC.canopy,plot.CCC.canopyHt,  ncol=1,
            labels=c("A", "B"), heights=c(1, 1)) 
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1.png", plot = final.plot.CCC, width = 7, height = 8, units = "in")
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1.png", plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1_AA_AW.png", plot = final.plot.CCC, width = 7, height = 8, units = "in")
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1_AA_AW.png", plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
 
 # Save the data: #####
 
-fileSave <- fs::path(localdir,paste0("SITE_DATA_ENSEMBLE_V1.Rdata"))
+fileSave <- fs::path(localdir,paste0("SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata"))
 
 save( SITE_DATA_ENSEMBLE,
       Linear_ENSEMBLE_plots_H2O, 
@@ -320,7 +313,7 @@ googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # Linear terms versus canopy:
 Linear_ENSEMBLE_Stats_canopy <- Linear_ENSEMBLE_Stats %>% 
-  full_join(SITES_One2One_canopy_model , by=c('Site', 'gas'))
+  full_join(SITES_One2One , by=c('Site', 'gas'))
 
 Linear_ENSEMBLE_Stats_canopy %>% 
   ggplot(aes(x = Cutoff05.SDSDH, y =slope )) +
@@ -331,9 +324,8 @@ Linear_ENSEMBLE_Stats_canopy %>%
 # ENSEMBLE_ MS by IGBP : ####
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
-SITES_One2One_canopy_summary <- SITES_One2One_canopy_model %>% 
-  full_join(canopy.adj, by=c('Site', 'Approach', 'gas', 'dLevelsAminusB')) %>% 
-  filter( Good.CCC.EC =="1") %>% 
+SITES_One2One_canopy_summary <- SITES_One2One %>% 
+  filter( Good.CCC =="1") %>% 
   select( Site, Approach, gas, dLevelsAminusB, R2, Cutoff05.TopRugosity, count, Cutoff05.SDSDH, CCC) %>% reframe( .by= c(Site, gas), 
            CCC= mean(CCC) %>% round(2), 
            count = sum(count),
@@ -345,32 +337,35 @@ SITES_One2One_canopy_summary <- SITES_One2One_canopy_model %>%
 Linear_ENSEMBLE_Stats_Canopy <- 
   Linear_ENSEMBLE_Stats %>% rename(CCC.ENSEMBLE = CCC) %>% 
   full_join(SITES_One2One_canopy_summary, by=c("Site", "gas"), relationship = "many-to-many") %>% full_join(metadata.igbp , by="Site")
- 
-plot_ENSEMBLE_siteLevel.CCC.sub.subsites  <- Linear_ENSEMBLE_Stats_Canopy %>% filter(Site %in% sub.sites)  %>% 
-  ggplot() + geom_point( aes( x=CCC, y=CCC.ENSEMBLE, col=gas)) +
-  geom_abline( slope = 1, color = "red", linetype = "dashed") + theme_bw() + xlab("CCC") + ylab("Ensemble CCC (EC)") + ylim(-1, 1)+ xlim(-1, 1) + 
-  scale_color_manual(values = c('#009966', "#000CCC", ""))+ 
-  facet_wrap( ~ factor(Site, levels=sub.sites), ncol=1) +
-  theme(legend.title = element_blank(), 
-        legend.position ="none",
-        strip.background = element_rect(fill = "transparent", size = 0.5))
-
-
 
 plot_ENSEMBLE_siteLevel.CCC <- Linear_ENSEMBLE_Stats_Canopy  %>% ggplot() + geom_point( aes( x=CCC, y=CCC.ENSEMBLE, col=gas)) +
-  geom_abline( slope = 1, color = "red", linetype = "dashed") + theme_bw() + xlab("CCC (EC)") + ylab("Ensemble CCC (EC)") + ylim(-1, 1)+ xlim(-1, 1) + 
+  geom_abline( slope = 1, color = "red", linetype = "dashed") + theme_bw() + xlab("CCC") + ylab("Ensemble CCC") + ylim(-1, 1)+ xlim(-1, 1) + 
   scale_color_manual(values = c('#009966', "#000CCC", "")) +
   theme(legend.title = element_blank()) 
 
-plot_ENSEMBLE_siteLevel_sampleSize <-Linear_ENSEMBLE_Stats_Canopy %>% drop_na(gas) %>% ggplot() + geom_point( aes( x=count, y=CCC.ENSEMBLE, col=gas))  + theme_bw() + xlab("Sample Size") + ylab("Ensemble CCC (EC)")+ scale_color_manual(values = c('#009966', "#000CCC")) +theme(legend.title = element_blank())+geom_smooth(method="lm", aes(  x=count, y=CCC.ENSEMBLE),col="purple" )
+ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_Summary_V1_AA_AW.png", plot = plot_ENSEMBLE_siteLevel.CCC, width =4, height = 3, units = "in")
+
+SITES_ENSEMBLE_canopy_season <- SITES_One2One_canopy_summary %>% 
+  full_join(Linear_ENSEMBLE_Season_Stats %>% 
+              rename( CCC.ENSEMBLE = CCC), 
+            by=c("Site", "gas"), relationship = "many-to-many") %>% distinct %>%  drop_na(season) %>% left_join(metadata.igbp, by="Site")
+
+plot_ENSEMBLE_siteLevel.CCC.season <- SITES_ENSEMBLE_canopy_season %>% ggplot() + geom_point( aes( x=CCC, y=CCC.ENSEMBLE, col=gas)) +
+  geom_abline( slope = 1, color = "red", linetype = "dashed") + theme_bw() + xlab("CCC") + ylab("Ensemble CCC") + ylim(-1, 1)+ xlim(-1, 1) + 
+  scale_color_manual(values = c('#009966', "#000CCC", "")) +
+  theme(legend.title = element_blank()) + facet_wrap(~season+EcoType)
+
+
+
+plot_ENSEMBLE_siteLevel_sampleSize <-Linear_ENSEMBLE_Stats_Canopy %>% drop_na(gas) %>% ggplot() + geom_point( aes( x=count, y=CCC.ENSEMBLE, col=gas))  + theme_bw() + xlab("Sample Size") + ylab("Ensemble CCC")+ scale_color_manual(values = c('#009966', "#000CCC")) +theme(legend.title = element_blank())+geom_smooth(method="lm", aes(  x=count, y=CCC.ENSEMBLE),col="purple" )
 
 plot_ENSEMBLE_siteLevelR2_Rugosity <-Linear_ENSEMBLE_Stats_Canopy %>% 
   ggplot(aes( x=Rugosity, y=CCC.ENSEMBLE, col=gas)) + 
   geom_point(alpha=0.5)  + theme_bw() + xlab("Rugosity") + 
-  ylab(" Ensemble CCC (EC)") + geom_smooth( method="lm", col="red", linetype = "dashed") + 
+  ylab(" Ensemble CCC") + geom_smooth( method="lm", col="red", linetype = "dashed") + 
          scale_color_manual(values = c('#009966', "#000CCC", "")) + ylim(-1,1)
 
-plot.CCC.EcoType <- Linear_ENSEMBLE_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=CCC.ENSEMBLE, col=gas))  + theme_bw() + xlab("") + ylab("Ensemble CCC (EC)")+ scale_color_manual(values = c('#009966', "#000CCC", "")) +theme(legend.title = element_blank(), legend.position="none")+ ylim(-1,1)
+plot.CCC.EcoType <- Linear_ENSEMBLE_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=CCC.ENSEMBLE, col=gas))  + theme_bw() + xlab("") + ylab("Ensemble CCC")+ scale_color_manual(values = c('#009966', "#000CCC", "")) +theme(legend.title = element_blank(), legend.position="none")+ ylim(-1,1)
 
 plot.CCC.EcoType.samplesize <- Linear_ENSEMBLE_Stats_Canopy %>% ggplot() + geom_boxplot( aes( x=EcoType, y=count, col=gas))  + theme_bw() + ylab("Sample Size") + xlab("") 
 
@@ -385,30 +380,7 @@ plot.CCC.season <- Linear_ENSEMBLE_Season_Stats %>% ggplot( aes(x = season, y= R
 # ENSEMBLE_ Figure Configuration: ####
 
 
-
-plots.1.final <- ggarrange( plot_ENSEMBLE_siteLevel.CCC,
-                            plot_ENSEMBLE_siteLevelR2_Rugosity,
-                             ncol=2, nrow=1, labels = c("A", "B"), common.legend = T)
-
-plots.2.final <- ggarrange(plot.CCC.EcoType ,
-                            plot.CCC.canopy ,
-                             ncol=2, nrow=1, labels = c("C", "D"))
-
-
-plots.3.final <- ggarrange(plot.CCC.season, labels = "E")
-
-ENSEMBLE_.plot.final <-ggarrange(plots.1.final,plots.2.final,plots.3.final,  ncol=1 , heights= c(1,1,1) )
-
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Summary_V1.png", plot = ENSEMBLE_.plot.final, width =8, height = 9, units = "in")
-
-
 Linear_ENSEMBLE_Stats_Canopy  %>% 
   reframe(.by=gas, CCC.mean = CCC.ENSEMBLE %>% mean(na.rm=T),
           CC.sd = CCC.ENSEMBLE %>% sd(na.rm=T))
-
-plot.insert <- ggarrange( plot_ENSEMBLE_siteLevel.CCC.sub.subsites,
-                          plot.CCC.canopy.subsites, ncol=2,
-                          widths = c(1, 0.74))
-
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Insert_V1.png", plot =plot.insert, width =3, height = 5, units = "in")
 
