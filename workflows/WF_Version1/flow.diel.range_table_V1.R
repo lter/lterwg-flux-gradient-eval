@@ -1,7 +1,7 @@
 library(tidyverse)
 
 DirRepo.eval <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-input_file <- "/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA"
+input_file <-'/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA'
 output_dir <- fs::path(DirRepo.eval, "Figures", "WF_Version1")
 
 load(input_file)
@@ -53,3 +53,4 @@ readr::write_tsv(
   diel_range_table,
   file = fs::path(output_dir, "DIEL_ENSEMBLE_site_gas_flux_ranges_AA_AW.tsv")
 )
+

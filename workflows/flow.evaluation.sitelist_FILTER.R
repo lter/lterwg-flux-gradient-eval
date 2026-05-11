@@ -18,12 +18,12 @@ canopy.info <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/
 # Data Prep:
 approach.df <- data.frame( Approach=c("MBR", "AE", "WP"))
 
-canopy <- canopy.info %>% cross_join(approach.df) %>% 
-  mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP") ),
-         RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
-         RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
-         MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_B) %>% 
-  filter(Canopy_L1 != "WW")
+canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% 
+  cross_join(approach.df ) %>% 
+  distinct %>% mutate(RelativeDistB = MeasurementHeight_m_B - CanopyHeight, 
+                      RelativeDistA = MeasurementHeight_m_A - CanopyHeight, 
+                      MeasurementDist = MeasurementHeight_m_A - MeasurementHeight_m_B) %>% 
+  filter(Canopy_L1 != "WW") %>% select(Site, Canopy_L1, dLevelsAminusB, Approach)
 
 
 SITE_DATA_FILTERED <- list() # Save all the data here:
@@ -38,11 +38,12 @@ for( site in site.list){
   
   message( paste("Importing the data for ", site))
   
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
+  
   load(paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
   
   canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, dLevelsAminusB, Approach)
-  
+ 
   MBR_9min_FILTER_canopy <- canopy.sub %>% filter( Approach == "MBR") %>% 
     full_join( MBR_9min_FILTER , by = c('dLevelsAminusB'), relationship = "many-to-many")  %>% 
     select( timeEndA.local,FG_mean ,Approach, Canopy_L1, gas, 
@@ -85,7 +86,7 @@ for( site in site.list){
   print( site)
   
   # Load the files:
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
   files.CO2 <- paste(site, "_9min.report.CO2_AA_AW.csv", sep = "")
   
@@ -107,7 +108,7 @@ for( site in site.list){
   print( site)
   
   # Load the files:
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
   files.CO2 <- paste(site, "_9min.report.stability.CO2_AA_AW.csv", sep = "")
   report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))

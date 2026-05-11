@@ -10,8 +10,7 @@ DirRepo.eval <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/
 
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-load( fs::path(localdir,paste0("SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata")))
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata")))
 
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>% 
   mutate(EcoType = case_when( Vegetation.Abbreviation..IGBP. == 'ENF' ~ 'Forest',
@@ -243,12 +242,17 @@ readr::write_csv(
   fs::path(DirRepo.eval, "Figures/WF_Version1/DIEL_curve_missing_reasons_AA_AW.csv")
 )
 
+
+# Save the plots:
+
+fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA'
 save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,ENSEMBLE_DIELS_EVAL,
-      file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
+      DIEL_curve_diagnostics, 
+      file= fileSave )
 
 # DIEL PLOTS: ####
 
-load(file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
+load(file='/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensembl/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
 
 sites.sub <- c("JORN", "KONZ", "GUAN", "HARV")
 
@@ -276,8 +280,6 @@ Subset.plot.co2 <- ENSEMBLE_DIELS  %>% filter( site %in% sites.sub, gas =='CO2')
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_AA_AW_SUBSET2.png", 
        plot = Subset.plot.co2, width = 4, height =2, units = "in")
 
-
-load( file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
 
 plot.diel.gas.season.fg <- ENSEMBLE_DIELS  %>%  ggplot()+ 
   geom_point(aes(x = Hour , y = FG, col=season)) +
@@ -534,7 +536,6 @@ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-fl
 
 # Text Summary: ####
 # This is saved below:
-load( file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
 
 ENSEMBLE_DIELS_Site %>% names
 ENSEMBLE_DIELS_Site %>% summary

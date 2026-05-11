@@ -6,8 +6,9 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
 SITES_One2One_canopy <- SITES_One2One %>% left_join( metadata.igbp, by='Site') %>% 

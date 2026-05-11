@@ -17,12 +17,13 @@ setwd(DirRepo.eval)
 
 #localdir <- 'C:/Users/csturtevant/OneDrive - Battelle Ecology/FluxGradient/filterTesting' # We'll deposit output files here prior to uploading to Google Drive
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
+localdir <- '/Volumes/MaloneLab/Research/FluxGradient'
 DnldFromGoogleDrive <- FALSE # Enter TRUE to grab files listed in dnld_files from Google Drive. Enter FALSE if you have the most up-to-date versions locally in localdir
 
 email <- 'sparklelmalone@gmail.com'
 googledrive::drive_auth(email = TRUE) 
-drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3") # The Data 
+drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3") 
+# The Data 
 data_folder <- googledrive::drive_ls(path = drive_url)
 
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') # has a list of all the sites
@@ -34,7 +35,14 @@ site.list <- metadata$Site_Id.NEON %>% unique
 # Download necessary files from Google Drive
 # Download files from lter-flux-gradient Google Earth:
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.download.R'))
+
 # ---------------------------------------------
+
+# With the EDI files:
+source(fs::path(DirRepo.eval,'workflows/flow.recreate.evaluation.dataframe_from_EDI.R'))
+
+# ---------------------------------------------
+
 # Evaluation of SNR Threshold: (ETA 1 Hour) ####
 SNR.plot.dir <- '/Volumes/MaloneLab/Research/FluxGradient/SNR_plot' # Where do you want to save the plots
 SNR.summary.dir <-"/Volumes/MaloneLab/Research/FluxGradient/SNR_Summary/" # Where to save the summary file
@@ -47,25 +55,24 @@ source(fs::path(DirRepo.eval,'workflows/flow.evaluation.filter.R')) # 20 minutes
 # Compiles Dataframes into one list: ####
 source(fs::path(DirRepo.eval,'workflows/flow.evaluation.sitelist_FILTER.R'))
 # 4 Objects are created
-fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_AA_AW.Rdata"))
 save( SITE_DATA_FILTERED,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-fileSave <- fs::path(localdir,paste0("SITES_MBR_9min_FILTER_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_MBR_9min_FILTER_AA_AW.Rdata"))
 save( SITES_MBR_9min_FILTER,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-fileSave <- fs::path(localdir,paste0("SITES_AE_9min_FILTER_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_AE_9min_FILTER_AA_AW.Rdata"))
 save( SITES_AE_9min_FILTER ,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-fileSave <- fs::path(localdir,paste0("SITES_WP_9min_FILTER_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_WP_9min_FILTER_AA_AW.Rdata"))
 save( SITES_WP_9min_FILTER,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-
 # Save the reports as well:
-fileSave <- fs::path(localdir,paste0("SITES_FILTER_REPORTS_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_FILTER_REPORTS_AA_AW.Rdata"))
 save( filter.report.H2O,
       filter.report.CO2, 
       filter.report.stability.H2O,
@@ -78,13 +85,13 @@ message('Running  CCC computation by Sampling Height...')
 
 source(fs::path(DirRepo.eval,'workflows/flow.evaluation.One2One.CCC.R'))
 
-fileSave <- fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata"))
-save( SITES_One2One,file=fileSave)
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata"))
+save( SITES_One2One, file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # Compile Data with the CCC in it:
 source(fs::path(DirRepo.eval,'workflows/flow.evaluation.sitelist_CCC.R')) # ENSURE all SUBSEQUENT FILES ARE USING THE FILES PRODUCED HERE:
-fileSave <- fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata"))
 save( SITE_DATA_FILTERED_CCC,file=fileSave)
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
@@ -100,7 +107,11 @@ source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.ensemble._V1R.R'))
 # Something is up with the CCC EC- Not clear why the CCC is recalculated in the season analysis... Just add season to the output
 
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.diel_V1.R'))
-fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA'
+fileSave <- '/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA'
+save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,ENSEMBLE_DIELS_EVAL,
+      DIEL_curve_diagnostics, 
+      file= fileSave )
+
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 # RESULTS #### Update Below to produce the same files!
 
@@ -114,20 +125,23 @@ source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.counts.R'))
 # Reliable Sampling Height Pairs (CCC_GF):
 ##source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.RSHP_V1.R'))
 
-# RSHP sensitivity to alternative CCC thresholds:
+## CCC Threshold Evaluation:
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.RSHP_threshold_sensitivity_V1.R'))
 fileSave <- fs::path(localdir, paste0("SITE_RSHP_threshold_sensitivity_AA_AW.Rdata"))
 googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
-# CCC Threshold Evaluation:
-source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.RSHP_threshold_sensitivity_V1.R'))
-
 #Results:
-load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 
-source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.CCC.placement.recommendations.R'))
+
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.CCC.drivers.R'))
+
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.diel.range_table_V1.R'))
+
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.results.ecotype.R'))
 
 # Results Section 1: ####
 SITES_One2One$CCC %>% summary
@@ -192,5 +206,4 @@ SITES_One2One %>% filter( CCC > 0.5) %>%
 # Next go to flow.results.ecotype for results
 # flow.results.summary
 # Good Drivers 
-
-load( file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
+load( file='/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')

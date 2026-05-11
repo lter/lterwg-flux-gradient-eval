@@ -5,13 +5,9 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 
-
-
-load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
 # Explore Seasonal Distribution: ####
@@ -97,6 +93,7 @@ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-fl
        width = 8, height = 4, units = "in")
 
 # FLUX COUNTS BY APPROACH: ####
+approach_colors <- c("MBR" = "goldenrod","AE" = "aquamarine4","WP" = "darkmagenta")
 
 plot.flux.count <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%  
   ggplot() +
@@ -105,7 +102,7 @@ plot.flux.count <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%
        y = "Sites",
        title = "",
        fill = "Approach")  +
-  theme_bw()  + scale_fill_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  theme_bw()  + scale_fill_manual(values= approach_colors) + 
   facet_wrap(~gas, scales = "free_x")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Approach_AA_AW.png", plot = plot.flux.count , width =5, height = 6, units = "in")
@@ -124,7 +121,7 @@ plot.flux.count.percent <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%
        y = "Sites",
        title = "",
        fill = "Approach")  +
-  theme_bw()  + scale_fill_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + facet_wrap(~gas, scales = "free_x")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme_bw()  + scale_fill_manual(values= approach_colors ) + facet_wrap(~gas, scales = "free_x")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 SITE_DATA_FLUX_COUNTS_Approach_Total %>% reframe(.by=c(Approach, gas), 
                                                  percent.mean = mean(percent),
@@ -371,7 +368,7 @@ SITE_DATA_FLUX_COUNTS_Overlap_Long %>%
   arrange(gas)
 
 # Save the files: ####
-data.dir <- '/Volumes/MaloneLab/Research/FluxGradient' # Where do you want to save the plots
+
 save(
   SITES_One2One, 
   SITE_DATA_FLUX_COUNTS_SEASON, 
@@ -385,5 +382,5 @@ save(
   SITE_DATA_FLUX_COUNTS_HOUR_Season,
   SITE_DATA_FLUX_COUNTS_Overlap ,
   SITE_DATA_FLUX_COUNTS_Overlap_Long,
-  SITE_DATA_FLUX_COUNTS_Overlap_Long_summary, file= paste(data.dir,"/flow.flux.counts.R", sep=""))
+  SITE_DATA_FLUX_COUNTS_Overlap_Long_summary, file= paste(localdir,"/flow.flux.counts.RDATA", sep=""))
 

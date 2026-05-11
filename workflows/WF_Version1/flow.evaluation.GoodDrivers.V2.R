@@ -8,14 +8,13 @@ library(VSURF)
 library(randomForest)
 
 
-load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+
 dir <- DirRepo.eval
 
 SITES_One2One.nona <- SITES_One2One %>% drop_na("Good.CCC") %>% 
   mutate(MeasurementDist =  MeasurementHeight_m_A - MeasurementHeight_m_B)
-
-SITES_One2One.nona %>% summary
 
 # Stop.vsurf:
 stop <- 'yes' # change this to no if you want to re-run variable selection
@@ -91,9 +90,14 @@ if( stop == 'no'){
 if( stop == 'no'){
 load( file= paste(dir, "FinalVarsSelection_AA_AW.Rdata", sep="") )
 
-final.vars[final.vars != 'gas'] 
+  final.vars[final.vars != 'gas' & final.vars !=  'MeasurementDist'] 
+  
+# VSURF choose MeasurementDist or RelativeDistA
+  
+  vars <- c( "Approach","RelativeDistB", "CHM.sd",  "Cutoff05.SDSDH", "RelativeDistA")
+            
 rf_model <- randomForest( Good.CCC ~ .,
-                              data= train %>% select(c(Good.CCC, all_of(final.vars[final.vars != 'gas'] ))) %>% na.omit,
+                              data= train %>% select(c(Good.CCC, all_of(vars))) %>% na.omit,
                               importance=TRUE,
                               predicted=TRUE,
                               keep.inbag=TRUE)
@@ -108,11 +112,11 @@ confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
 save(train, test,rf_model, final.vars, SITES_One2One, 
-     file= paste(localdir, "Good_Fluxes.Rdata_AA_AW", sep="") )
+     file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata_AA_AW", sep="") )
 }
 
 # Sensitivity Analysis: ####
-load(file= paste(localdir, "Good_Fluxes.Rdata_AA_AW", sep="") )
+load(file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata_AA_AW", sep="") )
 
 SITES_One2One$Approach %>% unique
 SITES_One2One$Canopy_L1 %>% unique#
@@ -241,7 +245,7 @@ caret::confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Model Use: #####
 
-load(file= paste(localdir, "Good_Fluxes.Rdata_AA_AW", sep="") )
+load(file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata_AA_AW", sep="") )
 
 SITES_One2One$rf_model <- predict(rf_model , SITES_One2One, type = "prob")[,2]
 
@@ -287,11 +291,11 @@ final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.can
 ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix_AA_AW.png", plot =  final.model.plots, width = 9, height = 3, units = "in")
 
 save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file= paste(localdir, "SITES_One2One_model_AA_AW.Rdata", sep="") )
+     file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/SITES_One2One_model_AA_AW.Rdata", sep="") )
 
 # Save the AA_AW canopy model artifact expected by downstream RSHP scripts.
 save(train, test, rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file = paste(localdir, "SITES_One2One_canopy_model_AA_AW.Rdata", sep = ""))
+     file = paste(localdir, "/NEON_GradientFlux_Data_MODEL/SITES_One2One_canopy_model_AA_AW.Rdata", sep = ""))
   
 # Results
 SITES_One2One_EC.summary <- 

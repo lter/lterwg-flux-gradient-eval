@@ -1,14 +1,12 @@
 # Site based example... Final Figure: 
-rm(list=ls())
 
 library(tidyverse)
 library(ggpubr)
 library(colorspace)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 
 # Build the dataset for canopy Information: ####
 aoi <- c( 'JORN', 'KONZ', 'GUAN', 'HARV')
@@ -122,7 +120,7 @@ mean.counts.h20 <- SITES_One2One %>% filter(gas == "H2O", CCC >= 0.5, Site %in% 
 # Season Sampling Panel:  #####
 
 data.dir <- '/Volumes/MaloneLab/Research/FluxGradient' # Where do you want to save the plots
-load(paste(data.dir,"/flow.flux.counts.R", sep=""))
+load(paste(data.dir,"/flow.flux.counts.Rdata", sep=""))
 
 SITE_DATA_FLUX_COUNTS_SEASON_Total.aoi <- SITE_DATA_FLUX_COUNTS_SEASON_Total %>% filter(Site %in% aoi)
 SITE_DATA_FLUX_COUNTS_HOUR_Season.aoi  <-  SITE_DATA_FLUX_COUNTS_HOUR_Season %>% filter(Site %in% aoi) 
@@ -196,9 +194,8 @@ plot.overlap.1.aoi <- SITE_DATA_FLUX_COUNTS_Overlap_Long.aoi %>%
 
 # ENSEMBLE Linear Relationship: ####
 
-ENSEMBLE.data <- fs::path('/Volumes/MaloneLab/Research/FluxGradient/FluxData/SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata')
 
-load(file=ENSEMBLE.data)
+load(file='/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
 
 linear.aoi.co2 <- ggarrange(Linear_ENSEMBLE_plots_CO2$JORN,
             Linear_ENSEMBLE_plots_CO2$KONZ,
@@ -214,7 +211,7 @@ linear.aoi <- ggarrange(linear.aoi.co2 , linear.aoi.h2o , ncol=1)
 
 # DIEL Plots:####
 
-load(file='/Volumes/MaloneLab/Research/FluxGradient/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
+load(file='/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
 
 
 plot.diel.gas.season.regression.aoi <-ENSEMBLE_DIELS  %>% filter(site %in% aoi) %>%   ggplot(aes(x = FG , y = EC, col=season))+

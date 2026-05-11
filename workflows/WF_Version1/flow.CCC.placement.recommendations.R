@@ -24,7 +24,7 @@ suppressPackageStartupMessages({
 
 # --- Paths ------------------------------------------------------
 root_dir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient"
-rdata    <- file.path(root_dir, "lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata")
+rdata    <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata'
 fig_dir <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
 
 out_png  <- file.path(fig_dir , "CCC_placement_recommendations.png")
@@ -158,7 +158,7 @@ make_panel <- function(opt, h_c, panel_title) {
    #           hjust = 1, size = 2.6, show.legend = FALSE, vjust = -3) +
     # h_c label
     annotate("text", x = canopy_w / 2 + 0.15, y = h_c,
-             label = "h[c]", parse = TRUE,
+             label = "h[c]", parse = TRUE, vjust = -0.5,
              color = "#1b5e20", hjust = 0, fontface = "bold", size = 3.6) +
     annotate("text", x = 0, y = canopy_centre,
              label = sprintf("h[c] %s %d~m", "%~~%", as.integer(h_c)),
@@ -244,7 +244,7 @@ design <- grid_panels  +
                   plot.subtitle = element_text(hjust = 0.5, size = 10))
   )
 
-ggsave(out_png, design, width = 7.5, height = 6, dpi = 220, bg = "white")
+ggsave(out_png, design, width = 8, height = 6, dpi = 220, bg = "white")
 
 message("Saved: ", out_png)
 

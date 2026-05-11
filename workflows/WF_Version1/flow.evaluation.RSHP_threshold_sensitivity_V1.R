@@ -2,11 +2,9 @@
 
 library(tidyverse)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo.eval <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 
-load(file = fs::path(localdir, paste0("SITES_One2One_canopy_model_AA_AW.Rdata")))
-load(fs::path(localdir, paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
 source(fs::path(DirRepo.eval, "./functions/calc_validation.R"))
 source(fs::path(DirRepo.eval, "./functions/calc.linear.terms.R"))
 source(fs::path(DirRepo.eval, "./functions/calc.lins.ccc.R"))

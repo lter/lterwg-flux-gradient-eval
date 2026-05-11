@@ -3,38 +3,33 @@ ABBY,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 ABBY,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 ABBY,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 ABBY,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-BARR,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-BARR,Autumn,H2O,21,4,FALSE,<=36 valid half-hours for seasonal loess fit
-BARR,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-BARR,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-BARR,Summer,H2O,418,7,FALSE,<=36 valid half-hours for seasonal loess fit
-BARR,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-BARR,Winter,H2O,8,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
-BLAN,Winter,CO2,34,13,FALSE,<=36 valid half-hours for seasonal loess fit
-BONA,Autumn,CO2,284,22,FALSE,<=36 valid half-hours for seasonal loess fit
-BONA,Spring,CO2,163,21,FALSE,<=36 valid half-hours for seasonal loess fit
-BONA,Summer,CO2,191,21,FALSE,<=36 valid half-hours for seasonal loess fit
-BONA,Winter,CO2,78,5,FALSE,<=36 valid half-hours for seasonal loess fit
-CLBJ,Autumn,CO2,25,10,FALSE,<=36 valid half-hours for seasonal loess fit
-CLBJ,Autumn,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-CLBJ,Spring,CO2,63,27,FALSE,<=36 valid half-hours for seasonal loess fit
-CLBJ,Spring,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-CLBJ,Summer,CO2,51,23,FALSE,<=36 valid half-hours for seasonal loess fit
-CLBJ,Summer,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-CLBJ,Winter,CO2,24,6,FALSE,<=36 valid half-hours for seasonal loess fit
-CLBJ,Winter,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+BARR,Autumn,CO2,22,3,FALSE,<=36 valid half-hours for seasonal loess fit
+BARR,Autumn,H2O,22,3,FALSE,<=36 valid half-hours for seasonal loess fit
+BARR,Summer,CO2,416,6,FALSE,<=36 valid half-hours for seasonal loess fit
+BARR,Summer,H2O,416,6,FALSE,<=36 valid half-hours for seasonal loess fit
+BARR,Winter,CO2,10,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
+BARR,Winter,H2O,10,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
+BART,Autumn,CO2,60,21,FALSE,<=36 valid half-hours for seasonal loess fit
+BART,Spring,CO2,91,30,FALSE,<=36 valid half-hours for seasonal loess fit
+BART,Summer,CO2,62,28,FALSE,<=36 valid half-hours for seasonal loess fit
+BART,Winter,CO2,80,14,FALSE,<=36 valid half-hours for seasonal loess fit
+BLAN,Winter,CO2,55,19,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Autumn,CO2,276,22,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Spring,CO2,166,24,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Summer,CO2,189,19,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Winter,CO2,77,6,FALSE,<=36 valid half-hours for seasonal loess fit
+CLBJ,Autumn,CO2,26,11,FALSE,<=36 valid half-hours for seasonal loess fit
+CLBJ,Spring,CO2,62,26,FALSE,<=36 valid half-hours for seasonal loess fit
+CLBJ,Summer,CO2,49,21,FALSE,<=36 valid half-hours for seasonal loess fit
+CLBJ,Winter,CO2,23,5,FALSE,<=36 valid half-hours for seasonal loess fit
 DELA,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-DELA,Autumn,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 DELA,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-DELA,Spring,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 DELA,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-DELA,Summer,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 DELA,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-DELA,Winter,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-DSNY,Autumn,CO2,78,12,FALSE,<=36 valid half-hours for seasonal loess fit
-DSNY,Spring,CO2,62,25,FALSE,<=36 valid half-hours for seasonal loess fit
+DSNY,Autumn,CO2,74,11,FALSE,<=36 valid half-hours for seasonal loess fit
+DSNY,Spring,CO2,61,24,FALSE,<=36 valid half-hours for seasonal loess fit
 DSNY,Summer,CO2,33,15,FALSE,<=36 valid half-hours for seasonal loess fit
-DSNY,Winter,CO2,53,12,FALSE,<=36 valid half-hours for seasonal loess fit
+DSNY,Winter,CO2,52,11,FALSE,<=36 valid half-hours for seasonal loess fit
 GUAN,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 GUAN,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 GUAN,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
@@ -43,21 +38,18 @@ HARV,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 HARV,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 HARV,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 HARV,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-HEAL,Autumn,CO2,39,9,FALSE,<=36 valid half-hours for seasonal loess fit
-HEAL,Spring,CO2,23,3,FALSE,<=36 valid half-hours for seasonal loess fit
-HEAL,Summer,CO2,86,24,FALSE,<=36 valid half-hours for seasonal loess fit
-HEAL,Winter,CO2,25,3,FALSE,<=36 valid half-hours for seasonal loess fit
-JERC,Autumn,CO2,92,30,FALSE,<=36 valid half-hours for seasonal loess fit
-JERC,Spring,CO2,57,12,FALSE,<=36 valid half-hours for seasonal loess fit
-JERC,Summer,CO2,54,16,FALSE,<=36 valid half-hours for seasonal loess fit
-JERC,Winter,CO2,45,17,FALSE,<=36 valid half-hours for seasonal loess fit
-LENO,Autumn,CO2,85,6,FALSE,<=36 valid half-hours for seasonal loess fit
-LENO,Winter,CO2,100,23,FALSE,<=36 valid half-hours for seasonal loess fit
-MLBS,Winter,CO2,56,10,FALSE,<=36 valid half-hours for seasonal loess fit
+HEAL,Spring,CO2,71,16,FALSE,<=36 valid half-hours for seasonal loess fit
+HEAL,Winter,CO2,64,14,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Autumn,CO2,92,31,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Spring,CO2,57,10,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Summer,CO2,53,15,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Winter,CO2,44,17,FALSE,<=36 valid half-hours for seasonal loess fit
+LENO,Autumn,CO2,82,6,FALSE,<=36 valid half-hours for seasonal loess fit
+LENO,Winter,CO2,100,19,FALSE,<=36 valid half-hours for seasonal loess fit
 NIWO,Autumn,CO2,22,5,FALSE,<=36 valid half-hours for seasonal loess fit
 NIWO,Spring,CO2,9,1,FALSE,<=36 valid half-hours for seasonal loess fit
 NIWO,Summer,CO2,43,14,FALSE,<=36 valid half-hours for seasonal loess fit
-NIWO,Winter,CO2,2,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
+NIWO,Winter,CO2,3,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
 OSBS,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 OSBS,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 OSBS,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
@@ -70,16 +62,16 @@ PUUM,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 PUUM,Summer,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 PUUM,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 PUUM,Winter,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-RMNP,Autumn,CO2,35,15,FALSE,<=36 valid half-hours for seasonal loess fit
-RMNP,Autumn,H2O,8,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
+RMNP,Autumn,CO2,35,16,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Autumn,H2O,7,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
 RMNP,Spring,CO2,32,12,FALSE,<=36 valid half-hours for seasonal loess fit
-RMNP,Spring,H2O,16,4,FALSE,<=36 valid half-hours for seasonal loess fit
-RMNP,Summer,CO2,31,15,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Spring,H2O,14,4,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Summer,CO2,35,18,FALSE,<=36 valid half-hours for seasonal loess fit
 RMNP,Summer,H2O,19,3,FALSE,<=36 valid half-hours for seasonal loess fit
-RMNP,Winter,CO2,35,10,FALSE,<=36 valid half-hours for seasonal loess fit
-RMNP,Winter,H2O,18,5,FALSE,<=36 valid half-hours for seasonal loess fit
-SRER,Autumn,CO2,1648,10,FALSE,<=36 valid half-hours for seasonal loess fit
-SRER,Summer,CO2,1558,15,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Winter,CO2,33,10,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Winter,H2O,21,7,FALSE,<=36 valid half-hours for seasonal loess fit
+SRER,Autumn,CO2,1639,10,FALSE,<=36 valid half-hours for seasonal loess fit
+SRER,Summer,CO2,1570,15,FALSE,<=36 valid half-hours for seasonal loess fit
 TEAK,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 TEAK,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 TEAK,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
@@ -88,4 +80,4 @@ TOOL,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 TOOL,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 TOOL,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
 TOOL,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
-WREF,Autumn,CO2,88,18,FALSE,<=36 valid half-hours for seasonal loess fit
+WREF,Autumn,CO2,89,18,FALSE,<=36 valid half-hours for seasonal loess fit

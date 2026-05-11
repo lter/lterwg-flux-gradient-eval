@@ -12,11 +12,9 @@ DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/l
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-
-load( fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
+load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+#load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_RSHP_AA_AW.Rdata")))
 
 canopy.adj <- SITES_One2One %>% 
   select( Site, Approach, gas, dLevelsAminusB, Good.CCC, Canopy_L1, canopyHeight_m) %>% 
@@ -42,7 +40,7 @@ weighted_mean_or_mean <- function(x, w) {
   weighted.mean(x, w = w, na.rm = TRUE)
 }
 
-rshp_index <- val.SHP.total.canopy.summary %>% 
+rshp_index <- SITES_One2One_model %>% 
   filter(Good.CCC == 1) %>% 
   distinct(Site, gas, Approach, dLevelsAminusB, Canopy_L1)
 
@@ -67,8 +65,7 @@ for( site in site.list){
              TRUE ~ "Autumn"),
            hour = format(timeEndA.local,'%H'),
            count= case_when( is.na(FG_mean) == FALSE ~ 1,
-                             TRUE ~ 0)) %>% distinct %>% 
-    inner_join(rshp_index, by = c("Site", "gas", "Approach", "dLevelsAminusB", "Canopy_L1")) %>% 
+                             TRUE ~ 0)) %>% distinct  %>% 
     mutate(weight.rmse = if_else(!is.na(RMSE) & is.finite(RMSE) & RMSE > 0, 1 / RMSE, 0)) %>% 
     filter(CCC >= 0.5 , Canopy_L1 != "WW") %>% 
     mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>%
@@ -300,7 +297,7 @@ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-fl
 
 # Save the data: #####
 
-fileSave <- fs::path(localdir,paste0("SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata"))
 
 save( SITE_DATA_ENSEMBLE,
       Linear_ENSEMBLE_plots_H2O, 

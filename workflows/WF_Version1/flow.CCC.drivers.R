@@ -29,7 +29,7 @@ suppressPackageStartupMessages({
 
 # --- Paths ------------------------------------------------------
 root_dir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient"
-rdata    <- file.path(root_dir, "lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata")
+rdata    <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata'
 fig_dir <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
 
 # --- Load -------------------------------------------------------
@@ -113,7 +113,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     geom_segment(aes(x = -2.5, xend = 2.5, y = hc_y, yend = hc_y),
                  linetype = "dashed", color = "#388e3c") +
     annotate("text", x = 2.6, y = ch, label = "h[c]", parse = TRUE,
-             color = "#1b5e20", size = 5, hjust = 0) +
+             color = "#1b5e20", size = 5, hjust = 1, vjust=0 ) +
     geom_point(aes(x = xs, y = y_zA, color = panel), size = 4, shape = 15) +
     geom_point(aes(x = xs, y = y_zB, color = panel), size = 4, shape = 15) +
     geom_text(aes(x = xs + 0.25, y = y_zA, label = "z[A]"), parse = TRUE, hjust = 0, size = 5) +

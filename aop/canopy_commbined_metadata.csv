@@ -1,0 +1,71 @@
+column_head,description,source_or_notes
+(unnamed first column),Row index written by R write.csv; not an analysis variable.,Created automatically because row.names were included when writing canopy_commbined.csv.
+canopyHeight_m,Canopy height from the site/tower attribute data in meters.,Derived from DistZaxsCnpy in the downloaded site attribute files.
+MeasurementHeight_m_A,Measurement height for tower level A in meters.,Derived from DistZaxsLvlMeasTow for the first/lower tower level in each paired level comparison.
+TowerPosition_A,Tower position identifier for measurement level A.,Derived from TowerPosition in the site attribute files.
+Site,NEON site identifier.,Used as the join key across tower attributes AOP summaries and structural diversity summaries.
+DistZaxsDisp,Displacement-related z-axis distance from the site attribute data.,Original NEON/site attribute field retained from DistZaxsDisp.
+DistZaxsGrndOfst,Ground-offset z-axis distance from the site attribute data.,Original NEON/site attribute field retained from DistZaxsGrndOfst.
+TowerPosition_B,Tower position identifier for measurement level B.,Generated from paired tower levels where TowerPosition_B is above TowerPosition_A.
+MeasurementHeight_m_B,Measurement height for tower level B in meters.,Derived from DistZaxsLvlMeasTow for the second/upper tower level in each paired level comparison.
+Max1_Tower_Position,Highest tower position available for the site.,Calculated as max(TowerPosition_B) within each Site.
+Max2_Tower_Position,Second-highest tower position available for the site.,Calculated as max(TowerPosition_B) - 1 within each Site.
+dLevelsAminusB,Paired tower-level comparison label in B_A format.,Generated from TowerPosition_B and TowerPosition_A; for example 3_1 means level B is 3 and level A is 1.
+EVI.mean,Mean Enhanced Vegetation Index for the site from NEON AOP raster summaries.,Calculated in flow_AOP_FormatLayers.R and averaged across available raster years.
+EVI.sd,Mean within-site standard deviation of Enhanced Vegetation Index.,Calculated from NEON AOP EVI raster summaries.
+EVI.years,Number of unique EVI raster years contributing to the site summary.,Count of unique EVI.year values.
+NDVI.mean,Mean Normalized Difference Vegetation Index for the site from NEON AOP raster summaries.,Calculated in flow_AOP_FormatLayers.R and averaged across available raster years.
+NDVI.sd,Mean within-site standard deviation of Normalized Difference Vegetation Index.,Calculated from NEON AOP NDVI raster summaries.
+NDVI.years,Number of unique NDVI raster years contributing to the site summary.,Count of unique NDVI.year values.
+LAI.mean,Mean Leaf Area Index for the site from NEON AOP raster summaries.,Calculated in flow_AOP_FormatLayers.R and averaged across available raster years.
+LAI.sd,Mean within-site standard deviation of Leaf Area Index.,Calculated from NEON AOP LAI raster summaries.
+LAI.years,Number of unique LAI raster years contributing to the site summary.,Count of unique LAI.year values.
+PRI.mean,Mean Photochemical Reflectance Index for the site from NEON AOP raster summaries.,Calculated in flow_AOP_FormatLayers.R and averaged across available raster years.
+PRI.sd,Mean within-site standard deviation of Photochemical Reflectance Index.,Calculated from NEON AOP PRI raster summaries.
+PRI.years,Number of unique PRI raster years contributing to the site summary.,Count of unique PRI.year values.
+CHM.mean,Mean Canopy Height Model value for the site from NEON AOP raster summaries.,Calculated in flow_AOP_FormatLayers.R and averaged across available raster years.
+CHM.sd,Mean within-site standard deviation of Canopy Height Model values.,Calculated from NEON AOP CHM raster summaries.
+CHM.years,Number of unique CHM raster years contributing to the site summary.,Count of unique CHM.year values.
+SAVI.mean,Mean Soil-Adjusted Vegetation Index for the site from NEON AOP raster summaries.,Calculated in flow_AOP_FormatLayers.R and averaged across available raster years.
+SAVI.sd,Mean within-site standard deviation of Soil-Adjusted Vegetation Index.,Calculated from NEON AOP SAVI raster summaries.
+SAVI.years,Number of unique SAVI raster years contributing to the site summary.,Count of unique SAVI.year values.
+Cutoff05-CVH,Canopy volume heterogeneity metric from the structural-diversity raster product using a 5 percent height cutoff.,Summarized by site in flow.StructuralDiversity.R; source field name CVH.
+Cutoff05-DGF,Direct gap fraction from the structural-diversity raster product using a 5 percent height cutoff.,Mapped in workflow code as Direct gap fraction; summarized by site.
+Cutoff05-GFP,Gap fraction profile from the structural-diversity raster product using a 5 percent height cutoff.,Mapped in workflow code as Gap fraction profile; summarized by site.
+Cutoff05-GiniCoeff,Gini coefficient for canopy-height or canopy-structure distribution using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Grain01-FHD,Foliage Height Diversity at grain size 01 using a 5 percent height cutoff.,Mapped in workflow code as Foliage Height Diversity.
+Cutoff05-Grain01-VAI,Vegetation Area Index at grain size 01 using a 5 percent height cutoff.,Mapped in workflow code as Vegetation Area Index.
+Cutoff05-Grain10-FHD,Foliage Height Diversity at grain size 10 using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Grain10-VAI,Vegetation Area Index at grain size 10 using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Grain30-FHD,Foliage Height Diversity at grain size 30 using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Grain30-VAI,Vegetation Area Index at grain size 30 using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-MCH,Mean canopy-height structural-diversity metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site; source field name MCH.
+Cutoff05-MH,Mean height structural-diversity metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site; source field name MH.
+Cutoff05-MSDH,Mean standard deviation of height structural-diversity metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site; source field name MSDH.
+Cutoff05-PointDens,Point density from the structural-diversity raster product using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q0,0th percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q1,1st percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q25,25th percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q5,5th percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q50,50th percentile or median height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q75,75th percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q95,95th percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-Q99,99th percentile height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-RumpleIndex,Rumple index from the structural-diversity raster product using a 5 percent height cutoff.,Metric describing canopy surface roughness/complexity; summarized by site.
+Cutoff05-SDH,Standard deviation of height metric using a 5 percent height cutoff.,Structural-diversity raster metric summarized by site.
+Cutoff05-SDSDH,Standard deviation of the standard deviation of height metric using a 5 percent height cutoff.,Used elsewhere in the repo as a canopy height-variance metric.
+Cutoff05-TopRugosity,Top rugosity metric from the structural-diversity raster product using a 5 percent height cutoff.,Mapped in workflow code as Top Rugosity; summarized by site.
+Cutoff05-VCI,Vertical Complexity Index using a 5 percent height cutoff.,Mapped in workflow code as Vertical Complexity Index; summarized by site.
+PointDens,Point density structural-diversity metric without the Cutoff05 prefix.,Selected from the structural-diversity site summary in flow.canopy.R.
+dist.m,Buffer distance in meters for the structural-diversity summary geometry.,From site.buffers.wedges generated in the AOP spatial-feature workflow.
+wedge,Wedge identifier for the spatial summary region.,Structural-diversity summary in flow.StructuralDiversity.R filters to wedge == 8 before joining.
+Year,Year associated with the structural-diversity raster summary.,This column is present in the file but contains all missing values in the inspected canopy_commbined.csv.
+CanopyHeight,Final canopy height used for classification.,Calculated as CHM.mean when available otherwise canopyHeight_m.
+Canopy_A,Indicator for whether measurement level A is within/below canopy height.,1 means CanopyHeight - MeasurementHeight_m_A > 0; 0 means level A is at or above canopy height.
+Canopy_B,Indicator for whether measurement level B is within/below canopy height.,1 means CanopyHeight - MeasurementHeight_m_B > 0; 0 means level B is at or above canopy height.
+Canopy_L1,First-level canopy-position class for the paired measurement levels.,AA means both levels are above canopy; AW means one above and one within canopy; WW means both within canopy.
+closest.below.MH,Measurement height closest below the canopy height for the site.,Calculated from tower measurement heights and final CanopyHeight.
+closest.above.MH,Measurement height closest above the canopy height for the site.,Calculated from tower measurement heights and final CanopyHeight.
+Closet.Below,Indicator that one of the paired measurement levels is the closest level below canopy height.,Column name appears to contain a typo for Closest.Below in the source script.
+Closet.Above,Indicator that one of the paired measurement levels is the closest level above canopy height.,Column name appears to contain a typo for Closest.Above in the source script.
+Canopy_L2,Second-level canopy-position class adding closest-above/closest-below flags to Canopy_L1.,Adds + when the pair includes the closest above-canopy height and - when it includes the closest below-canopy height.

@@ -11,10 +11,10 @@ library(ggpmisc)
 
 drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3") # The Data 
 
-load(fs::path(localdir,paste0("SITE_DATA_FILTERED_AA_AW.Rdata")))
 
 source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))
-load(fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata"))) # Import CCC results
+
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata"))) # Import CCC results
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
 site.list <- SITES_One2One$Site %>% unique
 
@@ -27,14 +27,15 @@ for( site in site.list){
   
   message( paste("Importing the data for ", site))
   
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  localdir.site <- paste(localdir,"/NEON_GradientFlux_Data_Filter/", site, sep = "")
   load(paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
   
   SITES_One2One_sub <- SITES_One2One %>% 
     select( -c('Canopy_L1', 'TowerPosition_A', 'TowerPosition_B')) %>% filter(Site == site)
 
-  SITE_DATA_FILTERED_CCC[[site]] <- SITE_DATA_FILTERED[[site]] %>% filter(gas != "CH4") %>%  full_join( SITES_One2One_sub , by = c('dLevelsAminusB', 'Approach', 'gas'), relationship = "many-to-many")  
+  SITE_DATA_FILTERED_CCC[[site]] <- SITE_DATA_FILTERED[[site]] %>% filter(gas != "CH4") %>% left_join( SITES_One2One_sub , by = c('dLevelsAminusB', 'Approach', 'gas'), relationship = "many-to-many")  
   
   SITE_DATA_FILTERED_CCC[[site]] %>% summary
 
 }
+

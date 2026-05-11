@@ -19,7 +19,7 @@ for( site in site.list){
   
   
   # Load the files:
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  localdir.site <- paste(localdir,"/NEON_GradientFlux_Data/", site, sep = "")
   
   files <- paste(site, "_Evaluation.Rdata", sep = "")
   
@@ -96,6 +96,7 @@ for( site in site.list){
                                                                                           site =site)
   
   SITE_9min.report.CO2 <- rbind( WP_9min.report.CO2, AE_9min.report.CO2, MBR_9min.report.CO2)
+  
   SITE_9min.report.stability.CO2 <- rbind( WP_9min.report.stability.CO2, AE_9min.report.stability.CO2, MBR_9min.report.stability.CO2)
   
   # H2O
@@ -135,7 +136,7 @@ for( site in site.list){
   SITE_9min.report.stability.H2O <- rbind( WP_9min.report.stability.H2O, AE_9min.report.stability.H2O, MBR_9min.report.stability.H2O)
   
   
-  # Run the filter functions... FILTER data and adjust the GF sign:
+  # Run the filter functions... FILTER data:
   MBR_9min_FILTER <- filter_fluxes( df = MBR_9min.df.final,
                                     dConcSNR.min = 3,
                                     approach = "MBR") %>% 
@@ -159,7 +160,11 @@ for( site in site.list){
   
   
   # Output the files
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  rm(localdir.site)
+  
+  localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
+  
+  dir.create(localdir.site)
   
   write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,"_9min.report.stability.CO2_AA_AW.csv", sep=""))
   write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,"_9min.report.CO2_AA_AW.csv", sep=""))

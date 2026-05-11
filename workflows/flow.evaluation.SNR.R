@@ -11,7 +11,7 @@ for( site in site.list){
   print( site)
   
   # Load the files:
-  localdir.site <- paste(localdir,"/", site, sep = "")
+  localdir.site <- paste(localdir,"/NEON_GradientFlux_Data/", site, sep = "")
   
   files <- paste(site, "_Evaluation.Rdata", sep = "")
   
@@ -20,8 +20,7 @@ for( site in site.list){
   # Change the time to local:
  
   # Get NEON sites from the server and find the time zones: https://cran.r-project.org/web/packages/lutz/readme/README.html
-  sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."),
-                                                                                                                      crs = "+proj=longlat +datum=WGS84")
+  sites.location <- metadata %>%  st_as_sf(coords = c("Longitude..degrees.", "Latitude..degrees."), crs = "+proj=longlat +datum=WGS84")
   
   sites.location$TZ <- tz_lookup(sites.location, method = "accurate")
   sites.location.sub <- sites.location %>%  select( "Site_Id.NEON" , "TZ")

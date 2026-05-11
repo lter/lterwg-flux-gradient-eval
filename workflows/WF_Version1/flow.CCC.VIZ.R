@@ -6,8 +6,8 @@ library(ggridges)
 library(colorspace)
 library(ggpubr)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-load(fs::path(localdir,paste0("SITES_One2One_AA_AW.Rdata")))
+
+load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
 
 SITES_One2One$CCC %>% range
 
@@ -71,6 +71,7 @@ SITES_One2One_canopy.subH2O <- SITES_One2One %>% filter(gas=="H2O")
 
  
  # Figure 3 ####
+ approach_colors <- c("MBR" = "goldenrod","AE" = "aquamarine4","WP" = "darkmagenta")
  
  plot.pairwise.co2.canopy <- SITES_One2One %>% filter(gas == "CO2") %>% 
    ggplot( aes( x= Canopy_L1, y = CCC , col= Canopy_L1)) +
@@ -81,7 +82,7 @@ SITES_One2One_canopy.subH2O <- SITES_One2One %>% filter(gas=="H2O")
  plot.pairwise.co2.approach <- SITES_One2One %>% filter(gas == "CO2") %>% 
    ggplot( aes( x= Approach, y = CCC , col= Approach)) +
    geom_boxplot() + 
-   scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta"),name= "Approach") +
+   scale_color_manual(values= approach_colors ,name= "Approach") +
    theme_bw() + theme(legend.position="none")+ ylab("CCC")
  
  
@@ -95,7 +96,7 @@ SITES_One2One_canopy.subH2O <- SITES_One2One %>% filter(gas=="H2O")
  plot.pairwise.h2o.approach <- SITES_One2One %>% filter(gas == "H2O") %>% 
    ggplot( aes( x= Approach, y = CCC , col= Approach)) +
    geom_boxplot() + 
-   scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta"),name= "Approach") +
+   scale_color_manual(values= approach_colors ,name= "Approach") +
    theme_bw()+ theme(legend.position="none")+ ylab("CCC")
  
 
@@ -116,13 +117,13 @@ library(ggridges)
 ggridges.co2 <- SITES_One2One %>% filter(gas=="CO2") %>% ggplot( aes(x = CCC, y = Canopy_L1, fill = Approach)) + geom_density_ridges(alpha=0.5) + theme_ridges() +
   theme(legend.position = "none") +
   scale_fill_manual(name = "Approach",
-                    values=c("goldenrod", "aquamarine4", "darkmagenta"),
+                    values= approach_colors,
                     labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC")
 
 ggridges.h2o <- SITES_One2One %>% filter(gas=="H2O") %>% ggplot( aes(x = CCC, y = Canopy_L1, fill = Approach)) + geom_density_ridges(alpha=0.5) + theme_ridges() +
   theme(legend.position = "none") +
   scale_fill_manual(name = "Approach",
-                    values=c("goldenrod", "aquamarine4", "darkmagenta"),
+                    values= approach_colors,
                     labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC")
 
 evaluation.ggridges <-  ggarrange( ggridges.co2, ggridges.h2o,ncol=2,
@@ -142,7 +143,7 @@ plot.CCC.CO2.all <- SITES_One2One %>%
   ggplot() + 
   geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + 
   facet_grid(cols = vars(Canopy_L1)) + 
-  scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  scale_color_manual(values= approach_colors) + 
   theme_bw() + ylab("") + xlab("CCC") +
   geom_vline(xintercept= 0.5, linetype="dashed", color ="red")
 
@@ -151,7 +152,7 @@ plot.CCC.H2O.all <- SITES_One2One %>% filter(gas=="H2O") %>%
   ggplot() + 
   geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + 
   facet_grid(cols = vars(Canopy_L1)) + 
-  scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  scale_color_manual(values= approach_colors) + 
   theme_bw() + ylab("") + xlab("CCC") +
   geom_vline(xintercept= 0.5, linetype="dashed", color ="red")
 
@@ -163,7 +164,7 @@ ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-fl
 plot.CCC.all <- SITES_One2One %>%  ggplot() + 
   geom_point( aes(x= CCC, y=Site, col=Approach ), alpha= 0.7, size = 3) + 
   facet_grid(cols = vars(gas)) + 
-  scale_color_manual(values=c("goldenrod", "aquamarine4", "darkmagenta")) + 
+  scale_color_manual(values= approach_colors) + 
   theme_bw() + ylab("") + xlab("CCC") +
   geom_vline(xintercept= 0.5, linetype="dashed", color = "red")
 
@@ -232,7 +233,7 @@ p_method <- ggplot(df_method, aes(x = gas, y = percent, fill = Approach)) +
     y = "Reliable Sampling Height Pairs (%)",
     title = "",
     fill = "Approach")  +
-  theme_bw()  + scale_fill_manual(values=c("goldenrod", "aquamarine4", "darkmagenta"))
+  theme_bw()  + scale_fill_manual(values= approach_colors)
 
 ## ======================
 
@@ -272,9 +273,6 @@ mean.counts <- SITES_One2One %>% filter(gas == "CO2", CCC >= 0.5 ) %>% mutate( c
 mean.counts$Mean.count %>% mean
 mean.counts$Mean.count %>% sd       
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-setwd(localdir)
-
 save(plot.CCC.CO2.all ,
-     plot.CCC.H2O.all, plots.samplingHeights.counts, file = "flow.CCC_VIZ_AA_AW.R" )
+     plot.CCC.H2O.all, plots.samplingHeights.counts, file = fs::path(localdir,paste0("/flow.CCC_VIZ_AA_AW.RDATA")))
 
