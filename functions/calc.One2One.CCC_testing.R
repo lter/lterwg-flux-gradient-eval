@@ -4,6 +4,8 @@ source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R"))
 # Define get_facet_stats as a global function
 get_facet_stats <- function(df, facet_level, x_col, y_col) {
   subset_df <- df %>% filter(dLevelsAminusB == facet_level)
+  subset_df <- subset_df[is.finite(subset_df[[x_col]]) &
+                           is.finite(subset_df[[y_col]]), , drop = FALSE]
   
   # Skip if insufficient data
   if(nrow(subset_df) < 10) {
@@ -22,7 +24,7 @@ get_facet_stats <- function(df, facet_level, x_col, y_col) {
   
   if(!is.null(model)) {
     r2_val <- summary(model)$r.squared
-    rmse_val <- sqrt(mean((subset_df[[y_col]] - predict(model))^2, na.rm = TRUE))
+    rmse_val <- sqrt(mean((subset_df[[y_col]] - subset_df[[x_col]])^2))
   } else {
     r2_val <- NA
     rmse_val <- NA
@@ -177,8 +179,11 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
 }
 
 ccc.parms <- function(Y, X, DF, TYPE) {
+  # Use the same finite observation pairs for all agreement statistics.
+  DF <- as.data.frame(DF)
+  DF <- DF[is.finite(DF[[X]]) & is.finite(DF[[Y]]), c(X, Y), drop = FALSE]
   
-  if(sum(!is.na(DF[,X]+ DF[,Y])) < 3) {
+  if(nrow(DF) < 3) {
     ccc.parms <- data.frame(Intercept = as.numeric(NA), 
                             Slope = as.numeric(NA),
                             CCC = as.numeric(NA), 
@@ -192,13 +197,10 @@ ccc.parms <- function(Y, X, DF, TYPE) {
   }
   
   # Calculate linear model parameters (same as in linear.parms)
-  data <- DF[, c(X, Y)] %>% na.omit
-  model <- lm(data = data, DF[,Y] ~ DF[, X])
-  
-  DF <- DF[,c(X, Y)] %>% na.omit
-  predicted <- predict(model, DF)
-  rmse <- sqrt(mean((DF[,Y] %>% na.omit - predicted)^2))
-  count <- DF[,Y] %>% na.omit() %>% length()
+  model <- lm(reformulate(X, response = Y), data = DF)
+  # Direct GF-EC error retains bias; regression residual error does not.
+  rmse <- sqrt(mean((DF[[Y]] - DF[[X]])^2))
+  count <- nrow(DF)
   # Calculate CCC
   ccc_result <- calc.lins.ccc(DF[,X], DF[,Y])
   
