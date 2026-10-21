@@ -1,14 +1,13 @@
 # ---------------------------------------------------------------
 # flow.CCC.results.summary.R
 #
-# Single summary figure for the Flux-Gradient evaluation paper,
-# COMPUTED DIRECTLY FROM SITES_One2One_canopy_model.
+# Single summary figure for the Flux-Gradient evaluation paper, computed from SITES_One2One.
+# All panels in the saved figure are derived from the data. make_panelF() (seasons, typed in
+# from the preprint text) is NOT used in the figure; seasonal coverage is Fig. A5 (flow.flux.counts.R).
 #
-# Panels A-E and G are derived from the data; the seasonal panel (F)
-# is taken from the manuscript text because the underlying
-# half-hourly flux records are not stored in the One2One file.
-#
-# Output: CCC_results_summary.{png,pdf} in the FluxGradient root.
+# Figure 4 of the paper (panels A-E, F = dataset size, G = overlap between approaches).
+# Input : localdir/NEON_GradientFlux_Data_Filter/SITES_One2One<run.tag>.Rdata (+ flow.flux.counts.R for panel G)
+# Output: Figures/WF_Version1/CCC_results_summary<run.tag>.{png,pdf}
 # ---------------------------------------------------------------
 
 suppressPackageStartupMessages({
@@ -19,12 +18,14 @@ suppressPackageStartupMessages({
   library(scales)
 })
 
-root_dir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-rdata    <- file.path(root_dir, "SITES_One2One_AA_AW.Rdata")
-fig_dir <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # set in flow.evaluation.batch_V1.R
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+rdata   <- file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata"))
+fig_dir <- file.path(DirRepo.eval, "Figures", "WF_Version1")
 # Name of the output files:
-out_png  <- file.path(fig_dir, "CCC_results_summary.png")
-out_pdf  <- file.path(fig_dir, "CCC_results_summary.pdf")
+out_png  <- file.path(fig_dir, paste0("CCC_results_summary", run.tag, ".png"))
+out_pdf  <- file.path(fig_dir, paste0("CCC_results_summary", run.tag, ".pdf"))
 
 
 load(rdata)
@@ -47,7 +48,7 @@ df <- SITES_One2One%>%
   filter(Canopy_L1 %in% c("AA", "AW")) %>%
   mutate(Approach = factor(Approach, levels = c("MBR", "AE", "WP")),
          Canopy_L1 = factor(Canopy_L1, levels = c("AA", "AW")),
-         Good = as.integer(CCC >= 0.5))
+         Good = as.integer(!is.na(CCC) & CCC >= 0.5))
 
 total_sites <- df %>% pull(Site) %>% n_distinct()
 
@@ -142,7 +143,7 @@ make_panelB <- function() {
     stats$H2O$rsites_mean, stats$H2O$rsites_sd)
 
   ggplot(d, aes(y = fct_rev(gas))) +
-    geom_col(data = bg, aes(x = pct), fill = "#eeeeee", color = "#bbb",
+    geom_col(data = bg, aes(x = pct), fill = "#eeeeee", color = "#bbbbbb",
              width = 0.55) +
     geom_col(aes(x = pct, fill = gas), alpha = 0.85, width = 0.55) +
     geom_text(aes(x = pct + 2, label = label, color = gas),
@@ -158,7 +159,7 @@ make_panelB <- function() {
          x = "% of sampling pairs with CCC ≥ 0.5",
          y = NULL) +
     base_theme +
-    theme(plot.subtitle = element_text(size = 8.5, color = "#444"),
+    theme(plot.subtitle = element_text(size = 8.5, color = "#444444"),
           axis.text.y = element_text(face = "bold", size = 11,
                                      color = c(gas_colors["H2O"], gas_colors["CO2"])))
 }
@@ -254,7 +255,7 @@ make_panelE <- function() {
                linewidth = 0.4) +
    # geom_text(data = ann, aes(x = group, y = 1.0, label = label),
    #           parse = TRUE, inherit.aes = FALSE,
-   #           vjust = 1, size = 2.8, color = "#333") +
+   #           vjust = 1, size = 2.8, color = "#333333") +
     scale_fill_manual(values = geom_colors,
                       name = "Canopy_L1 (fill)") +
     scale_color_manual(values = gas_colors,
@@ -306,7 +307,7 @@ make_panelF <- function() {
                   width = 0.25, linewidth = 0.4) +
     geom_text(aes(label = paste0(pct, "%")),
               position = position_dodge(width = 0.8),
-              vjust = -0.6, size = 3, color = "#222") +
+              vjust = -0.6, size = 3, color = "#222222") +
     scale_fill_manual(values = gas_colors,
                       labels = c(CO2 = expression(CO[2]),
                                  H2O = expression(H[2]*O))) +
@@ -318,7 +319,7 @@ make_panelF <- function() {
     base_theme +
     theme(legend.position = "none",
           legend.background = element_blank(),
-          plot.caption = element_text(size = 7.5, color = "#666", hjust = 1))
+          plot.caption = element_text(size = 7.5, color = "#666666", hjust = 1))
 }
 
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.counts.R'))
@@ -355,13 +356,13 @@ make_panelG <- function() {
                   width = 0.25, linewidth = 0.4) +
     geom_text(aes(label = scales::comma(round(mean))),
               position = position_dodge(width = 0.8),
-              vjust = -5, size = 3, color = "#222") +
+              vjust = -5, size = 3, color = "#222222") +
     scale_fill_manual(values = gas_colors,
                       labels = c(CO2 = expression(CO[2]),
                                  H2O = expression(H[2]*O)))  +
     coord_cartesian(ylim = c(0, ymax)) +
     labs(title = "F. ",
-         x = NULL, y = "Mean half-hours per year", fill = NULL) +
+         x = NULL, y = "Filtered GF values (largest pair per site)", fill = NULL) +
     base_theme +
     theme(legend.position = 'none',
           legend.background = element_blank(),
@@ -422,7 +423,7 @@ make_panelH <- function() {
     #         size = 3.1, family = "mono") +
     coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
     theme_void() +
-    theme(plot.background = element_rect(fill = "#f5f5f5", color = "#bbb",
+    theme(plot.background = element_rect(fill = "#f5f5f5", color = "#bbbbbb",
                                          linewidth = 0.4))
 }
 

@@ -1,11 +1,15 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 library(dplyr)
 library(ggplot2)
 library(readr)
 
-figdir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
+if (!exists("figdir")) figdir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
 
 site_slopes_all <- read_csv(
-  file.path(figdir, "delta_z_all_canopy_site_trend_detail.csv"),
+  file.path(figdir, paste0("delta_z_all_canopy_site_trend_detail", run.tag, ".csv")),
   show_col_types = FALSE
 ) %>%
   mutate(
@@ -54,10 +58,10 @@ plot_site_slopes_all <- ggplot(
     axis.text.y = element_text(size = 7)
   )
 
-write_csv(site_slopes_all, file.path(figdir, "delta_z_all_canopy_site_slope_plot_data.csv"))
+write_csv(site_slopes_all, file.path(figdir, paste0("delta_z_all_canopy_site_slope_plot_data", run.tag, ".csv")))
 
 ggsave(
-  file.path(figdir, "delta_z_all_canopy_site_slopes.png"),
+  file.path(figdir, paste0("delta_z_all_canopy_site_slopes", run.tag, ".png")),
   plot = plot_site_slopes_all,
   width = 11,
   height = 16,

@@ -28,14 +28,15 @@ suppressPackageStartupMessages({
 })
 
 # --- Paths ------------------------------------------------------
-root_dir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient"
-rdata    <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata'
-fig_dir <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
+root_dir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient"
+rdata <- file.path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".Rdata"))
+if (!exists("fig_dir")) fig_dir <- '/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
 
 # --- Load -------------------------------------------------------
 # This file contains: train, test, rf_model, final.vars,
 #                     SITES_One2One_canopy, SITES_One2One_canopy_model
 load(rdata)
+SITES_One2One_canopy_model <- SITES_One2One_model
 stopifnot(exists("SITES_One2One_canopy_model"))
 
 approach_palette <- c(MBR = "#B8860B", AE = "#2E8B57", WP = "#6A0DAD")
@@ -169,7 +170,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     scale_color_manual(values = approach_palette) +
     scale_shape_manual(values = c(MBR = 16, AE = 15, WP = 17)) +
     labs(title = title_C,
-         x = expression("Upper sensor height - canopy height (z"[A] * " - h"[c] * ", m)"),
+         x = expression("Lower sensor height - canopy height (z"[A] * " - h"[c] * ", m)"),
          y = "Mean CCC") +
     coord_cartesian(xlim = c(-15, 40), ylim = c(-0.05, 0.9)) +
     base_theme +
@@ -322,7 +323,7 @@ for (g in c("CO2", "H2O")) {
   
   fig <- build_ccc_drivers_figure(SITES_One2One_canopy_model, gas = g)
   print(fig)
-  out_png <- file.path(fig_dir, sprintf("CCC_drivers_explained_%s.png", g))
+  out_png <- file.path(fig_dir, sprintf("CCC_drivers_explained_%s%s.png", g, run.tag))
   ggsave(out_png, fig, width = 13, height = 9, dpi = 220, bg = "white")
   message("Saved: ", out_png)
 }

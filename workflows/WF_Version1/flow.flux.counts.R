@@ -1,3 +1,7 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # This script explores the distribution of fluxes:
 library(tidyverse)
 library(dplyr)
@@ -5,8 +9,8 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
 
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
@@ -88,7 +92,7 @@ plot.flux.count.ecotype <- SITE_DATA_FLUX_COUNTS_Total_EcoType %>%
         strip.background = element_rect(fill = "transparent"))
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/SamplingFluxesEcotype_AA_AW.png", 
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/SamplingFluxesEcotype", run.tag, ".png"), 
        plot = ggarrange( plot.flux.count.ecotype, labels="E"), 
        width = 8, height = 4, units = "in")
 
@@ -105,7 +109,7 @@ plot.flux.count <- SITE_DATA_FLUX_COUNTS_Approach_Total %>%
   theme_bw()  + scale_fill_manual(values= approach_colors) + 
   facet_wrap(~gas, scales = "free_x")+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Approach_AA_AW.png", plot = plot.flux.count , width =5, height = 6, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Approach", run.tag, ".png"), plot = plot.flux.count , width =5, height = 6, units = "in")
 
 # Summary for Approach: ####
 
@@ -127,7 +131,7 @@ SITE_DATA_FLUX_COUNTS_Approach_Total %>% reframe(.by=c(Approach, gas),
                                                  percent.mean = mean(percent),
                                                  percent.sd = sd(percent))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Approach_Percent_AA_AW.png", plot = plot.flux.count.percent , width =5, height = 6, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Approach_Percent", run.tag, ".png"), plot = plot.flux.count.percent , width =5, height = 6, units = "in")
 
 
 # Seasonal Analysis: #####
@@ -197,7 +201,7 @@ p_season_label <- ggarrange(p_season, labels="D")
 
 final.season.hour.plots <- ggarrange( ggarrange( plot.counts.season, hour.plots, ncol=2,labels="A"), p_season_label ,ncol=1, nrow=2, heights = c(3, 1))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent_AA_AW.png", plot = final.season.hour.plots , width =9, height = 8, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent", run.tag, ".png"), plot = final.season.hour.plots , width =9, height = 8, units = "in")
 
 # Summary information for Season: ####
 
@@ -240,9 +244,9 @@ plot.counts.season.hour.h2o <- SITE_DATA_FLUX_COUNTS_HOUR_Season  %>% filter(gas
          legend.title = element_text(size = 11, face = "bold"))
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent_CO2_AA_AW.png", plot = plot.counts.season.hour.co2  , width =6, height = 7, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent_CO2", run.tag, ".png"), plot = plot.counts.season.hour.co2  , width =6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent_H2O_AA_AW.png", plot = plot.counts.season.hour.h2o  , width =6, height = 7, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent_H2O", run.tag, ".png"), plot = plot.counts.season.hour.h2o  , width =6, height = 7, units = "in")
 
 
 
@@ -360,7 +364,7 @@ final.overlap.plot <- ggarrange(plot.overlap.1, plot.overlap.2,
           ncol=1, nrow=2, heights = c(3, 0.5), labels=c("A", "B"))
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Overlap_AA_AW.png", plot = final.overlap.plot, width = 6, height = 7, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Overlap", run.tag, ".png"), plot = final.overlap.plot, width = 6, height = 7, units = "in")
 
 
 SITE_DATA_FLUX_COUNTS_Overlap_Long %>% 

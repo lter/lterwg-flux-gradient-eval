@@ -1,9 +1,13 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # Designed to evaluate RSHP sensitivity to alternative CCC thresholds.
 
 library(tidyverse)
 
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
 
 source(fs::path(DirRepo.eval, "./functions/calc_validation.R"))
 source(fs::path(DirRepo.eval, "./functions/calc.linear.terms.R"))
@@ -323,38 +327,38 @@ plot.prop_rshp <- ggplot(rshp.threshold.sensitivity, aes(x = threshold_label, y 
   theme_bw() +
   ylim(0, 1)
 
-plot.path <- fs::path(DirRepo.eval, "Figures/WF_Version1/RSHP_threshold_sensitivity_AA_AW.png")
+plot.path <- fs::path(DirRepo.eval, paste0("Figures/WF_Version1/RSHP_threshold_sensitivity", run.tag, ".png"))
 ggsave(plot.path, ggpubr::ggarrange(plot.n_rshp, plot.prop_rshp, ncol = 2, common.legend = TRUE), width = 11, height = 4.8, units = "in")
 
 write.csv(
   rshp.threshold.sensitivity,
-  fs::path(localdir, "/RSHP_threshold_sensitivity_AA_AW.csv"),
+  fs::path(localdir, paste0("/RSHP_threshold_sensitivity", run.tag, ".csv")),
   row.names = FALSE
 )
 
 write.csv(
   rshp.threshold.summary.table,
-  fs::path(localdir, "/RSHP_threshold_summary_table_AA_AW.csv"),
+  fs::path(localdir, paste0("/RSHP_threshold_summary_table", run.tag, ".csv")),
   row.names = FALSE
 )
 
 write.csv(
   rshp.threshold.manuscript.table,
-  fs::path(localdir, "/RSHP_threshold_manuscript_table_AA_AW.csv"),
+  fs::path(localdir, paste0("/RSHP_threshold_manuscript_table", run.tag, ".csv")),
   row.names = FALSE
 )
 
 writeLines(
   methods.section,
-  fs::path(localdir, "/RSHP_threshold_methods_AA_AW.md")
+  fs::path(localdir, paste0("/RSHP_threshold_methods", run.tag, ".md"))
 )
 
 writeLines(
   markdown_table,
-  fs::path(localdir, "/RSHP_threshold_methods_and_table_AA_AW.md")
+  fs::path(localdir, paste0("/RSHP_threshold_methods_and_table", run.tag, ".md"))
 )
 
-fileSave <- fs::path(localdir, "/SITE_RSHP_threshold_sensitivity_AA_AW.Rdata")
+fileSave <- fs::path(localdir, paste0("/SITE_RSHP_threshold_sensitivity", run.tag, ".Rdata"))
 save(
   rshp.threshold.sensitivity,
   rshp.threshold.summary.table,

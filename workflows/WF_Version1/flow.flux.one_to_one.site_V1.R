@@ -1,9 +1,10 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) 
 library(tidyverse)
 
-DirRepo.eval <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-localdir <- "/Volumes/MaloneLab/Research/FluxGradient/FluxData"
 
-load(fs::path(localdir, "SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata"))
+load(fs::path(localdir, "NEON_GradientFlux_Ensemble", paste0("SITE_DATA_ENSEMBLE_V1", run.tag, ".Rdata")))
 
 output_dir <- fs::path(DirRepo.eval, "Figures", "WF_Version1")
 fs::dir_create(output_dir)
@@ -36,7 +37,7 @@ site_r2_summary <- site_scatter_data %>%
 
 write.csv(
   site_r2_summary,
-  file = fs::path(output_dir, "SITE_DATA_ENSEMBLE_one_to_one_R2_summary_AA_AW.csv"),
+  file = fs::path(output_dir, paste0("SITE_DATA_ENSEMBLE_one_to_one_R2_summary", run.tag, ".csv")),
   row.names = FALSE
 )
 
@@ -89,7 +90,7 @@ plot_h2o <- plot_one_to_one_by_gas(
 )
 
 ggsave(
-  filename = fs::path(output_dir, "SITE_DATA_ENSEMBLE_one_to_one_by_site_CO2_AA_AW.png"),
+  filename = fs::path(output_dir, paste0("SITE_DATA_ENSEMBLE_one_to_one_by_site_CO2", run.tag, ".png")),
   plot = plot_co2,
   width = 13,
   height = 18,
@@ -98,7 +99,7 @@ ggsave(
 )
 
 ggsave(
-  filename = fs::path(output_dir, "SITE_DATA_ENSEMBLE_one_to_one_by_site_H2O_AA_AW.png"),
+  filename = fs::path(output_dir, paste0("SITE_DATA_ENSEMBLE_one_to_one_by_site_H2O", run.tag, ".png")),
   plot = plot_h2o,
   width = 13,
   height = 18,

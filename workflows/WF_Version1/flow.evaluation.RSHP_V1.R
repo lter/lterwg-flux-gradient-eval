@@ -1,3 +1,7 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # Designed to explore the performance of sampling height pairs relative to other pairs
 
 library(ggforce)
@@ -9,11 +13,10 @@ library(randomForest)
 library(caret)
 library(rpart)
 
-localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo.eval <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 
-load(file= fs::path(localdir,paste0("SITES_One2One_canopy_model_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(file= fs::path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".Rdata")))
+load( fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_DATA_FILTERED_CCC", run.tag, ".Rdata")))
 source(fs::path(DirRepo.eval,"./functions/calc_validation.R"))
 source(fs::path(DirRepo.eval,"./functions/calc.linear.terms.R"))
 source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R"))
@@ -85,12 +88,12 @@ val.SHP.total.canopy.summary <- val.SHP.total.canopy %>% reframe(.by= c(Site, ga
                                                                  CCC.GF.range = mean(CCC.GF.range),
                                                                  CCC.GF = mean(CCC.GF))
 
-fileSave <- fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata"))
+fileSave <- fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".Rdata"))
 save(val.SHP.total.canopy ,val.SHP.total.canopy.summary, file=fileSave)
 
 # Detect RSHP with CCC.GF: RANDOM FOREST MODEL DEVELOPMENT ####
 
-load(fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".Rdata")))
 
 
 train <- val.SHP.total.canopy.summary %>% na.omit() %>% 
@@ -252,14 +255,14 @@ model.plots.gf <- ggarrange(ggarrange(plot.Model.matrix.gf,
 
 final.model.plots.gf <- ggarrange(tree.plot.grid, model.plots.gf, ncol=2 )
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/RSHP_V1_AA_AW.png", 
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/RSHP_V1", run.tag, ".png"), 
        plot =  final.model.plots.gf, width = 12, height = 5, units = "in")
 
 
 # Save this file for use:
 save(val.SHP.total.canopy.summary ,rf.good.ccc.ec,tree_surrogate , confusion.matrix.RSHP ,
      tree_surrogate ,
-     file= paste(localdir, 'SITE_RSHP_MODEL_AA_AW.Rdata', sep="") )
+     file= fs::path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITE_RSHP_MODEL", run.tag, ".Rdata")) )
 
 # Reults: 
-load(fs::path(localdir,paste0("SITE_RSHP_AA_AW.Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".Rdata")))

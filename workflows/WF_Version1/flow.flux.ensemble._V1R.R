@@ -1,3 +1,7 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # Harmonization
 
 # This script explores the distribution of fluxes:
@@ -7,20 +11,31 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo.eval <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
+source(fs::path(DirRepo.eval, 'functions/calc.ensemble.R'))
 
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
-#load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_RSHP_AA_AW.Rdata")))
+# Write the ensemble (with between-pair spread) as an EDI data table: one CSV per site + metadata table.
+# Default: on for new runs, off for the published run so its EDI folder is not modified.
+if (!exists("write.edi.ensemble")) write.edi.ensemble <- run.tag != "_AA_AW"
+if (!exists("edi.ensemble.dir")) edi.ensemble.dir <- fs::path(localdir, paste0("NEON_GradientFlux_EDI", sub("^_AA_AW", "", run.tag)))
+
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
+#load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_RSHP", run.tag, ".Rdata"))))
 
 canopy.adj <- SITES_One2One %>% 
   select( Site, Approach, gas, dLevelsAminusB, Good.CCC, Canopy_L1, canopyHeight_m) %>% 
   rename( Good.CCC.EC = Good.CCC) 
 
 ensemble_method_name <- "inverse_rmse_weighted"
+
+# Regression eligibility is based on finite paired observations, not aggregated rows.
+complete_ensemble_pairs <- function(df) {
+  df[is.finite(df$EC_mean) & is.finite(df$FG_ENSEMBLE), , drop = FALSE]
+}
 
 weighted_mean_or_mean <- function(x, w) {
   keep <- !is.na(x) & is.finite(x)
@@ -56,25 +71,12 @@ SITE_DATA_ENSEMBLE <- list()
 for( site in site.list){
   print(site)
   
-  df.ENSEMBLE <-SITE_DATA_FILTERED_CCC[[site]] %>% 
-    mutate(month = format(timeEndA.local,'%m') %>% as.numeric,
-           season = case_when(
-             month %in% c(12, 1, 2) ~ "Winter",
-             month %in% c(3, 4, 5) ~ "Spring",
-             month %in% c(6, 7, 8) ~ "Summer",
-             TRUE ~ "Autumn"),
-           hour = format(timeEndA.local,'%H'),
-           count= case_when( is.na(FG_mean) == FALSE ~ 1,
-                             TRUE ~ 0)) %>% distinct  %>% 
-    mutate(weight.rmse = if_else(!is.na(RMSE) & is.finite(RMSE) & RMSE > 0, 1 / RMSE, 0)) %>% 
-    filter(CCC >= 0.5 , Canopy_L1 != "WW") %>% 
-    mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>%
-    reframe( .by= c( gas, time.rounded), 
-             EC_mean = mean(EC_mean, na.rm=T), 
-             FG_ENSEMBLE = weighted_mean_or_mean(FG_mean, weight.rmse))
+  # 30-min ensemble of reliable pairs (CCC >= 0.5) plus the spread between pairs
+  # (FG_ENSEMBLE_SD, FG_ENSEMBLE_NPAIRS, FG_ENSEMBLE_NVALUES, FG_ENSEMBLE_APPROACHES); see functions/calc.ensemble.R
+  df.ENSEMBLE <- calc.ensemble.site(SITE_DATA_FILTERED_CCC[[site]])
 
-  
   SITE_DATA_ENSEMBLE[[site]] <-  df.ENSEMBLE
+  df.ENSEMBLE <- complete_ensemble_pairs(df.ENSEMBLE)
   
   
   if( df.ENSEMBLE %>% filter(gas == "CO2") %>% nrow > 20 ){
@@ -142,6 +144,8 @@ for( site in site.list){
   rm(df.ENSEMBLE, df )
 }
 
+if (isTRUE(write.edi.ensemble)) write.ensemble.edi(SITE_DATA_ENSEMBLE, edi.ensemble.dir, method = ensemble_method_name)
+
 # Linear plots by site: ####
 plots.linear.co2.1 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_CO2[1:25], common.legend = TRUE)
 plots.linear.co2.2 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_CO2[26:50], common.legend = TRUE)
@@ -152,8 +156,8 @@ plots.linear.h2o.2 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_H2O[26:50], com
 plots.linear.co2 <- ggarrange( plots.linear.co2.1, plots.linear.co2.2, ncol=1)
 plots.linear.h2o <- ggarrange( plots.linear.h2o.1, plots.linear.h2o.2, ncol=1)
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2_AA_AW.png", plot = plots.linear.co2, width = 8, height = 16, units = "in")
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o_AA_AW.png", plot = plots.linear.h2o, width = 8, height = 16, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2", run.tag, ".png"), plot = plots.linear.co2, width = 8, height = 16, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o", run.tag, ".png"), plot = plots.linear.h2o, width = 8, height = 16, units = "in")
 
 # ENSEMBLE_ linear plots #####
 Linear_ENSEMBLE_Stats %>% 
@@ -190,9 +194,13 @@ for( site in site.list){
              EC_mean = mean(EC_mean, na.rm=T), 
              FG_ENSEMBLE = weighted_mean_or_mean(FG_mean, weight.rmse))
   
+  df.ENSEMBLE <- complete_ensemble_pairs(df.ENSEMBLE)
   threshold.co2 <- df.ENSEMBLE$FG_ENSEMBLE[ df.ENSEMBLE$gas == "CO2"] %>% length
   threshold.h2o <- df.ENSEMBLE$FG_ENSEMBLE[ df.ENSEMBLE$gas == "H2O"] %>% length
   
+  if (threshold.co2 <= 20) message("Skipping seasonal CO2 regression: ", site, " / ", i, " (", threshold.co2, " finite pairs; need >20)")
+  if (threshold.h2o <= 20) message("Skipping seasonal H2O regression: ", site, " / ", i, " (", threshold.h2o, " finite pairs; need >20)")
+
   if( threshold.co2 > 20){
     co2.df <- df.ENSEMBLE %>% filter(gas== "CO2")
     df.h.lm.co2 <- lm( data =co2.df,  EC_mean ~FG_ENSEMBLE)%>% summary
@@ -292,12 +300,12 @@ final.plot.CCC.support <- ggarrange( plot.CCC.canopy,plot.CCC.canopyHt,  ncol=1,
            labels=c("A", "B"), heights=c(1, 1)) 
 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1_AA_AW.png", plot = final.plot.CCC, width = 7, height = 8, units = "in")
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1_AA_AW.png", plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1", run.tag, ".png"), plot = final.plot.CCC, width = 7, height = 8, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1", run.tag, ".png"), plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
 
 # Save the data: #####
 
-fileSave <- fs::path(localdir,paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1_AA_AW.Rdata"))
+fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1", run.tag, ".Rdata")))
 
 save( SITE_DATA_ENSEMBLE,
       Linear_ENSEMBLE_plots_H2O, 
@@ -306,7 +314,7 @@ save( SITE_DATA_ENSEMBLE,
       Linear_ENSEMBLE_Season_Stats,
       file=fileSave)
 
-googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
+if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # Linear terms versus canopy:
 Linear_ENSEMBLE_Stats_canopy <- Linear_ENSEMBLE_Stats %>% 
@@ -340,7 +348,7 @@ plot_ENSEMBLE_siteLevel.CCC <- Linear_ENSEMBLE_Stats_Canopy  %>% ggplot() + geom
   scale_color_manual(values = c('#009966', "#000CCC", "")) +
   theme(legend.title = element_blank()) 
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_Summary_V1_AA_AW.png", plot = plot_ENSEMBLE_siteLevel.CCC, width =4, height = 3, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_Summary_V1", run.tag, ".png"), plot = plot_ENSEMBLE_siteLevel.CCC, width =4, height = 3, units = "in")
 
 SITES_ENSEMBLE_canopy_season <- SITES_One2One_canopy_summary %>% 
   full_join(Linear_ENSEMBLE_Season_Stats %>% 

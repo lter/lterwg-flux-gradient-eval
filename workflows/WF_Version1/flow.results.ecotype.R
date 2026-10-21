@@ -1,3 +1,7 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # Ecosystem Based Figures: 
 
 library(tidyverse)
@@ -6,8 +10,8 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
 
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
@@ -89,7 +93,7 @@ eco.plot.final <- ggarrange( Summary.approach.ecotype ,
                              RSHP.CCC.ecotype,
                              total.RSHP.plot, labels=c("A", "B", "C", "D"))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/EcoType_Results_AA_AW.png", plot = eco.plot.final , width =8, height = 7, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/EcoType_Results", run.tag, ".png"), plot = eco.plot.final , width =8, height = 7, units = "in")
 
 
              

@@ -1,3 +1,4 @@
+# LEGACY (not used for the 2021-2026 figures; reads preprint-era files). Current version/workflow: workflows/flow.evaluation.batch_V1.R
 # Compare 30 miniute fluxes:
 
 # Final diel:
@@ -11,7 +12,7 @@ library(gtools)
 library(ggplot2)
 library(ggpmisc)
 
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 source(fs::path(DirRepo,'functions/calc.diel.R' ))
 load(fs::path(localdir,paste0("SITES_One2One.Rdata"))) # Import CCC results

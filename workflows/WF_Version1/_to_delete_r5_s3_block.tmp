@@ -1,0 +1,34 @@
+
+# R5b. Supplement S3: seasonal day/night concentration profiles at every site -----------------
+# Uses P (profiles closed with the top inlet, dC = 0) and tab.R5 from R5. Writes
+#  REVIEW_R5_sink_source_by_season{run.tag}.csv  (summary of tab.R5 for every season, not only summer)
+#  S3_profiles_CO2{run.tag}.png, S3_profiles_H2O{run.tag}.png  (all 47 sites, ordered by canopy height)
+tab.R5.season <- tab.R5[, .(sites = .N,
+    pct_extreme_at_lowest_inlet = round(100 * mean(z_extreme_m == z_low)),
+    pct_extreme_within_canopy = round(100 * mean(z_extreme_m < hc)),
+    pct_second_inlet_above_extreme = round(100 * mean(second_above_extreme))),
+  by = .(gas, season, daynight, canopy = fifelse(hc < 5, "hc < 5 m", "hc >= 5 m"))]
+tab.R5.season[, season := factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))]
+setorder(tab.R5.season, gas, canopy, daynight, season)
+print(tab.R5.season)
+fwrite(tab.R5.season, file.path(rev.dir, paste0("REVIEW_R5_sink_source_by_season", run.tag, ".csv")))
+
+site.order <- unique(P[, .(Site, hc)])[order(hc)]
+site.lab <- setNames(sprintf("%s (%.1f m)", site.order$Site, site.order$hc), site.order$Site)
+plot.S3 <- function(g, xlab) {
+  d <- P[gas == g][, `:=`(Site = factor(Site, levels = site.order$Site), season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn")))]
+  setorder(d, Site, season, daynight, height_m)
+  hcl <- unique(d[, .(Site, hc)])
+  ggplot(d, aes(dC, height_m, colour = season, linetype = daynight, group = interaction(season, daynight))) +
+    geom_vline(xintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_hline(data = hcl, aes(yintercept = hc), colour = "#4A7C3A", linetype = 2, linewidth = 0.3, inherit.aes = FALSE) +
+    geom_path(linewidth = 0.45) + geom_point(size = 0.6) +
+    facet_wrap(~ Site, scales = "free", ncol = 7, labeller = as_labeller(site.lab)) +
+    scale_colour_manual(values = c(Winter = "#3B5BA5", Spring = "#4E9A3E", Summer = "#E69F00", Autumn = "#B5523B"), name = NULL) +
+    scale_linetype_manual(values = c(day = "solid", night = "22"), name = NULL) +
+    labs(x = xlab, y = "Inlet height (m)") + th + theme(strip.text = element_text(size = 7), axis.text = element_text(size = 6))
+}
+pS3c <- plot.S3("CO2", expression("CO"[2]*" minus top inlet (ppm)"))
+pS3h <- plot.S3("H2O", expression("H"[2]*"O minus top inlet (mmol mol"^-1*")"))
+ggsave(file.path(fig.dir, paste0("S3_profiles_CO2", run.tag, ".png")), pS3c, width = 11, height = 12, dpi = 200, bg = "white")
+ggsave(file.path(fig.dir, paste0("S3_profiles_H2O", run.tag, ".png")), pS3h, width = 11, height = 12, dpi = 200, bg = "white")

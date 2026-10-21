@@ -1,10 +1,11 @@
+# LEGACY (not used for the 2021-2026 figures; reads preprint-era files). Current version/workflow: workflows/flow.evaluation.batch_V1.R
 # The Diel analysis is currently set up by season for the harmonized data:
 library(tidyverse)
 library(ggpubr)
 library(ggplot2)
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 load( fs::path(localdir,paste0("SITE_DATA_Harmonized.Rdata")))
 source(paste(DirRepo,"/functions/calc.diel.R", sep="") )
 # Calculate diels by Season: ####

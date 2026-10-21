@@ -8,7 +8,7 @@ library(gtools)
 library(ggplot2)
 library(ggpmisc)
 
-DirRepo.eval <-"/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo.eval <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 
 source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))

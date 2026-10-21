@@ -1,3 +1,4 @@
+# LEGACY (not used for the 2021-2026 figures; reads preprint-era files). Current version/workflow: workflows/flow.evaluation.batch_V1.R
 # ---------------------------------------------------------------
 # flow.CCC.placement.recommendations.R
 #
@@ -23,9 +24,9 @@ suppressPackageStartupMessages({
 })
 
 # --- Paths ------------------------------------------------------
-root_dir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient"
+root_dir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient"
 rdata    <- file.path(root_dir, "lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata")
-fig_dir <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
+fig_dir <- '/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
 
 
 out_png  <- file.path(fig_dir , "CCC_placement_recommendations.png")

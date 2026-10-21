@@ -1,3 +1,4 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW" # output-name tag; set in flow.evaluation.batch_V1.R
 # Builds the Filtered dataframe:
 # The file produced does not include CH4!
 
@@ -14,7 +15,7 @@ drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77
 
 source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))
 
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata"))) # Import CCC results
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata")))) # Import CCC results
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
 site.list <- SITES_One2One$Site %>% unique
 
@@ -28,7 +29,7 @@ for( site in site.list){
   message( paste("Importing the data for ", site))
   
   localdir.site <- paste(localdir,"/NEON_GradientFlux_Data_Filter/", site, sep = "")
-  load(paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
+  load(paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
   
   SITES_One2One_sub <- SITES_One2One %>% 
     select( -c('Canopy_L1', 'TowerPosition_A', 'TowerPosition_B')) %>% filter(Site == site)

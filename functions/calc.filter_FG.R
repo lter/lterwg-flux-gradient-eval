@@ -325,3 +325,37 @@ Generate.filter.report_old <- function( site.tibble,
   
   return(REPORT  )  
 }
+
+
+# Gradient-flux spike removal ------------------------------------------------
+# Applied after filter_fluxes(). Drops gradient fluxes (FG_mean) farther than
+# k * MAD from the median, computed within gas x sampling-height pair x
+# day/night x season strata. Stratifying matters: pooled across the diel cycle,
+# the MAD is set by small night-time fluxes and real midday H2O peaks get removed
+# (~25% of midday MBR H2O). Uses the GF only (no EC information).
+# With k = 6, removes ~2-3% of filtered GF by day and by night (NEON 2021-2026).
+# Strata with fewer than min.n values are left untouched.
+despike_fluxes <- function(df, k = 6, flux.col = "FG_mean",
+                           time.col = "timeEndA.local",
+                           group.cols = c("gas", "dLevelsAminusB"),
+                           day.hours = 7:18, by.season = TRUE, min.n = 20) {
+  df <- as.data.frame(df)
+  if (nrow(df) == 0) return(df)
+  hr <- as.numeric(format(df[[time.col]], "%H"))
+  mo <- as.numeric(format(df[[time.col]], "%m"))
+  df$.daynight <- ifelse(hr %in% day.hours, "day", "night")
+  df$.season <- if (by.season) {
+    dplyr::case_when(mo %in% c(12, 1, 2) ~ "Winter", mo %in% 3:5 ~ "Spring",
+                     mo %in% 6:8 ~ "Summer", TRUE ~ "Autumn")
+  } else "all"
+  df %>%
+    group_by(across(all_of(c(group.cols, ".daynight", ".season")))) %>%
+    mutate(.med = median(.data[[flux.col]], na.rm = TRUE),
+           .mad = mad(.data[[flux.col]], na.rm = TRUE),
+           .n = sum(!is.na(.data[[flux.col]]))) %>%
+    filter(is.na(.data[[flux.col]]) | .n < min.n |
+             abs(.data[[flux.col]] - .med) <= k * pmax(.mad, 1e-6)) %>%
+    ungroup() %>%
+    select(-.med, -.mad, -.n, -.daynight, -.season) %>%
+    as.data.frame()
+}

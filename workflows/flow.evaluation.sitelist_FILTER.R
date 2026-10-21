@@ -1,3 +1,4 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW" # output-name tag; set in flow.evaluation.batch_V1.R
 # Builds the Filtered dataframe:
 
 # The Diel analysis is currently set up by CCC threshold:
@@ -40,7 +41,7 @@ for( site in site.list){
   
   localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
-  load(paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
+  load(paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
   
   canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, dLevelsAminusB, Approach)
  
@@ -88,13 +89,13 @@ for( site in site.list){
   # Load the files:
   localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
-  files.CO2 <- paste(site, "_9min.report.CO2_AA_AW.csv", sep = "")
+  files.CO2 <- paste(site, paste0("_9min.report.CO2", run.tag, ".csv"), sep = "")
   
   report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))
   
   filter.report.CO2 <- rbind(filter.report.CO2,  report.CO2 )
   
-  files.H2O <- paste(site, "_9min.report.H2O_AA_AW.csv", sep = "")
+  files.H2O <- paste(site, paste0("_9min.report.H2O", run.tag, ".csv"), sep = "")
   
   report.H2O <- read.csv( paste( localdir.site,"/", files.H2O, sep="" ))
   
@@ -110,11 +111,11 @@ for( site in site.list){
   # Load the files:
   localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
-  files.CO2 <- paste(site, "_9min.report.stability.CO2_AA_AW.csv", sep = "")
+  files.CO2 <- paste(site, paste0("_9min.report.stability.CO2", run.tag, ".csv"), sep = "")
   report.CO2 <- read.csv( paste( localdir.site,"/", files.CO2, sep="" ))
   filter.report.stability.CO2 <- rbind(filter.report.stability.CO2,  report.CO2 )
   
-  files.H2O <- paste(site, "_9min.report.stability.H2O_AA_AW.csv", sep = "")
+  files.H2O <- paste(site, paste0("_9min.report.stability.H2O", run.tag, ".csv"), sep = "")
   report.H2O <- read.csv( paste( localdir.site,"/", files.H2O, sep="" ))
   filter.report.stability.H2O <- rbind(filter.report.stability.H2O,  report.H2O )
   

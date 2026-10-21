@@ -1,3 +1,7 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # Good levels:
 library(tidyverse)
 library(dplyr)
@@ -8,8 +12,8 @@ library(VSURF)
 library(randomForest)
 
 
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
 
 dir <- DirRepo.eval
 
@@ -83,12 +87,12 @@ if( stop == 'no'){
   
   final.vars <- c(rf_index.sdesign.vars, rf_index.Cspec.vars,rf_index.Cstructure.vars) 
   
-  save(final.vars, file= paste(dir, "FinalVarsSelection_AA_AW.Rdata", sep="") )
+  save(final.vars, file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".Rdata")) )
 }
 
 # Final Model Fit : ####
 if( stop == 'no'){
-load( file= paste(dir, "FinalVarsSelection_AA_AW.Rdata", sep="") )
+load( file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".Rdata")) )
 
   final.vars[final.vars != 'gas' & final.vars !=  'MeasurementDist'] 
   
@@ -112,11 +116,29 @@ confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
 save(train, test,rf_model, final.vars, SITES_One2One, 
-     file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata_AA_AW", sep="") )
+     file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
+}
+
+# Refit the final model on this run's CCC table (same predictors as the published model; no
+# VSURF re-selection). Set refit.rf <- TRUE in flow.evaluation.batch_V1.R, e.g. when new data
+# periods are added. With refit.rf FALSE/unset the saved model for run.tag is loaded instead.
+if (exists("refit.rf") && isTRUE(refit.rf) && stop != 'no') {
+  set.seed(2026)
+  train <- SITES_One2One.nona %>% sample_frac(0.80)
+  test <- anti_join(SITES_One2One.nona, train)
+  vars <- c("Approach", "RelativeDistB", "CHM.sd", "Cutoff05.SDSDH", "RelativeDistA")
+  final.vars <- vars
+  rf_model <- randomForest(Good.CCC ~ .,
+                           data = train %>% select(c(Good.CCC, all_of(vars))) %>% na.omit,
+                           importance = TRUE, predicted = TRUE, keep.inbag = TRUE)
+  print(rf_model)
+  dir.create(paste(localdir, "/NEON_GradientFlux_Data_MODEL", sep = ""), showWarnings = FALSE)
+  save(train, test, rf_model, final.vars, SITES_One2One,
+       file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep = ""))
 }
 
 # Sensitivity Analysis: ####
-load(file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata_AA_AW", sep="") )
+load(file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
 
 SITES_One2One$Approach %>% unique
 SITES_One2One$Canopy_L1 %>% unique#
@@ -212,7 +234,7 @@ if( approach == "MBR"){
   
   plot.mbr.5 <- Sensitivity_plot2(df = RelativeDistA.final, approach = approach, label= "Relative Dist A", var='RelativeDistA', col =col )+ theme(legend.title = element_blank())
   
-  plot.mbr.3 <- Sensitivity_plot2(df = CHM.sd.final , approach = approach, label= "Canopy Height (m)", var='CHM.sd' , col =col)+ theme(legend.title = element_blank())
+  plot.mbr.3 <- Sensitivity_plot2(df = CHM.sd.final , approach = approach, label= "CHM.sd (m)", var='CHM.sd' , col =col)+ theme(legend.title = element_blank())
   
   
   gd.plot.mbr <- ggarrange(plot.mbr.3,
@@ -229,7 +251,7 @@ gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c( "I", "J","K"
 final.gd.plot <- ggarrange( gd.plot.mbr, gd.plot.ae, gd.plot.wp, nrow=3, ncol=1, common.legend = TRUE)
 
 setwd(DirRepo.eval )
-ggsave("Figures/WF_Version1/GoodData_plot_AA_AW.png", plot = final.gd.plot, width = 11, height = 9, units = "in")
+ggsave(paste0("Figures/WF_Version1/GoodData_plot", run.tag, ".png"), plot = final.gd.plot, width = 11, height = 9, units = "in")
 
 # Model Results: ####
 metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
@@ -245,7 +267,7 @@ caret::confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Model Use: #####
 
-load(file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata_AA_AW", sep="") )
+load(file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
 
 SITES_One2One$rf_model <- predict(rf_model , SITES_One2One, type = "prob")[,2]
 
@@ -288,14 +310,14 @@ final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.can
                                    labels=c("B", "C")), nrow=1,
           widths = c(1, 2, 2), labels="A")
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix_AA_AW.png", plot =  final.model.plots, width = 9, height = 3, units = "in")
+ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix", run.tag, ".png"), plot =  final.model.plots, width = 9, height = 3, units = "in")
 
 save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file= paste(localdir, "/NEON_GradientFlux_Data_MODEL/SITES_One2One_model_AA_AW.Rdata", sep="") )
+     file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_model", run.tag, ".Rdata"), sep="") )
 
 # Save the AA_AW canopy model artifact expected by downstream RSHP scripts.
 save(train, test, rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file = paste(localdir, "/NEON_GradientFlux_Data_MODEL/SITES_One2One_canopy_model_AA_AW.Rdata", sep = ""))
+     file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_canopy_model", run.tag, ".Rdata"), sep = ""))
   
 # Results
 SITES_One2One_EC.summary <- 

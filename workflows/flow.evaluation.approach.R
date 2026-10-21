@@ -1,3 +1,4 @@
+# LEGACY (not used for the 2021-2026 figures; reads preprint-era files). Current version/workflow: workflows/flow.evaluation.batch_V1.R
 # Designed to explore the performance of sampling height pairs relative to other pairs
 
 library(ggforce)
@@ -107,7 +108,7 @@ plot.CCC.gf <- val.SHP.resample  %>% drop_na(predicted)%>%
 final.model.plots.gf <- ggarrange( ggarrange(plot.CCC.gf, plot.Cmatrix.gf, nrow=1, ncol=2, labels=c("A", "B")),
                                 ggarrange(plot.approach.gf , plot.canopylevels.gf, nrow= 1, common.legend = T, labels=c("C", "D")), ncol=1 )
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/SamplingHeightPair_Selection_GFMODELPRED.png", plot =  final.model.plots.gf, width = 7, height = 7, units = "in")
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/SamplingHeightPair_Selection_GFMODELPRED.png", plot =  final.model.plots.gf, width = 7, height = 7, units = "in")
 
 # How many additional pairs were added ####
 sites.model <- pairs.MODEL  %>% select (Site) %>% unique # sites
@@ -212,16 +213,16 @@ final.pre.validation.plot <- ggarrange(plot.preval.SHP.density,
 
 # Save the plots:
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.SHP.APPROACH.CL1.png",
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.SHP.APPROACH.CL1.png",
        plot =  final.pre.validation.plot, width = 6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.APPROACH.png",
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.APPROACH.png",
        plot =  finalplot.preval.approach, width = 6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.CL1.png",
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.CL1.png",
        plot =  finalplot.preval.canopy, width = 6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.SHP.png",
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.SHP.png",
        plot =  final.plots.preval.SHP, width = 6, height = 7, units = "in")
 
 # Post-validation: ####
@@ -244,7 +245,7 @@ final.post.validation.plot <- ggarrange(plot.post.val,
                                        labels=c("A", "B"),
                                        heights=c(3,1))
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.PLOTS.png",
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.PLOTS.png",
        plot =  final.post.validation.plot, width = 6, height = 7, units = "in")
 
 final.post.validation.plot <- ggarrange(plot.post.val,
@@ -254,7 +255,7 @@ final.post.validation.plot <- ggarrange(plot.post.val,
 
 SUper.plot <- ggarrange( final.pre.validation.plot,final.post.validation.plot , ncol=2 )
 
-ggsave("/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.Harmonization.png",
+ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.Harmonization.png",
        plot =  SUper.plot, width = 8, height = 7, units = "in")
 
 

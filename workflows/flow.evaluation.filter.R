@@ -1,3 +1,4 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW" # output-name tag; set in flow.evaluation.batch_V1.R
 # Filter Gradient Flux Data:
 
 library(lutz)
@@ -18,12 +19,23 @@ for( site in site.list){
     filter(Site == site, Canopy_L1 != "WW") %>% select(Site, Canopy_L1, dLevelsAminusB)
   
   
-  # Load the files:
-  localdir.site <- paste(localdir,"/NEON_GradientFlux_Data/", site, sep = "")
-  
-  files <- paste(site, "_Evaluation.Rdata", sep = "")
-  
-  load(paste(localdir.site, "/", files, sep=""))
+  # Load the files (one SITE_Evaluation.Rdata per data period in eval.data.dirs; stacked):
+  if (!exists("eval.data.dirs")) eval.data.dirs <- "NEON_GradientFlux_Data"
+  period.list <- list(MBR = list(), AE = list(), WP = list())
+  for (period.dir in eval.data.dirs) {
+    localdir.site <- paste(localdir, "/", period.dir, "/", site, sep = "")
+    files <- paste(site, "_Evaluation.Rdata", sep = "")
+    if (!file.exists(paste(localdir.site, "/", files, sep = ""))) {
+      message("No evaluation file for ", site, " in ", period.dir); next }
+    load(paste(localdir.site, "/", files, sep = ""))
+    period.list$MBR[[period.dir]] <- MBR_9min.df.final
+    period.list$AE[[period.dir]]  <- AE_9min.df.final
+    period.list$WP[[period.dir]]  <- WP_9min.df.final
+  }
+  MBR_9min.df.final <- bind_rows(period.list$MBR)
+  AE_9min.df.final  <- bind_rows(period.list$AE)
+  WP_9min.df.final  <- bind_rows(period.list$WP)
+  rm(period.list)
   
   # Add the canopy information to the file:
   MBR_9min.df.final <- MBR_9min.df.final  %>% 
@@ -159,6 +171,16 @@ for( site in site.list){
                                 gas == "CH4"~ NA))
   
   
+  # Gradient-flux spike removal (GF only; EC is not used). Drops FG_mean outside
+  # median +/- despike.k * MAD within gas x sampling-height pair x day/night x season,
+  # computed over all periods loaded above. Set despike.k <- NULL in the batch file to skip.
+  if (!exists("despike.k")) despike.k <- NULL
+  if (!is.null(despike.k)) {
+    MBR_9min_FILTER <- despike_fluxes(MBR_9min_FILTER, k = despike.k)
+    AE_9min_FILTER  <- despike_fluxes(AE_9min_FILTER,  k = despike.k)
+    WP_9min_FILTER  <- despike_fluxes(WP_9min_FILTER,  k = despike.k)
+  }
+  
   # Output the files
   rm(localdir.site)
   
@@ -166,36 +188,36 @@ for( site in site.list){
   
   dir.create(localdir.site)
   
-  write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,"_9min.report.stability.CO2_AA_AW.csv", sep=""))
-  write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,"_9min.report.CO2_AA_AW.csv", sep=""))
+  write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,paste0("_9min.report.stability.CO2", run.tag, ".csv"), sep=""))
+  write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,paste0("_9min.report.CO2", run.tag, ".csv"), sep=""))
   
-  write.csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,"_9min.report.stability.H2O_AA_AW.csv", sep=""))
-  write.csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,"_9min.report.H2O_AA_AW.csv", sep=""))
+  write.csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,paste0("_9min.report.stability.H2O", run.tag, ".csv"), sep=""))
+  write.csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,paste0("_9min.report.H2O", run.tag, ".csv"), sep=""))
   
   
   save( AE_9min_FILTER,
         WP_9min_FILTER,
-        MBR_9min_FILTER, file = paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep=""))
+        MBR_9min_FILTER, file = paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
   
   
   # Upload files to the google
   
   site_folder <-data_folder$id[data_folder$name==site]
   
-  fileSave <- paste(localdir.site, "/", site, "_FILTER_AA_AW.Rdata", sep="")
-  googledrive::drive_upload(media = fileSave, overwrite = T, path = site_folder)
+  fileSave <- paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep="")
+  if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.CO2_AA_AW.csv", sep="")
-  googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
+  fileSave <- paste(localdir.site, "/", site,paste0("_9min.report.CO2", run.tag, ".csv"), sep="")
+  if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.CO2_AA_AW.csv", sep="")
-  googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
+  fileSave <- paste(localdir.site, "/", site,paste0("_9min.report.stability.CO2", run.tag, ".csv"), sep="")
+  if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.H2O_AA_AW.csv", sep="")
-  googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
+  fileSave <- paste(localdir.site, "/", site,paste0("_9min.report.H2O", run.tag, ".csv"), sep="")
+  if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
-  fileSave <- paste(localdir.site, "/", site,"_9min.report.stability.H2O_AA_AW.csv", sep="")
-  googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
+  fileSave <- paste(localdir.site, "/", site,paste0("_9min.report.stability.H2O", run.tag, ".csv"), sep="")
+  if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path =site_folder)
   
   message( paste("Done with filtering", site))
   

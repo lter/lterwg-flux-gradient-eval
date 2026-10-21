@@ -1,7 +1,11 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 library(tidyverse)
 
-DirRepo.eval <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-input_file <-'/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA'
+DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+input_file <-paste0("/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA")
 output_dir <- fs::path(DirRepo.eval, "Figures", "WF_Version1")
 
 load(input_file)
@@ -45,12 +49,12 @@ diel_range_table <- season_summary %>%
 
 write.csv(
   diel_range_table,
-  file = fs::path(output_dir, "DIEL_ENSEMBLE_site_gas_flux_ranges_AA_AW.csv"),
+  file = fs::path(output_dir, paste0("DIEL_ENSEMBLE_site_gas_flux_ranges", run.tag, ".csv")),
   row.names = FALSE
 )
 
 readr::write_tsv(
   diel_range_table,
-  file = fs::path(output_dir, "DIEL_ENSEMBLE_site_gas_flux_ranges_AA_AW.tsv")
+  file = fs::path(output_dir, paste0("DIEL_ENSEMBLE_site_gas_flux_ranges", run.tag, ".tsv"))
 )
 

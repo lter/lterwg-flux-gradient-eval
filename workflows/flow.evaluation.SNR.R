@@ -11,7 +11,8 @@ for( site in site.list){
   print( site)
   
   # Load the files:
-  localdir.site <- paste(localdir,"/NEON_GradientFlux_Data/", site, sep = "")
+  if (length(eval.data.dirs) != 1L) stop("SNR requires one combined evaluation directory")
+  localdir.site <- file.path(localdir, eval.data.dirs, site)
   
   files <- paste(site, "_Evaluation.Rdata", sep = "")
   

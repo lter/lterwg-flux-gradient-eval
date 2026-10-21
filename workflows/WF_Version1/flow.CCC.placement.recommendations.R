@@ -23,14 +23,15 @@ suppressPackageStartupMessages({
 })
 
 # --- Paths ------------------------------------------------------
-root_dir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient"
-rdata    <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata'
-fig_dir <- '/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
+root_dir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient"
+rdata <- file.path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".Rdata"))
+if (!exists("fig_dir")) fig_dir <- '/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
 
-out_png  <- file.path(fig_dir , "CCC_placement_recommendations.png")
+out_png  <- file.path(fig_dir , paste0("CCC_placement_recommendations", run.tag, ".png"))
 
 # --- Load -------------------------------------------------------
 load(rdata)
+SITES_One2One_canopy_model <- SITES_One2One_model
 stopifnot(exists("SITES_One2One_canopy_model"))
 
 approach_palette <- c(MBR = "#B8860B", AE = "#2E8B57", WP = "#6A0DAD")

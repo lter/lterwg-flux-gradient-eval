@@ -1,13 +1,14 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) 
 library(tidyverse)
 library(lubridate)
 
-DirRepo.eval <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-localdir <- "/Volumes/MaloneLab/Research/FluxGradient/FluxData"
 
 source(fs::path(DirRepo.eval, "functions/calc.lins.ccc.R"))
 
-load(fs::path(localdir, "SITE_DATA_FILTERED_CCC_AA_AW.Rdata"))
-load(fs::path(localdir, "SITE_RSHP_AA_AW.Rdata"))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_DATA_FILTERED_CCC", run.tag, ".Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata")))
 
 safe_inverse <- function(x, power = 1, fallback = 0) {
   out <- rep(fallback, length(x))
@@ -68,9 +69,9 @@ calc_site_metrics <- function(df) {
   )
 }
 
-# RSHP index from the RSHP workflow. Good.CCC == 1 is equivalent to CCC.EC >= 0.5.
-rshp_index <- val.SHP.total.canopy.summary %>%
-  filter(Good.CCC == 1) %>%
+# RSHP index: pairs with CCC >= 0.5 in this run's SITES_One2One (same as Good.CCC == 1).
+rshp_index <- SITES_One2One %>%
+  filter(CCC >= 0.5) %>%
   distinct(Site, gas, Approach, dLevelsAminusB, Canopy_L1)
 
 # Global method reliabilities used by method-specific and Bayesian weighting.
@@ -270,21 +271,21 @@ plot.ensemble.method.comparison <- ggplot(
 
 write_csv(
   ensemble_site_metrics,
-  fs::path(DirRepo.eval, "Figures/WF_Version1/ENSEMBLE_site_level_metrics_RSHP_CCC05.csv")
+  fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_site_level_metrics_RSHP_CCC05", run.tag, ".csv"))
 )
 
 write_csv(
   ensemble_r2_summary,
-  fs::path(DirRepo.eval, "Figures/WF_Version1/ENSEMBLE_method_comparison_R2_RSHP_CCC05.csv")
+  fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_method_comparison_R2_RSHP_CCC05", run.tag, ".csv"))
 )
 
 write_csv(
   method_priors,
-  fs::path(DirRepo.eval, "Figures/WF_Version1/ENSEMBLE_method_priors_RSHP_CCC05.csv")
+  fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_method_priors_RSHP_CCC05", run.tag, ".csv"))
 )
 
 ggsave(
-  fs::path(DirRepo.eval, "Figures/WF_Version1/ENSEMBLE_method_comparison_R2_RSHP_CCC05.png"),
+  fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_method_comparison_R2_RSHP_CCC05", run.tag, ".png")),
   plot = plot.ensemble.method.comparison,
   width = 8,
   height = 7,
@@ -293,7 +294,7 @@ ggsave(
 )
 
 ggsave(
-  fs::path(DirRepo.eval, "Figures/WF_Version1/ENSEMBLE_method_comparison_R2_RSHP_CCC05.pdf"),
+  fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_method_comparison_R2_RSHP_CCC05", run.tag, ".pdf")),
   plot = plot.ensemble.method.comparison,
   width = 8,
   height = 7,
@@ -306,7 +307,7 @@ save(
   ensemble_r2_summary,
   method_priors,
   plot.ensemble.method.comparison,
-  file = fs::path(DirRepo.eval, "Figures/WF_Version1/ENSEMBLE_METHOD_COMPARISON_RSHP_CCC05_AA_AW.Rdata")
+  file = fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_METHOD_COMPARISON_RSHP_CCC05", run.tag, ".Rdata"))
 )
 
 print(ensemble_r2_summary)

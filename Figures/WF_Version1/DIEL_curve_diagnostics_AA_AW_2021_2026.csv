@@ -1,0 +1,377 @@
+site,season,gas,ensemble_rows,complete_rows,curve_present,reason
+ABBY,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Autumn,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Spring,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Summer,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+ABBY,Winter,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+BARR,Autumn,CO2,149,25,TRUE,diel curve present
+BARR,Autumn,H2O,4607,886,TRUE,diel curve present
+BARR,Spring,CO2,909,136,TRUE,diel curve present
+BARR,Spring,H2O,8029,2396,TRUE,diel curve present
+BARR,Summer,CO2,925,81,TRUE,diel curve present
+BARR,Summer,H2O,6590,2491,TRUE,diel curve present
+BARR,Winter,CO2,114,6,FALSE,<=36 valid half-hours for seasonal loess fit
+BARR,Winter,H2O,3178,902,TRUE,diel curve present
+BART,Autumn,CO2,272,114,TRUE,diel curve present
+BART,Autumn,H2O,236,100,TRUE,diel curve present
+BART,Spring,CO2,363,134,TRUE,diel curve present
+BART,Spring,H2O,291,112,TRUE,diel curve present
+BART,Summer,CO2,411,216,TRUE,diel curve present
+BART,Summer,H2O,343,184,TRUE,diel curve present
+BART,Winter,CO2,294,88,TRUE,diel curve present
+BART,Winter,H2O,255,81,TRUE,diel curve present
+BLAN,Autumn,CO2,274,83,TRUE,diel curve present
+BLAN,Autumn,H2O,3639,1291,TRUE,diel curve present
+BLAN,Spring,CO2,338,190,TRUE,diel curve present
+BLAN,Spring,H2O,4974,3004,TRUE,diel curve present
+BLAN,Summer,CO2,269,90,TRUE,diel curve present
+BLAN,Summer,H2O,3799,1790,TRUE,diel curve present
+BLAN,Winter,CO2,114,31,TRUE,diel curve present
+BLAN,Winter,H2O,4043,1017,TRUE,diel curve present
+BONA,Autumn,CO2,277,29,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Autumn,H2O,6184,1425,TRUE,diel curve present
+BONA,Spring,CO2,121,18,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Spring,H2O,6917,2567,TRUE,diel curve present
+BONA,Summer,CO2,188,24,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Summer,H2O,6681,2189,TRUE,diel curve present
+BONA,Winter,CO2,57,1,FALSE,<=36 valid half-hours for seasonal loess fit
+BONA,Winter,H2O,4083,1000,TRUE,diel curve present
+CLBJ,Autumn,CO2,1133,441,TRUE,diel curve present
+CLBJ,Autumn,H2O,1939,1078,TRUE,diel curve present
+CLBJ,Spring,CO2,1787,824,TRUE,diel curve present
+CLBJ,Spring,H2O,2852,1752,TRUE,diel curve present
+CLBJ,Summer,CO2,1011,484,TRUE,diel curve present
+CLBJ,Summer,H2O,2753,1871,TRUE,diel curve present
+CLBJ,Winter,CO2,959,304,TRUE,diel curve present
+CLBJ,Winter,H2O,1810,876,TRUE,diel curve present
+CPER,Autumn,CO2,1551,453,TRUE,diel curve present
+CPER,Autumn,H2O,4882,2795,TRUE,diel curve present
+CPER,Spring,CO2,2307,732,TRUE,diel curve present
+CPER,Spring,H2O,7213,3866,TRUE,diel curve present
+CPER,Summer,CO2,3433,1274,TRUE,diel curve present
+CPER,Summer,H2O,5487,3066,TRUE,diel curve present
+CPER,Winter,CO2,1495,312,TRUE,diel curve present
+CPER,Winter,H2O,5725,3418,TRUE,diel curve present
+DCFS,Autumn,CO2,3906,2467,TRUE,diel curve present
+DCFS,Autumn,H2O,6792,4622,TRUE,diel curve present
+DCFS,Spring,CO2,2936,1679,TRUE,diel curve present
+DCFS,Spring,H2O,7451,4846,TRUE,diel curve present
+DCFS,Summer,CO2,6291,3947,TRUE,diel curve present
+DCFS,Summer,H2O,7640,5117,TRUE,diel curve present
+DCFS,Winter,CO2,675,207,TRUE,diel curve present
+DCFS,Winter,H2O,4825,2594,TRUE,diel curve present
+DEJU,Autumn,CO2,1882,719,TRUE,diel curve present
+DEJU,Autumn,H2O,3990,1991,TRUE,diel curve present
+DEJU,Spring,CO2,1189,598,TRUE,diel curve present
+DEJU,Spring,H2O,5036,3196,TRUE,diel curve present
+DEJU,Summer,CO2,3164,1493,TRUE,diel curve present
+DEJU,Summer,H2O,5154,2965,TRUE,diel curve present
+DEJU,Winter,CO2,1177,242,TRUE,diel curve present
+DEJU,Winter,H2O,3186,1349,TRUE,diel curve present
+DELA,Autumn,CO2,1092,538,TRUE,diel curve present
+DELA,Autumn,H2O,2960,1678,TRUE,diel curve present
+DELA,Spring,CO2,786,365,TRUE,diel curve present
+DELA,Spring,H2O,2111,1080,TRUE,diel curve present
+DELA,Summer,CO2,741,325,TRUE,diel curve present
+DELA,Summer,H2O,2482,1025,TRUE,diel curve present
+DELA,Winter,CO2,432,171,TRUE,diel curve present
+DELA,Winter,H2O,1305,554,TRUE,diel curve present
+DSNY,Autumn,CO2,4940,1958,TRUE,diel curve present
+DSNY,Autumn,H2O,5447,2525,TRUE,diel curve present
+DSNY,Spring,CO2,3990,1658,TRUE,diel curve present
+DSNY,Spring,H2O,4988,2586,TRUE,diel curve present
+DSNY,Summer,CO2,3562,1808,TRUE,diel curve present
+DSNY,Summer,H2O,3737,2131,TRUE,diel curve present
+DSNY,Winter,CO2,4698,1883,TRUE,diel curve present
+DSNY,Winter,H2O,6018,3426,TRUE,diel curve present
+YELL,Autumn,CO2,341,105,TRUE,diel curve present
+YELL,Autumn,H2O,1585,621,TRUE,diel curve present
+YELL,Spring,CO2,581,226,TRUE,diel curve present
+YELL,Spring,H2O,2175,1009,TRUE,diel curve present
+YELL,Summer,CO2,837,186,TRUE,diel curve present
+YELL,Summer,H2O,1906,603,TRUE,diel curve present
+YELL,Winter,CO2,281,52,TRUE,diel curve present
+YELL,Winter,H2O,1457,439,TRUE,diel curve present
+GRSM,Autumn,CO2,2467,1110,TRUE,diel curve present
+GRSM,Autumn,H2O,3971,1975,TRUE,diel curve present
+GRSM,Spring,CO2,2039,874,TRUE,diel curve present
+GRSM,Spring,H2O,3746,1650,TRUE,diel curve present
+GRSM,Summer,CO2,2556,1369,TRUE,diel curve present
+GRSM,Summer,H2O,4014,2277,TRUE,diel curve present
+GRSM,Winter,CO2,1890,445,TRUE,diel curve present
+GRSM,Winter,H2O,3739,1037,TRUE,diel curve present
+GUAN,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+GUAN,Autumn,H2O,4033,0,TRUE,diel curve present
+GUAN,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+GUAN,Spring,H2O,2268,0,TRUE,diel curve present
+GUAN,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+GUAN,Summer,H2O,3213,37,TRUE,diel curve present
+GUAN,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+GUAN,Winter,H2O,3795,0,TRUE,diel curve present
+HARV,Autumn,CO2,889,233,TRUE,diel curve present
+HARV,Autumn,H2O,880,233,TRUE,diel curve present
+HARV,Spring,CO2,609,243,TRUE,diel curve present
+HARV,Spring,H2O,592,230,TRUE,diel curve present
+HARV,Summer,CO2,565,296,TRUE,diel curve present
+HARV,Summer,H2O,556,291,TRUE,diel curve present
+HARV,Winter,CO2,499,160,TRUE,diel curve present
+HARV,Winter,H2O,493,155,TRUE,diel curve present
+HEAL,Autumn,CO2,951,353,TRUE,diel curve present
+HEAL,Autumn,H2O,950,347,TRUE,diel curve present
+HEAL,Spring,CO2,1046,546,TRUE,diel curve present
+HEAL,Spring,H2O,1018,532,TRUE,diel curve present
+HEAL,Summer,CO2,2033,1210,TRUE,diel curve present
+HEAL,Summer,H2O,2027,1207,TRUE,diel curve present
+HEAL,Winter,CO2,845,258,TRUE,diel curve present
+HEAL,Winter,H2O,819,237,TRUE,diel curve present
+JERC,Autumn,CO2,12,2,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Autumn,H2O,2573,1351,TRUE,diel curve present
+JERC,Spring,CO2,9,2,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Spring,H2O,2274,1058,TRUE,diel curve present
+JERC,Summer,CO2,11,2,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Summer,H2O,1686,762,TRUE,diel curve present
+JERC,Winter,CO2,13,3,FALSE,<=36 valid half-hours for seasonal loess fit
+JERC,Winter,H2O,2649,1276,TRUE,diel curve present
+JORN,Autumn,CO2,1383,287,TRUE,diel curve present
+JORN,Autumn,H2O,6867,1760,TRUE,diel curve present
+JORN,Spring,CO2,515,119,TRUE,diel curve present
+JORN,Spring,H2O,7330,3435,TRUE,diel curve present
+JORN,Summer,CO2,1468,384,TRUE,diel curve present
+JORN,Summer,H2O,7128,2527,TRUE,diel curve present
+JORN,Winter,CO2,664,61,TRUE,diel curve present
+JORN,Winter,H2O,6372,1601,TRUE,diel curve present
+KONA,Autumn,CO2,3630,1379,TRUE,diel curve present
+KONA,Autumn,H2O,6384,3746,TRUE,diel curve present
+KONA,Spring,CO2,2979,1318,TRUE,diel curve present
+KONA,Spring,H2O,7742,4588,TRUE,diel curve present
+KONA,Summer,CO2,4803,2558,TRUE,diel curve present
+KONA,Summer,H2O,6510,4204,TRUE,diel curve present
+KONA,Winter,CO2,2115,616,TRUE,diel curve present
+KONA,Winter,H2O,8360,4912,TRUE,diel curve present
+KONZ,Autumn,CO2,4282,2552,TRUE,diel curve present
+KONZ,Autumn,H2O,8469,5280,TRUE,diel curve present
+KONZ,Spring,CO2,2780,1569,TRUE,diel curve present
+KONZ,Spring,H2O,7686,4783,TRUE,diel curve present
+KONZ,Summer,CO2,6826,4528,TRUE,diel curve present
+KONZ,Summer,H2O,8990,6394,TRUE,diel curve present
+KONZ,Winter,CO2,1479,403,TRUE,diel curve present
+KONZ,Winter,H2O,7512,4541,TRUE,diel curve present
+LAJA,Autumn,CO2,1739,969,TRUE,diel curve present
+LAJA,Autumn,H2O,1917,1108,TRUE,diel curve present
+LAJA,Spring,CO2,1835,351,TRUE,diel curve present
+LAJA,Spring,H2O,2312,664,TRUE,diel curve present
+LAJA,Summer,CO2,2421,1287,TRUE,diel curve present
+LAJA,Summer,H2O,2669,1555,TRUE,diel curve present
+LAJA,Winter,CO2,1838,827,TRUE,diel curve present
+LAJA,Winter,H2O,2001,1041,TRUE,diel curve present
+LENO,Autumn,CO2,27,0,FALSE,no complete FG_ENSEMBLE and EC_mean rows
+LENO,Autumn,H2O,2009,706,TRUE,diel curve present
+LENO,Spring,CO2,64,20,FALSE,<=36 valid half-hours for seasonal loess fit
+LENO,Spring,H2O,2875,1141,TRUE,diel curve present
+LENO,Summer,CO2,58,13,FALSE,<=36 valid half-hours for seasonal loess fit
+LENO,Summer,H2O,2716,1278,TRUE,diel curve present
+LENO,Winter,CO2,2,1,FALSE,<=36 valid half-hours for seasonal loess fit
+LENO,Winter,H2O,1564,780,TRUE,diel curve present
+MLBS,Autumn,CO2,505,167,TRUE,diel curve present
+MLBS,Autumn,H2O,699,254,TRUE,diel curve present
+MLBS,Spring,CO2,571,202,TRUE,diel curve present
+MLBS,Spring,H2O,701,237,TRUE,diel curve present
+MLBS,Summer,CO2,333,150,TRUE,diel curve present
+MLBS,Summer,H2O,584,274,TRUE,diel curve present
+MLBS,Winter,CO2,663,169,TRUE,diel curve present
+MLBS,Winter,H2O,808,217,TRUE,diel curve present
+MOAB,Autumn,CO2,2168,597,TRUE,diel curve present
+MOAB,Autumn,H2O,7165,3899,TRUE,diel curve present
+MOAB,Spring,CO2,2207,797,TRUE,diel curve present
+MOAB,Spring,H2O,8618,4776,TRUE,diel curve present
+MOAB,Summer,CO2,3001,1120,TRUE,diel curve present
+MOAB,Summer,H2O,8795,4454,TRUE,diel curve present
+MOAB,Winter,CO2,1885,278,TRUE,diel curve present
+MOAB,Winter,H2O,8104,3839,TRUE,diel curve present
+NIWO,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+NIWO,Autumn,H2O,6176,3134,TRUE,diel curve present
+NIWO,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+NIWO,Spring,H2O,5550,2844,TRUE,diel curve present
+NIWO,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+NIWO,Summer,H2O,6215,3421,TRUE,diel curve present
+NIWO,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+NIWO,Winter,H2O,4360,2312,TRUE,diel curve present
+NOGP,Autumn,CO2,1956,1057,TRUE,diel curve present
+NOGP,Autumn,H2O,8465,5929,TRUE,diel curve present
+NOGP,Spring,CO2,1866,822,TRUE,diel curve present
+NOGP,Spring,H2O,10169,6345,TRUE,diel curve present
+NOGP,Summer,CO2,3374,2195,TRUE,diel curve present
+NOGP,Summer,H2O,7404,5831,TRUE,diel curve present
+NOGP,Winter,CO2,1236,243,TRUE,diel curve present
+NOGP,Winter,H2O,9231,4285,TRUE,diel curve present
+OAES,Autumn,CO2,3501,1437,TRUE,diel curve present
+OAES,Autumn,H2O,7154,3969,TRUE,diel curve present
+OAES,Spring,CO2,3447,1642,TRUE,diel curve present
+OAES,Spring,H2O,7361,4992,TRUE,diel curve present
+OAES,Summer,CO2,4877,2548,TRUE,diel curve present
+OAES,Summer,H2O,8803,5847,TRUE,diel curve present
+OAES,Winter,CO2,1121,355,TRUE,diel curve present
+OAES,Winter,H2O,3540,2117,TRUE,diel curve present
+ONAQ,Autumn,CO2,1749,406,TRUE,diel curve present
+ONAQ,Autumn,H2O,6663,2644,TRUE,diel curve present
+ONAQ,Spring,CO2,2225,695,TRUE,diel curve present
+ONAQ,Spring,H2O,8397,4513,TRUE,diel curve present
+ONAQ,Summer,CO2,2733,561,TRUE,diel curve present
+ONAQ,Summer,H2O,8443,3243,TRUE,diel curve present
+ONAQ,Winter,CO2,1483,202,TRUE,diel curve present
+ONAQ,Winter,H2O,6673,2499,TRUE,diel curve present
+ORNL,Autumn,CO2,1275,339,TRUE,diel curve present
+ORNL,Autumn,H2O,3920,1477,TRUE,diel curve present
+ORNL,Spring,CO2,1326,615,TRUE,diel curve present
+ORNL,Spring,H2O,4231,2431,TRUE,diel curve present
+ORNL,Summer,CO2,894,401,TRUE,diel curve present
+ORNL,Summer,H2O,3378,1720,TRUE,diel curve present
+ORNL,Winter,CO2,1134,223,TRUE,diel curve present
+ORNL,Winter,H2O,4307,1431,TRUE,diel curve present
+OSBS,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Autumn,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Spring,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Summer,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+OSBS,Winter,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Autumn,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Spring,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Summer,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+PUUM,Winter,H2O,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+RMNP,Autumn,CO2,387,162,TRUE,diel curve present
+RMNP,Autumn,H2O,16,4,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Spring,CO2,280,100,TRUE,diel curve present
+RMNP,Spring,H2O,22,5,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Summer,CO2,501,237,TRUE,diel curve present
+RMNP,Summer,H2O,39,6,FALSE,<=36 valid half-hours for seasonal loess fit
+RMNP,Winter,CO2,336,117,TRUE,diel curve present
+RMNP,Winter,H2O,21,5,FALSE,<=36 valid half-hours for seasonal loess fit
+SCBI,Autumn,CO2,430,171,TRUE,diel curve present
+SCBI,Autumn,H2O,613,257,TRUE,diel curve present
+SCBI,Spring,CO2,649,219,TRUE,diel curve present
+SCBI,Spring,H2O,901,310,TRUE,diel curve present
+SCBI,Summer,CO2,499,245,TRUE,diel curve present
+SCBI,Summer,H2O,671,345,TRUE,diel curve present
+SCBI,Winter,CO2,725,237,TRUE,diel curve present
+SCBI,Winter,H2O,1005,353,TRUE,diel curve present
+SERC,Autumn,CO2,1621,794,TRUE,diel curve present
+SERC,Autumn,H2O,1355,654,TRUE,diel curve present
+SERC,Spring,CO2,1777,716,TRUE,diel curve present
+SERC,Spring,H2O,1500,593,TRUE,diel curve present
+SERC,Summer,CO2,2734,1479,TRUE,diel curve present
+SERC,Summer,H2O,2198,1181,TRUE,diel curve present
+SERC,Winter,CO2,1285,418,TRUE,diel curve present
+SERC,Winter,H2O,1086,336,TRUE,diel curve present
+SJER,Autumn,CO2,1129,240,TRUE,diel curve present
+SJER,Autumn,H2O,3750,758,TRUE,diel curve present
+SJER,Spring,CO2,1351,571,TRUE,diel curve present
+SJER,Spring,H2O,4846,1861,TRUE,diel curve present
+SJER,Summer,CO2,1506,334,TRUE,diel curve present
+SJER,Summer,H2O,5405,1316,TRUE,diel curve present
+SJER,Winter,CO2,822,252,TRUE,diel curve present
+SJER,Winter,H2O,3075,738,TRUE,diel curve present
+SOAP,Autumn,CO2,1940,372,TRUE,diel curve present
+SOAP,Autumn,H2O,1818,340,TRUE,diel curve present
+SOAP,Spring,CO2,2403,612,TRUE,diel curve present
+SOAP,Spring,H2O,2251,579,TRUE,diel curve present
+SOAP,Summer,CO2,2940,778,TRUE,diel curve present
+SOAP,Summer,H2O,2729,715,TRUE,diel curve present
+SOAP,Winter,CO2,2604,455,TRUE,diel curve present
+SOAP,Winter,H2O,2452,429,TRUE,diel curve present
+SRER,Autumn,CO2,994,127,TRUE,diel curve present
+SRER,Autumn,H2O,2724,1241,TRUE,diel curve present
+SRER,Spring,CO2,835,250,TRUE,diel curve present
+SRER,Spring,H2O,2635,1457,TRUE,diel curve present
+SRER,Summer,CO2,1602,382,TRUE,diel curve present
+SRER,Summer,H2O,3058,1387,TRUE,diel curve present
+SRER,Winter,CO2,548,36,TRUE,diel curve present
+SRER,Winter,H2O,2439,1083,TRUE,diel curve present
+STEI,Autumn,CO2,752,190,TRUE,diel curve present
+STEI,Autumn,H2O,3454,1412,TRUE,diel curve present
+STEI,Spring,CO2,615,209,TRUE,diel curve present
+STEI,Spring,H2O,3769,1965,TRUE,diel curve present
+STEI,Summer,CO2,793,412,TRUE,diel curve present
+STEI,Summer,H2O,3029,1746,TRUE,diel curve present
+STEI,Winter,CO2,668,154,TRUE,diel curve present
+STEI,Winter,H2O,3236,1436,TRUE,diel curve present
+STER,Autumn,CO2,2894,1099,TRUE,diel curve present
+STER,Autumn,H2O,6143,3413,TRUE,diel curve present
+STER,Spring,CO2,2400,1010,TRUE,diel curve present
+STER,Spring,H2O,6490,3715,TRUE,diel curve present
+STER,Summer,CO2,4939,2539,TRUE,diel curve present
+STER,Summer,H2O,7955,4777,TRUE,diel curve present
+STER,Winter,CO2,2210,542,TRUE,diel curve present
+STER,Winter,H2O,6242,2963,TRUE,diel curve present
+TALL,Autumn,CO2,134,40,TRUE,diel curve present
+TALL,Autumn,H2O,576,140,TRUE,diel curve present
+TALL,Spring,CO2,142,50,TRUE,diel curve present
+TALL,Spring,H2O,1104,313,TRUE,diel curve present
+TALL,Summer,CO2,80,18,FALSE,<=36 valid half-hours for seasonal loess fit
+TALL,Summer,H2O,355,57,TRUE,diel curve present
+TALL,Winter,CO2,115,22,FALSE,<=36 valid half-hours for seasonal loess fit
+TALL,Winter,H2O,1439,364,TRUE,diel curve present
+TEAK,Autumn,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+TEAK,Autumn,H2O,170,32,TRUE,diel curve present
+TEAK,Spring,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+TEAK,Spring,H2O,332,102,TRUE,diel curve present
+TEAK,Summer,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+TEAK,Summer,H2O,164,47,TRUE,diel curve present
+TEAK,Winter,CO2,0,0,FALSE,no ensemble rows after RSHP/AA_AW filtering
+TEAK,Winter,H2O,264,57,TRUE,diel curve present
+TOOL,Autumn,CO2,371,67,TRUE,diel curve present
+TOOL,Autumn,H2O,3273,1321,TRUE,diel curve present
+TOOL,Spring,CO2,244,68,TRUE,diel curve present
+TOOL,Spring,H2O,3550,1327,TRUE,diel curve present
+TOOL,Summer,CO2,779,242,TRUE,diel curve present
+TOOL,Summer,H2O,5584,2406,TRUE,diel curve present
+TOOL,Winter,CO2,669,126,TRUE,diel curve present
+TOOL,Winter,H2O,2084,693,TRUE,diel curve present
+TREE,Autumn,CO2,780,345,TRUE,diel curve present
+TREE,Autumn,H2O,4620,1862,TRUE,diel curve present
+TREE,Spring,CO2,608,248,TRUE,diel curve present
+TREE,Spring,H2O,4692,2520,TRUE,diel curve present
+TREE,Summer,CO2,871,484,TRUE,diel curve present
+TREE,Summer,H2O,4362,3035,TRUE,diel curve present
+TREE,Winter,CO2,531,139,TRUE,diel curve present
+TREE,Winter,H2O,4604,1723,TRUE,diel curve present
+UKFS,Autumn,CO2,1721,747,TRUE,diel curve present
+UKFS,Autumn,H2O,5118,2862,TRUE,diel curve present
+UKFS,Spring,CO2,1765,904,TRUE,diel curve present
+UKFS,Spring,H2O,5466,3431,TRUE,diel curve present
+UKFS,Summer,CO2,2828,1600,TRUE,diel curve present
+UKFS,Summer,H2O,5313,3313,TRUE,diel curve present
+UKFS,Winter,CO2,1431,504,TRUE,diel curve present
+UKFS,Winter,H2O,5322,3113,TRUE,diel curve present
+UNDE,Autumn,CO2,1058,467,TRUE,diel curve present
+UNDE,Autumn,H2O,4872,2494,TRUE,diel curve present
+UNDE,Spring,CO2,672,308,TRUE,diel curve present
+UNDE,Spring,H2O,5131,2747,TRUE,diel curve present
+UNDE,Summer,CO2,1644,937,TRUE,diel curve present
+UNDE,Summer,H2O,4903,3030,TRUE,diel curve present
+UNDE,Winter,CO2,329,88,TRUE,diel curve present
+UNDE,Winter,H2O,3902,1485,TRUE,diel curve present
+WOOD,Autumn,CO2,2614,1187,TRUE,diel curve present
+WOOD,Autumn,H2O,6596,3955,TRUE,diel curve present
+WOOD,Spring,CO2,1995,1073,TRUE,diel curve present
+WOOD,Spring,H2O,6988,4253,TRUE,diel curve present
+WOOD,Summer,CO2,5419,2974,TRUE,diel curve present
+WOOD,Summer,H2O,7545,4978,TRUE,diel curve present
+WOOD,Winter,CO2,653,171,TRUE,diel curve present
+WOOD,Winter,H2O,5822,2425,TRUE,diel curve present
+WREF,Autumn,CO2,181,40,TRUE,diel curve present
+WREF,Autumn,H2O,466,120,TRUE,diel curve present
+WREF,Spring,CO2,421,138,TRUE,diel curve present
+WREF,Spring,H2O,914,322,TRUE,diel curve present
+WREF,Summer,CO2,549,171,TRUE,diel curve present
+WREF,Summer,H2O,1156,385,TRUE,diel curve present
+WREF,Winter,CO2,285,109,TRUE,diel curve present
+WREF,Winter,H2O,466,177,TRUE,diel curve present

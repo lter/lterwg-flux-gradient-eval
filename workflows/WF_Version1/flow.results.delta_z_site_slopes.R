@@ -1,12 +1,16 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(readr)
 
-localdir <- "/Volumes/MaloneLab/Research/FluxGradient/FluxData"
-figdir <- "/Users/sm3466/YSE Dropbox/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("figdir")) figdir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
 
-load(file.path(localdir, "SITES_One2One_AA_AW.Rdata"))
+load(file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata")))
 
 site_height <- SITES_One2One %>%
   select(Site, canopyHeight_m) %>%
@@ -16,7 +20,7 @@ site_height <- SITES_One2One %>%
   arrange(desc(canopyHeight_m), Site)
 
 site_slopes <- read_csv(
-  file.path(figdir, "delta_z_AAplus_site_trend_detail.csv"),
+  file.path(figdir, paste0("delta_z_AAplus_site_trend_detail", run.tag, ".csv")),
   show_col_types = FALSE
 ) %>%
   select(
@@ -62,10 +66,10 @@ plot_site_slopes <- ggplot(
     panel.grid.minor = element_blank()
   )
 
-write_csv(site_slopes, file.path(figdir, "delta_z_AAplus_site_slope_plot_data.csv"))
+write_csv(site_slopes, file.path(figdir, paste0("delta_z_AAplus_site_slope_plot_data", run.tag, ".csv")))
 
 ggsave(
-  file.path(figdir, "delta_z_AAplus_site_slopes.png"),
+  file.path(figdir, paste0("delta_z_AAplus_site_slopes", run.tag, ".png")),
   plot = plot_site_slopes,
   width = 10,
   height = 5,

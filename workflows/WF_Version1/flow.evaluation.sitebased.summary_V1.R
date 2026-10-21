@@ -1,3 +1,7 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
+if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
+if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+
 # Site based example... Final Figure: 
 
 library(tidyverse)
@@ -5,8 +9,8 @@ library(ggpubr)
 library(colorspace)
 
 
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One_AA_AW.Rdata")))
-load( fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC_AA_AW.Rdata")))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
 
 # Build the dataset for canopy Information: ####
 aoi <- c( 'JORN', 'KONZ', 'GUAN', 'HARV')
@@ -195,7 +199,7 @@ plot.overlap.1.aoi <- SITE_DATA_FLUX_COUNTS_Overlap_Long.aoi %>%
 # ENSEMBLE Linear Relationship: ####
 
 
-load(file='/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
+load(file=paste0("/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA"))
 
 linear.aoi.co2 <- ggarrange(Linear_ENSEMBLE_plots_CO2$JORN,
             Linear_ENSEMBLE_plots_CO2$KONZ,
@@ -211,7 +215,7 @@ linear.aoi <- ggarrange(linear.aoi.co2 , linear.aoi.h2o , ncol=1)
 
 # DIEL Plots:####
 
-load(file='/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1_AA_AW.RDATA')
+load(file=paste0("/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA"))
 
 
 plot.diel.gas.season.regression.aoi <-ENSEMBLE_DIELS  %>% filter(site %in% aoi) %>%   ggplot(aes(x = FG , y = EC, col=season))+

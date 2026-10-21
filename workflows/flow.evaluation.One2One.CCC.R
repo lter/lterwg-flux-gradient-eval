@@ -1,10 +1,11 @@
+if (!exists("run.tag")) run.tag <- "_AA_AW" # output-name tag; set in flow.evaluation.batch_V1.R
 drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77DnqMl2mrUtuikcY47BFpckKw3") # The Data 
 
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
 
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_MBR_9min_FILTER_AA_AW.Rdata")))
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_AE_9min_FILTER_AA_AW.Rdata")))
-load(fs::path(localdir,paste0("/NEON_GradientFlux_Data_Filter/SITES_WP_9min_FILTER_AA_AW.Rdata")))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_MBR_9min_FILTER", run.tag, ".Rdata"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_AE_9min_FILTER", run.tag, ".Rdata"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_WP_9min_FILTER", run.tag, ".Rdata"))))
 
 
 # Calculate CCC parameters for CO2
