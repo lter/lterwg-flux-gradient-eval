@@ -267,7 +267,7 @@ Subset.plot.h2o <- ENSEMBLE_DIELS  %>% filter( site %in% sites.sub, gas =='H2O')
   theme_bw() + facet_wrap(~ gas + site, , scales = "free_y")+ 
   theme(legend.position = "top", 
         strip.background = element_rect(fill = "transparent", linewidth = 0.5),
-        legend.title = element_blank()) + ylab(expression(paste( "Ecosystem Flux (g m"^-2, ")")))
+        legend.title = element_blank()) + ylab(expression(paste( "Ecosystem Flux (g m"^-2, " h"^-1, ")")))
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, "_SUBSET.png"), 
        plot = Subset.plot.h2o, width = 4, height =4, units = "in")
@@ -279,7 +279,7 @@ Subset.plot.co2 <- ENSEMBLE_DIELS  %>% filter( site %in% sites.sub, gas =='CO2')
   theme_bw() + facet_wrap(~ gas + site, , scales = "free_y")+ 
   theme(legend.position = "none", 
         strip.background = element_rect(fill = "transparent", linewidth = 0.5),
-        legend.title = element_blank()) + ylab(expression(paste( "Ecosystem Flux (g m"^-2, ")")))
+        legend.title = element_blank()) + ylab(expression(paste( "Ecosystem Flux (g m"^-2, " h"^-1, ")")))
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, "_SUBSET2.png"), 
        plot = Subset.plot.co2, width = 4, height =2, units = "in")
@@ -291,7 +291,7 @@ plot.diel.gas.season.fg <- ENSEMBLE_DIELS  %>%  ggplot()+
   theme_bw() + facet_wrap(~ gas, , scales = "free_y")+ 
   theme(legend.position = "top", 
         strip.background = element_rect(fill = "transparent", linewidth = 0.5),
-        legend.title = element_blank()) + ylab(expression(paste( "GF (g m"^-2, ")")))
+        legend.title = element_blank()) + ylab(expression(paste( "GF (g m"^-2, " h"^-1, ")")))
 
 plot.diel.gas.season.ec <- ENSEMBLE_DIELS  %>%  ggplot() + 
   geom_point(aes(x = Hour , y = EC, col=season)) +
@@ -299,7 +299,7 @@ plot.diel.gas.season.ec <- ENSEMBLE_DIELS  %>%  ggplot() +
   theme_bw() + facet_wrap(~ gas, , scales = "free_y")+ 
   theme(legend.position = "top",
         strip.background = element_rect(fill = "transparent", size = 0.5),
-        legend.title = element_blank())  + ylab(expression(paste( "EC (g m"^-2, ")"))) + xlab("")
+        legend.title = element_blank())  + ylab(expression(paste( "EC (g m"^-2, " h"^-1, ")"))) + xlab("")
 
 plot.diel.gas.season.regression <- ENSEMBLE_DIELS  %>%  ggplot(aes(x = FG , y = EC, col=season))+
   geom_point() +
@@ -310,7 +310,7 @@ plot.diel.gas.season.regression <- ENSEMBLE_DIELS  %>%  ggplot(aes(x = FG , y = 
   facet_wrap(~ gas+ season, , scales = "free", ncol=4) + 
   theme(legend.position = "none", 
         strip.background = element_rect(fill = "transparent", size = 0.5),
-        legend.title = element_blank()) + ylab(expression(paste( "EC (g m"^-2, ")")))  + xlab(expression(paste( "GF (g m"^2, ")"))) 
+        legend.title = element_blank()) + ylab(expression(paste( "EC (g m"^-2, " h"^-1, ")")))  + xlab(expression(paste( "GF (g m"^-2, " h"^-1, ")")))
 
 diel.plot.season <- ggarrange ( ggarrange(plot.diel.gas.season.ec,  plot.diel.gas.season.fg, ncol=1, common.legend = TRUE, labels= c("A", "B")), 
 ggarrange(plot.diel.gas.season.regression, ncol=1,
@@ -333,8 +333,8 @@ ENSEMBLE_DIELS_IGBP  %>%  ggplot(aes(x = FG , y = EC, col=gas))+
   facet_wrap(~ gas+ EcoType, , scales = "free", ncol=4) + 
   theme(legend.position = "none", 
         strip.background = element_rect(fill = "transparent", size = 0.5),
-        legend.title = element_blank()) + ylab(expression(paste( "EC (g m"^-2, ")")))  +
-  xlab(expression(paste( "GF (g m"^-2, ")"))) 
+        legend.title = element_blank()) + ylab(expression(paste( "EC (g m"^-2, " h"^-1, ")")))  +
+  xlab(expression(paste( "GF (g m"^-2, " h"^-1, ")")))
 
 
 
@@ -410,13 +410,13 @@ plot.diels.co2 <- ENSEMBLE_DIELS %>% filter(season == 'Spring', gas=="CO2") %>% 
   stat_smooth(aes(x = Hour , y = FG), col="black") + 
   stat_smooth(aes(x = Hour , y = EC), col="black", linetype="dashed") +
   geom_ribbon(aes(x=Hour, ymin = FG, ymax = EC), fill = "red", alpha = 0.2)+
-  theme_bw() + facet_wrap(~ site, scales = "free_y", ncol=5) +  ylab(expression(paste( "CO"[2]," (g m"^-2, ")"))) 
+  theme_bw() + facet_wrap(~ site, scales = "free_y", ncol=5) +  ylab(expression(paste( "CO"[2]," (g m"^-2, " h"^-1, ")")))
 
 plot.diels.h2o <- ENSEMBLE_DIELS %>% filter(season == 'Spring', gas=="H2O") %>%  ggplot()+ 
   stat_smooth(aes(x = Hour , y = FG), col="black") + 
   stat_smooth(aes(x = Hour , y = EC), col="black", linetype="dashed") +
   geom_ribbon(aes(x=Hour, ymin = FG, ymax = EC), fill = "red", alpha = 0.2)+
-  theme_bw() + facet_wrap(~ site, scales = "free_y", ncol=5) +  ylab(expression(paste( "H"[2],"O (g m"^-2, ")"))) 
+  theme_bw() + facet_wrap(~ site, scales = "free_y", ncol=5) +  ylab(expression(paste( "H"[2],"O (g m"^-2, " h"^-1, ")")))
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SITES_CO2_V1", run.tag, ".png"), plot = plot.diels.co2 , width = 8, height =9, units = "in")
 
