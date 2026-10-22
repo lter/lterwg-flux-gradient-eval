@@ -144,7 +144,13 @@ for( site in site.list){
   rm(df.ENSEMBLE, df )
 }
 
-if (isTRUE(write.edi.ensemble)) write.ensemble.edi(SITE_DATA_ENSEMBLE, edi.ensemble.dir, method = ensemble_method_name)
+if (isTRUE(write.edi.ensemble)) {
+  # Complete 30-min grid (every half-hour; no gap filling) with NEON's own 30-min EC flux where the
+  # extracted SITE_30min.Rdata files exist (EC_30min); EC_mean stays the interpolated EC of the GF samples.
+  if (!exists("ec30.dirs")) ec30.dirs <- file.path(localdir, c("NEON_Tower_Data", "NEON_Tower_Data_202407_202608"))
+  ec30 <- do.call(rbind, lapply(names(SITE_DATA_ENSEMBLE), load.ec30.neon, tower.dirs = ec30.dirs))
+  write.ensemble.edi(SITE_DATA_ENSEMBLE, edi.ensemble.dir, method = ensemble_method_name, complete = TRUE, ec30 = ec30)
+}
 
 # Linear plots by site: ####
 plots.linear.co2.1 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_CO2[1:25], common.legend = TRUE)
@@ -189,7 +195,7 @@ for( site in site.list){
     inner_join(rshp_index, by = c("Site", "gas", "Approach", "dLevelsAminusB", "Canopy_L1")) %>% 
     mutate(weight.rmse = if_else(!is.na(RMSE) & is.finite(RMSE) & RMSE > 0, 1 / RMSE, 0)) %>% 
     filter(CCC >= 0.5, season == i, Canopy_L1 != "WW") %>% 
-    mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>%
+    mutate( time.rounded = ensemble.halfhour(timeEnd_A, timeBgn_B, timeEndA.local) ) %>%   # half-hour of the sampling midpoint
     reframe( .by= c( gas, time.rounded), 
              EC_mean = mean(EC_mean, na.rm=T), 
              FG_ENSEMBLE = weighted_mean_or_mean(FG_mean, weight.rmse))

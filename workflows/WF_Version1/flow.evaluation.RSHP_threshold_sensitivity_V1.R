@@ -1,3 +1,4 @@
+source(fs::path(if (exists("DirRepo.eval")) DirRepo.eval else "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval", 'functions/calc.ensemble.R'))   # ensemble.halfhour()
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
@@ -111,7 +112,7 @@ build_fg_ec_threshold_metrics <- function(canopy_data, ccc_cutoff) {
     retained <- df_site %>%
       left_join(canopy.sub, by = c("Site", "dLevelsAminusB", "gas", "Approach"), relationship = "many-to-many") %>%
       filter(CCC.EC >= ccc_cutoff) %>%
-      mutate(time.rounded = lubridate::round_date(timeEndA.local, unit = "30 minutes")) %>%
+      mutate(time.rounded = ensemble.halfhour(timeEnd_A, timeBgn_B, timeEndA.local)) %>%   # half-hour of the sampling midpoint
       reframe(
         .by = c(Site, gas, Approach, dLevelsAminusB, time.rounded),
         EC_mean = mean(EC_mean, na.rm = TRUE),

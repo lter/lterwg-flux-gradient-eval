@@ -1,3 +1,4 @@
+source(fs::path(if (exists("DirRepo.eval")) DirRepo.eval else "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval", 'functions/calc.ensemble.R'))   # ensemble.halfhour()
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) 
@@ -100,7 +101,7 @@ for (site in names(SITE_DATA_FILTERED_CCC)) {
     inner_join(rshp_index, by = c("Site", "gas", "Approach", "dLevelsAminusB", "Canopy_L1")) %>%
     left_join(method_priors, by = c("gas", "Approach")) %>%
     mutate(
-      time.rounded = round_date(timeEndA.local, unit = "30 minutes"),
+      time.rounded = ensemble.halfhour(timeEnd_A, timeBgn_B, timeEndA.local),   # half-hour of the sampling midpoint
       obs_weight_rmse = safe_inverse(RMSE, power = 1, fallback = 0),
       obs_weight_var = safe_inverse(RMSE, power = 2, fallback = 0),
       method_weight = coalesce(method_weight_rmse, 0),
