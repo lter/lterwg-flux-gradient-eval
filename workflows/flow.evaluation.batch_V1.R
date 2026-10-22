@@ -182,6 +182,8 @@ for (f in c("flow.results.delta_z_AA_AAplus.R", "flow.results.delta_z_site_ranki
 # S1: what causes gradient-flux spikes (same rule as despike_fluxes()); reads the stacked EDI export
 #     (or Spike_Eval/extract<period>/ if already extracted). Outputs: Spike_Eval/SPIKE_*<run.tag>, Figures/WF_Version1/SPIKE_*<run.tag>.png
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.spike_eval.R'), local = new.env())  # own environment: does not overwrite objects used below
+# Sampling time: CCC vs the time between the two sequential inlet samples (reads the spike-evaluation extracts)
+source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.sampling_time.R'), local = new.env())
 # S2: choosing sampling-height pairs without an EC reference (e.g. CH4): AA MBR reference + AE/WP pairs with
 #     CCC >= 0.5 against it, scaled to it. Outputs: Spike_Eval/noEC_*<run.tag>.csv, Figures/WF_Version1/S2_noEC_pair_selection<run.tag>.png
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.noEC_pair_selection.R'), local = new.env())
