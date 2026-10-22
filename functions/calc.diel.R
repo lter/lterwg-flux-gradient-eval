@@ -165,8 +165,11 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
   dataframe <- dataframe %>% as.data.frame %>% filter(gas == Gas) %>% rename( timeEndA.local = time.rounded)
   
   if(Gas == "CH4"){
-    dataframe$flux.other <- dataframe[, flux.other]*0.0000288872 # g C 30 minutes
-    dataframe$flux <- dataframe[, flux]*0.0000288872 # g C 30 minutes
+    # NEON CH4 inputs are umol m-2 s-1. Each prediction represents one hour.
+    # One umol CH4 contains 12.011 micrograms C; output is g C m-2 hour-1.
+    ch4_to_gC_hour <- 12.011 / 1e6 * 3600
+    dataframe$flux.other <- dataframe[, flux.other] * ch4_to_gC_hour
+    dataframe$flux <- dataframe[, flux] * ch4_to_gC_hour
   }
   
   
