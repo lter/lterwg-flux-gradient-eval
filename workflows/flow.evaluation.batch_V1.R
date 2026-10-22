@@ -25,10 +25,15 @@ localdir <- '/Volumes/MaloneLab/Research/FluxGradient'
 # lterwg-flux-gradient (WorkFlow_master.R) now stacks all periods before calculating fluxes and writes
 # one SITE_Evaluation.RDATA per site to NEON_GradientFlux_Data_2021_2026 (Aug 2021 - Aug 2026).
 # Several folders can still be listed here; they are stacked per site.
-eval.data.dirs <- "NEON_GradientFlux_Data_2021_2026"
+# Version 3 (Oct 2026 rerun): corrected canopy height, MBR median, k = 0.4, pair zeta, WP floor, direct RMSE,
+# hourly diel units and midpoint half-hours. Built by lterwg-flux-gradient/workflows/WorkFlow_rerun_2021_2026_v3.R.
+# The published 2021-2026 results stay in the folders/tags without "_v3".
+eval.data.dirs <- "NEON_GradientFlux_Data_2021_2026_v3"
+edi.dir   <- "NEON_GradientFlux_EDI_2021_2026_v3"     # EDI export of this run (folder in localdir)
 despike.k <- 6        # GF spike removal: drop FG outside median +/- k*MAD per gas x height pair x day/night x season (NULL = off)
 refit.rf  <- TRUE     # refit the canopy random-forest on this run's CCC table
-run.tag   <- "_AA_AW_2021_2026"  # suffix for all outputs/figures of this run
+run.tag   <- "_AA_AW_2021_2026_v3"  # suffix for all outputs/figures of this run
+# Published 2021-2026 run: eval.data.dirs <- "NEON_GradientFlux_Data_2021_2026"; edi.dir <- "NEON_GradientFlux_EDI_2021_2026"; run.tag <- "_AA_AW_2021_2026"
 # To reproduce the published (preprint) outputs instead:
 #   eval.data.dirs <- "NEON_GradientFlux_Data"; despike.k <- NULL; refit.rf <- FALSE; run.tag <- "_AA_AW"
 upload.drive <- FALSE
@@ -124,7 +129,7 @@ source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.ensemble._V1R.R'))
 # Something is up with the CCC EC- Not clear why the CCC is recalculated in the season analysis... Just add season to the output
 
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.diel_V1.R'))
-fileSave <- paste0("/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA")
+fileSave <- paste0(localdir, "/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA")
 save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,ENSEMBLE_DIELS_EVAL,
       DIEL_curve_diagnostics, 
       file= fileSave )

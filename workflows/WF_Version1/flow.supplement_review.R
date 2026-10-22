@@ -28,8 +28,13 @@ if (!exists("run.tag"))         run.tag <- "_AA_AW_2021_2026"
 if (!exists("localdir"))        localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval"))    DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 if (!exists("edi.dir"))         edi.dir <- file.path(localdir, paste0("NEON_GradientFlux_EDI", sub("^_AA_AW", "", run.tag)))
+if (!grepl("^(/|[A-Za-z]:)", edi.dir)) edi.dir <- file.path(localdir, edi.dir)   # batch file gives the folder name
 if (!exists("make.aggregates")) make.aggregates <- FALSE
-rev.dir <- file.path(localdir, "Review_Supplement"); dir.create(file.path(rev.dir, "aggregates"), recursive = TRUE, showWarnings = FALSE)
+rev.dir <- file.path(localdir, "Review_Supplement")
+agg.dir <- file.path(rev.dir, paste0("aggregates", run.tag)); dir.create(agg.dir, recursive = TRUE, showWarnings = FALSE)
+# Aggregates are specific to a run (canopy height, flux ranges and tracer counts change with each rerun):
+# they are tagged with run.tag and built automatically when missing.
+if (!all(file.exists(file.path(rev.dir, paste0("ALL_", c("profile","schedule","zveg","tracer","fluxrange"), run.tag, ".csv"))))) make.aggregates <- TRUE
 fig.dir <- file.path(DirRepo.eval, "Figures/WF_Version1")
 filter.dir <- file.path(localdir, "NEON_GradientFlux_Data_Filter")
 spike.extract.dir <- file.path(localdir, "Spike_Eval", paste0("extract", sub("^_AA_AW", "", run.tag)))
@@ -54,33 +59,33 @@ if (isTRUE(make.aggregates)) {
               by = .(gas, season, daynight, level = TowerPosition_B, height_m = TowerHeight_B)]
     topc <- unique(d[TowerPosition_A == top], by = c("gas","timeBgn_A"))[, .(C_top_mean = mean(mean_A, na.rm = TRUE), n_top = .N), by = .(gas, season, daynight)]
     prof <- topc[prof, on = .(gas, season, daynight)][, `:=`(Site = s, top_position = top, height_top_m = median(d[TowerPosition_A == top, TowerHeight_A], na.rm = TRUE))]
-    fwrite(prof, file.path(rev.dir, "aggregates", paste0(s, "_profile.csv")))
+    fwrite(prof, file.path(agg.dir, paste0(s, "_profile.csv")))
     # R3 input: sampling duration and revisit interval of each inlet
     lv <- unique(rbind(d[, .(gas, pos = TowerPosition_A, b = timeBgn_A, e = timeEnd_A)], d[, .(gas, pos = TowerPosition_B, b = timeBgn_B, e = timeEnd_B)])[!is.na(b)], by = c("gas","pos","b"))
     lv[, `:=`(b = as.POSIXct(b, tz = "UTC"), e = as.POSIXct(e, tz = "UTC"))]; setorder(lv, gas, pos, b)
     lv[, `:=`(dur_min = as.numeric(e - b, units = "mins"), revisit_min = as.numeric(b - shift(b), units = "mins")), by = .(gas, pos)]
     fwrite(lv[, .(Site = s, n_samples = .N, dur_min_median = median(dur_min, na.rm = TRUE), revisit_min_median = median(revisit_min, na.rm = TRUE),
                   revisit_min_p25 = quantile(revisit_min, .25, na.rm = TRUE), revisit_min_p75 = quantile(revisit_min, .75, na.rm = TRUE)), by = .(gas, pos)],
-           file.path(rev.dir, "aggregates", paste0(s, "_schedule.csv")))
+           file.path(agg.dir, paste0(s, "_schedule.csv")))
     # R6 input: aerodynamic canopy height by month
-    fwrite(unique(d, by = "timeBgn_A")[!is.na(z_veg_aero), .(Site = s, z_veg_aero = median(z_veg_aero)), by = ym], file.path(rev.dir, "aggregates", paste0(s, "_zveg.csv")))
+    fwrite(unique(d, by = "timeBgn_A")[!is.na(z_veg_aero), .(Site = s, z_veg_aero = median(z_veg_aero)), by = ym], file.path(agg.dir, paste0(s, "_zveg.csv")))
     # R4 input: tracer used for each target gas
-    fwrite(d[!is.na(FG_mean), .(Site = s, n = .N), by = .(gas, tracer)], file.path(rev.dir, "aggregates", paste0(s, "_tracer.csv")))
+    fwrite(d[!is.na(FG_mean), .(Site = s, n = .N), by = .(gas, tracer)], file.path(agg.dir, paste0(s, "_tracer.csv")))
     # R7 input: unfiltered flux quantiles, all approaches
     rng <- list(MBR = d[!is.na(FG_mean), .(gas, FG_mean)])
     for (m in c("AE","WP")) { ff <- file.path(edi.dir, s, paste0(s, "_", m, "_9min.df.final.csv"))
       if (file.exists(ff)) rng[[m]] <- fread(ff, select = c("gas","FG_mean"))[gas %in% c("CO2","H2O") & !is.na(FG_mean)] }
     fr <- rbindlist(lapply(names(rng), function(m) rng[[m]][, as.list(setNames(quantile(FG_mean, qs), paste0("q", c("0","0.1","1","50","99","99.9","100")))),
                                                              by = gas][, `:=`(Site = s, Approach = m)]))
-    fwrite(fr, file.path(rev.dir, "aggregates", paste0(s, "_fluxrange.csv")))
+    fwrite(fr, file.path(agg.dir, paste0(s, "_fluxrange.csv")))
     rm(d, p, lv, rng); gc(); message(s)
   }
   for (k in c("profile","schedule","zveg","tracer","fluxrange"))
-    fwrite(rbindlist(lapply(list.files(file.path(rev.dir, "aggregates"), paste0("_", k, "\\.csv$"), full.names = TRUE), fread), fill = TRUE),
-           file.path(rev.dir, paste0("ALL_", k, ".csv")))
+    fwrite(rbindlist(lapply(list.files(agg.dir, paste0("_", k, "\\.csv$"), full.names = TRUE), fread), fill = TRUE),
+           file.path(rev.dir, paste0("ALL_", k, run.tag, ".csv")))
 }
-PROF <- fread(file.path(rev.dir, "ALL_profile.csv")); SCHED <- fread(file.path(rev.dir, "ALL_schedule.csv"))
-ZVEG <- fread(file.path(rev.dir, "ALL_zveg.csv")); TRACER <- fread(file.path(rev.dir, "ALL_tracer.csv")); FRANGE <- fread(file.path(rev.dir, "ALL_fluxrange.csv"))
+PROF <- fread(file.path(rev.dir, paste0("ALL_profile", run.tag, ".csv"))); SCHED <- fread(file.path(rev.dir, paste0("ALL_schedule", run.tag, ".csv")))
+ZVEG <- fread(file.path(rev.dir, paste0("ALL_zveg", run.tag, ".csv"))); TRACER <- fread(file.path(rev.dir, paste0("ALL_tracer", run.tag, ".csv"))); FRANGE <- fread(file.path(rev.dir, paste0("ALL_fluxrange", run.tag, ".csv")))
 
 load(file.path(filter.dir, paste0("SITES_One2One", run.tag, ".Rdata")))
 O <- as.data.table(SITES_One2One)[, .(Site, gas, Approach = as.character(Approach), pair = dLevelsAminusB, CCC, count,
