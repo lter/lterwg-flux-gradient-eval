@@ -77,8 +77,8 @@ plot.canopy <-  ggplot(data= canopy.summary.lter) +
   theme(legend.position = "top") + labs(color = "Height Variance")  + theme_bw()
 
 
-top.plot <- ggarrange(plot.map, labels=c("A", "B"), ncol=2)
-bottom.plot <-ggarrange( plot.canopy,plot.tower.counts, common.legend=T,  labels=c("C", "D"), ncol=2)
+top.plot <- ggarrange(plot.map, labels=c("(a)", "(b)"), ncol=2)
+bottom.plot <-ggarrange( plot.canopy,plot.tower.counts, common.legend=T,  labels=c("(c)", "(d)"), ncol=2)
 
 final.plot <- ggarrange(top.plot , bottom.plot, ncol=1)
 

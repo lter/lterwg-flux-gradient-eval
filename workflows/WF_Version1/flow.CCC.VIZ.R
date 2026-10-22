@@ -64,7 +64,7 @@ SITES_One2One_canopy.subH2O <- SITES_One2One %>% filter(gas=="H2O")
  matrix.canopyl1.plot.h2o <-pairwise.matrix.plot(df = SITES_One2One_canopy.subH2O, y = "CCC", x = "Canopy_L1"  )
  
  final.plot.matrix <- ggarrange( matrix.approach.plot.co2, matrix.approach.plot.h2o, matrix.canopyl1.plot.co2, matrix.canopyl1.plot.h2o,
-            ncol=2 , nrow=2, labels= c("A", "B", "C", "D"), common.legend = T, legend = "right")
+            ncol=2 , nrow=2, labels= c("(a)", "(b)", "(c)", "(d)"), common.legend = T, legend = "right")
  
  
  ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/final.plot.matrix", run.tag, ".png"), plot =  final.plot.matrix, width = 5, height = 5, units = "in")
@@ -111,7 +111,7 @@ evaluation.ccc.plot <-  ggarrange(  plot.pairwise.co2.approach ,
                           
                                     
                                     ncol=2, nrow=2, common.legend = FALSE,
-                                    labels = c("A", "B", "C", "D"))
+                                    labels = c("(a)", "(b)", "(c)", "(d)"))
  
  
 evaluation.ccc.plot
@@ -131,7 +131,7 @@ ggridges.h2o <- SITES_One2One %>% filter(gas=="H2O") %>% ggplot( aes(x = CCC, y 
                     labels = c("MBR", "AE", "WP")) + ylab("") +xlab("CCC")
 
 evaluation.ggridges <-  ggarrange( ggridges.co2, ggridges.h2o,ncol=2,
-                                    labels = c("E", "F"))
+                                    labels = c("(e)", "(f)"))
 
 
 final.eval.ccc.plot <- ggarrange( evaluation.ccc.plot, evaluation.ggridges , ncol=1)
@@ -264,7 +264,7 @@ p_canopy <- ggplot(df_canopy, aes(x = gas, y = percent, fill = Canopy_L1)) +
   theme_bw() + scale_fill_manual(values= my_colors)
 
 plots.samplingHeights.counts <- ggarrange( p_overall , p_method , p_canopy,
-           nrow = 1, labels=c('A', 'B', 'C'))
+           nrow = 1, labels=c("(a)", "(b)", "(c)"))
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/SamplingHeightPairs", run.tag, ".png"), plot = plots.samplingHeights.counts, width = 8.5, height = 3, units = "in")
 

@@ -235,7 +235,7 @@ plot.boxplot.CCC.gf <- val.SHP.total.canopy.summary %>%
 
 
 
-tree.plot.grid <- ggarrange(tree.plot, nrow=1, ncol=1, labels=c("A"))
+tree.plot.grid <- ggarrange(tree.plot, nrow=1, ncol=1, labels=c("(a)"))
 
 tree.plot
 plot.boxplot.CCC.gf
@@ -247,10 +247,10 @@ plot.boxplot.canopylevels.gf
 
 model.plots.gf <- ggarrange(ggarrange(plot.Model.matrix.gf,
                                             plot.boxplot.CCC.gf,
-                                             nrow= 1, common.legend = T, labels=c("B","C")),
+                                             nrow= 1, common.legend = T, labels=c("(b)", "(c)")),
                                   ggarrange(plot.boxplot.approach.gf,
                                             plot.boxplot.canopylevels.gf, 
-                                            nrow= 1, labels=c("D","F")), 
+                                            nrow= 1, labels=c("(d)", "(f)")), 
                                   ncol=1, common.legend = T )
 
 final.model.plots.gf <- ggarrange(tree.plot.grid, model.plots.gf, ncol=2 )

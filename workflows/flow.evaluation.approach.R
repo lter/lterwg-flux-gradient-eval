@@ -105,8 +105,8 @@ plot.CCC.gf <- val.SHP.resample  %>% drop_na(predicted)%>%
                                                 colour="Prediction") + scale_color_manual(values = c("0" = "skyblue", "1" = "navy"))+ 
   theme( legend.position = "none")
 
-final.model.plots.gf <- ggarrange( ggarrange(plot.CCC.gf, plot.Cmatrix.gf, nrow=1, ncol=2, labels=c("A", "B")),
-                                ggarrange(plot.approach.gf , plot.canopylevels.gf, nrow= 1, common.legend = T, labels=c("C", "D")), ncol=1 )
+final.model.plots.gf <- ggarrange( ggarrange(plot.CCC.gf, plot.Cmatrix.gf, nrow=1, ncol=2, labels=c("(a)", "(b)")),
+                                ggarrange(plot.approach.gf , plot.canopylevels.gf, nrow= 1, common.legend = T, labels=c("(c)", "(d)")), ncol=1 )
 
 ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/SamplingHeightPair_Selection_GFMODELPRED.png", plot =  final.model.plots.gf, width = 7, height = 7, units = "in")
 
@@ -161,7 +161,7 @@ plot.preval.SHP.density <- pre.val.SHP %>% ggplot() +
 
 final.plots.preval.SHP <- ggarrange( plot.preval.SHP.sites,
                                      plot.preval.SHP.density, 
-                                     ncol=1, labels = c("A", "B"),
+                                     ncol=1, labels = c("(a)", "(b)"),
                                      heights=c(3, 1))
 
 pre.val.approach <- validation.approach(index.df =  canopy.adj) %>% mutate(combination = paste(x, y, sep="-")) %>% rename( CCC.GF = CCC)
@@ -181,7 +181,7 @@ plot.preval.approach.sites <- pre.val.approach %>% ggplot() +
   theme(strip.background =element_rect(fill="transparent")) +
   geom_vline( xintercept = 0, col="red") 
 
-finalplot.preval.approach <- ggarrange( plot.preval.approach.sites, plot.preval.approach, labels=c("A", "B"),
+finalplot.preval.approach <- ggarrange( plot.preval.approach.sites, plot.preval.approach, labels=c("(a)", "(b)"),
            ncol=1, heights=c(3, 1))
 
 pre.val.canopy <- validation.canopy.l1( index.df = canopy.adj) %>% mutate(combination = paste(x, y, sep="-")) %>% rename( CCC.GF = CCC) %>% mutate(
@@ -204,12 +204,12 @@ plot.preval.canopy.sites <- pre.val.canopy %>% ggplot() +
   geom_vline( xintercept = 0, col="red") 
   
 finalplot.preval.canopy <- ggarrange(plot.preval.canopy.sites,plot.preval.canopy, ncol=1,
-                                       labels=c("A", "B"), heights = c(3,1))
+                                       labels=c("(a)", "(b)"), heights = c(3,1))
 
 
 final.pre.validation.plot <- ggarrange(plot.preval.SHP.density,
           plot.preval.approach, plot.preval.canopy , ncol=1,
-          labels=c("A", "B", "C"), heights = c(1,1,1))
+          labels=c("(a)", "(b)", "(c)"), heights = c(1,1,1))
 
 # Save the plots:
 
@@ -242,7 +242,7 @@ plot.post.val.density <- post.validation %>% ggplot() +
 
 final.post.validation.plot <- ggarrange(plot.post.val,
                                         plot.post.val.density, ncol=1,
-                                       labels=c("A", "B"),
+                                       labels=c("(a)", "(b)"),
                                        heights=c(3,1))
 
 ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.PLOTS.png",
@@ -250,7 +250,7 @@ ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/F
 
 final.post.validation.plot <- ggarrange(plot.post.val,
                                         plot.post.val.density, ncol=1,
-                                        labels=c("D", "E"),
+                                        labels=c("(d)", "(e)"),
                                         heights=c(3,1))
 
 SUper.plot <- ggarrange( final.pre.validation.plot,final.post.validation.plot , ncol=2 )

@@ -160,5 +160,5 @@ pb <- ggplot(pairs[Approach != "MBR" & !is.na(CCC_ref)], aes(CCC_ref, CCC, colou
 pc <- ggplot(gain, aes(AA_MBR, scaled, colour = gas)) + geom_abline(linetype = 2, colour = "grey50") + geom_point(size = 1.6) +
   scale_colour_manual(values = c(CO2 = "#000CCC", H2O = "#009966")) + coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
   labs(x = "AA MBR ensemble CCC", y = "AA MBR + scaled AE/WP CCC", colour = NULL) + th
-fig <- ggarrange(pa, ggarrange(pb, pc, ncol = 2, labels = c("b", "c"), widths = c(1.15, 1)), nrow = 2, labels = c("a", ""))
+fig <- ggarrange(pa, ggarrange(pb, pc, ncol = 2, labels = c("(b)", "(c)"), widths = c(1.15, 1)), nrow = 2, labels = c("(a)", ""))
 ggsave(file.path(fig.dir, paste0("S2_noEC_pair_selection", run.tag, ".png")), fig, width = 9, height = 8, dpi = 250, bg = "white")

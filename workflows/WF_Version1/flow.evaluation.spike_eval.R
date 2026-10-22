@@ -230,7 +230,7 @@ S4b <- ggplot(ap.f(tab.floor[!is.na(level)]), aes(interaction(level, ifelse(h_fl
   th + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 S4c <- ggplot(B.zdz0, aes(bin, spike_pct, linetype = gas, group = gas)) + geom_line(colour = pal.ap["WP"]) + geom_point(colour = pal.ap["WP"], size = 0.9) +
   labs(x = expression((z - d) / z[0]~"(WP)"), y = "Spikes (%)", linetype = NULL) + th + theme(axis.text.x = element_text(angle = 30, hjust = 1))
-ggsave(file.path(fig.dir, paste0("SPIKE_K", run.tag, ".png")), ggarrange(S4a, S4b, S4c, ncol = 3, labels = c("a", "b", "c"), widths = c(1, 1.1, 0.9)), width = 12, height = 3.8, dpi = 250)
+ggsave(file.path(fig.dir, paste0("SPIKE_K", run.tag, ".png")), ggarrange(S4a, S4b, S4c, ncol = 3, labels = c("(a)", "(b)", "(c)"), widths = c(1, 1.1, 0.9)), width = 12, height = 3.8, dpi = 250)
 
 # S5: odds ratios from the multivariable model
 lab <- c(levelAW = "Canopy level AW (vs AA)", gasH2O = "H2O (vs CO2)", daynightnight = "Night", seasonSpring = "Spring", seasonSummer = "Summer",

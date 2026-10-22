@@ -244,9 +244,9 @@ if( approach == "MBR"){
   return( gd.plot.mbr )
 }
 
-gd.plot.mbr <-Sensitivity_approach_plot(approach = "MBR", labels = c("A", "B", "C", "D"))
-gd.plot.ae <-Sensitivity_approach_plot(approach = "AE", labels = c( "E", "F", "G", "H"))
-gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c( "I", "J","K", "L"))
+gd.plot.mbr <-Sensitivity_approach_plot(approach = "MBR", labels = c("(a)", "(b)", "(c)", "(d)"))
+gd.plot.ae <-Sensitivity_approach_plot(approach = "AE", labels = c("(e)", "(f)", "(g)", "(h)"))
+gd.plot.wp <-Sensitivity_approach_plot(approach = "WP", labels = c("(i)", "(j)", "(k)", "(l)"))
 
 final.gd.plot <- ggarrange( gd.plot.mbr, gd.plot.ae, gd.plot.wp, nrow=3, ncol=1, common.legend = TRUE)
 
@@ -307,8 +307,8 @@ SITES_One2One_model <- SITES_One2One
 
 
 final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.canopylevels, nrow= 1, common.legend = T,
-                                   labels=c("B", "C")), nrow=1,
-          widths = c(1, 2, 2), labels="A")
+                                   labels=c("(b)", "(c)")), nrow=1,
+          widths = c(1, 2, 2), labels="(a)")
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix", run.tag, ".png"), plot =  final.model.plots, width = 9, height = 3, units = "in")
 

@@ -91,7 +91,7 @@ total.RSHP.plot <- total.RSHP %>% ggplot() +
 eco.plot.final <- ggarrange( Summary.approach.ecotype ,
                              Summary.canopyL.ecotype ,
                              RSHP.CCC.ecotype,
-                             total.RSHP.plot, labels=c("A", "B", "C", "D"))
+                             total.RSHP.plot, labels=c("(a)", "(b)", "(c)", "(d)"))
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/EcoType_Results", run.tag, ".png"), plot = eco.plot.final , width =8, height = 7, units = "in")
 

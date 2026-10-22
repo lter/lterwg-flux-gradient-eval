@@ -312,9 +312,9 @@ plot.diel.gas.season.regression <- ENSEMBLE_DIELS  %>%  ggplot(aes(x = FG , y = 
         strip.background = element_rect(fill = "transparent", size = 0.5),
         legend.title = element_blank()) + ylab(expression(paste( "EC (g m"^-2, " h"^-1, ")")))  + xlab(expression(paste( "GF (g m"^-2, " h"^-1, ")")))
 
-diel.plot.season <- ggarrange ( ggarrange(plot.diel.gas.season.ec,  plot.diel.gas.season.fg, ncol=1, common.legend = TRUE, labels= c("A", "B")), 
+diel.plot.season <- ggarrange ( ggarrange(plot.diel.gas.season.ec,  plot.diel.gas.season.fg, ncol=1, common.legend = TRUE, labels= c("(a)", "(b)")), 
 ggarrange(plot.diel.gas.season.regression, ncol=1,
-          labels= "C"), ncol=1)
+          labels= "(c)"), ncol=1)
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, ".png"), 
        plot = diel.plot.season, width = 9, height =8, units = "in")
@@ -506,9 +506,9 @@ ENSEMBLE_DIELS_EVAL_canopy <- ENSEMBLE_DIELS_EVAL %>% rename(Site = site) %>%
  
 
  plot.2 <- ggarrange(  Plot_ENSEMBLE_DIEL_EVAL,
-                       plot.reliable.season , labels=c("A", "B" ))
+                       plot.reliable.season , labels=c("(a)", "(b)"))
                        
- plot.3 <- ggarrange(   plot.reliable.season.total, labels="C" )
+ plot.3 <- ggarrange(   plot.reliable.season.total, labels="(c)" )
  
  plot.23 <- ggarrange(   plot.2,  plot.3 , nrow=2 , heights= c(3,1))
 

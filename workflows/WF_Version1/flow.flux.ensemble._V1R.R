@@ -300,10 +300,10 @@ plot.CCC.canopyHt <- SITES_ENSEMBLE_canopy %>% ggplot(aes( x= canopyHeight_m, y 
 # ENSEMBLE_ plots R2 by Site Plot: ####
 
 final.plot.CCC <- ggarrange(plot.CCC.sites ,plot.CCC.density , ncol= 1, heights = c(2.5, 1), 
-          labels=c("A", "B"))
+          labels=c("(a)", "(b)"))
 
 final.plot.CCC.support <- ggarrange( plot.CCC.canopy,plot.CCC.canopyHt,  ncol=1,
-           labels=c("A", "B"), heights=c(1, 1)) 
+           labels=c("(a)", "(b)"), heights=c(1, 1)) 
 
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1", run.tag, ".png"), plot = final.plot.CCC, width = 7, height = 8, units = "in")

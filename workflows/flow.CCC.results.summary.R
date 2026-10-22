@@ -122,7 +122,7 @@ make_panelA <- function() {
     annotate("text", x = 2.6, y = 1.85, label = "H[2]*O", parse = TRUE,
              color = gas_colors["H2O"], fontface = "bold", size = 4.5) +
     coord_fixed(xlim = c(-1, 5), ylim = c(-2.4, 2.4)) +
-    labs(title = "A.", x = NULL, y = NULL) +
+    labs(title = "(a)", x = NULL, y = NULL) +
     theme_void() +
     theme(plot.title = element_text(face = "bold", size = 11, hjust = 0))
 }
@@ -154,7 +154,7 @@ make_panelB <- function() {
     scale_fill_manual(values = gas_colors, guide = "none") +
     scale_color_manual(values = gas_colors, guide = "none") +
     coord_cartesian(xlim = c(0, 110)) +
-    labs(title = "B.",
+    labs(title = "(b)",
          #subtitle = subtitle,
          x = "% of sampling pairs with CCC ≥ 0.5",
          y = NULL) +
@@ -187,7 +187,7 @@ make_panelC <- function() {
                                 H2O = expression(H[2]*O))) +
     scale_fill_manual(values = approach_colors) +
     coord_cartesian(xlim = c(0, 100)) +
-    labs(title = "C.",
+    labs(title = "(c)",
          x = "% of sampling pairs with CCC ≥ 0.5", y = NULL, fill = NULL) +
     base_theme +
     theme(legend.position = "none",
@@ -217,7 +217,7 @@ make_panelD <- function() {
                                 H2O = expression(H[2]*O))) +
     scale_fill_manual(values = geom_colors) +
     coord_cartesian(xlim = c(0, 100)) +
-    labs(title = "D.",
+    labs(title = "(d)",
          x = "% of sampling pairs with CCC ≥ 0.5", y = NULL) +
     base_theme +
     theme(legend.position = "none",
@@ -264,7 +264,7 @@ make_panelE <- function() {
                        name = "Gas (edge)") +
     scale_x_discrete(labels = group_labels) +
     coord_cartesian(ylim = c(0.4, 1.02)) +
-    labs(title = "E.",
+    labs(title = "(e)",
          x = NULL, y = "CCC") +
     base_theme +
     theme(legend.position = "none",
@@ -312,7 +312,7 @@ make_panelF <- function() {
                       labels = c(CO2 = expression(CO[2]),
                                  H2O = expression(H[2]*O))) +
     coord_cartesian(ylim = c(0, 50)) +
-    labs(title = "F.",
+    labs(title = "(f)",
          caption = "* From filtered 1/2-hourly fluxes",
          x = NULL, y = "% of reliable flux records",
          fill = NULL) +
@@ -327,7 +327,7 @@ p_season <- ggplot(season.summary %>% na.omit, aes(x = percent.mean, y = gas, fi
   labs(
     y = NULL,
     x = "% sampling pairs",
-    title = "F. ",
+    title = "(f)",
     fill = "Season"
   )  + theme_bw()  + theme(legend.position = "top") 
 
@@ -361,7 +361,7 @@ make_panelG <- function() {
                       labels = c(CO2 = expression(CO[2]),
                                  H2O = expression(H[2]*O)))  +
     coord_cartesian(ylim = c(0, ymax)) +
-    labs(title = "F. ",
+    labs(title = "(f)",
          x = NULL, y = "Filtered GF values (largest pair per site)", fill = NULL) +
     base_theme +
     theme(legend.position = 'none',
@@ -372,7 +372,7 @@ make_panelG <- function() {
 plot.h <- plot.overlap.2 + labs(
   y = NULL,
   x = "% overlapping sampling pairs",
-  title = "G. ",
+  title = "(g)",
   fill = "")  + 
   base_theme + theme(legend.position = 'top')
 

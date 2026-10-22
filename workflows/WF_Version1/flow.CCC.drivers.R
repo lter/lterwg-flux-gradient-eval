@@ -121,7 +121,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     geom_text(aes(x = xs + 0.25, y = y_zB, label = "z[B]"), parse = TRUE, hjust = 0, size = 5) +
     scale_color_manual(values = setNames(geom_df$color, geom_df$panel), guide = "none") +
     coord_cartesian(xlim = c(-2.6, 2.6), ylim = c(-0.5, ch * 2.1)) +
-    labs(title = "A.",
+    labs(title = "(a)",
          x = NULL, y = NULL) +
     base_theme +
     theme(panel.grid = element_blank(), axis.text = element_blank(),
@@ -139,7 +139,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     
 
   # -------- Panel B titles depend on gas ------------------------
-  title_B <- "B."
+  title_B <- "(b)"
 
   B <- ggplot(co, aes(x = Canopy_L1, y = CCC, fill = Approach)) +
     geom_boxplot(outlier.shape = NA, alpha = 0.78,
@@ -161,7 +161,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     filter(n >= 5, !is.na(bin)) %>%
     mutate(center = .bin_center(bin))
 
-  title_C <- "C."
+  title_C <- "(c)"
 
   C <- ggplot(C_data, aes(x = center, y = ccc, color = Approach, shape = Approach)) +
     geom_line(linewidth = 0.7) + geom_point(size = 2.2) +
@@ -191,7 +191,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     geom_hline(yintercept = 0.5, linetype = "dashed", color = "red", linewidth = 0.4) +
     scale_color_manual(values = approach_palette) +
     scale_shape_manual(values = c(MBR = 16, AE = 15, WP = 17)) +
-    labs(title = "D.",
+    labs(title = "(d)",
          x = "Mean canopy height (m)", y = "Mean CCC") +
     coord_cartesian(xlim = c(0, 40), ylim = c(-0.05, 0.8)) +
     base_theme+
@@ -243,7 +243,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
                          name = "r with CCC") +
     scale_color_manual(values = c(`TRUE` = "white", `FALSE` = "black"),
                        guide = "none") +
-    labs(title = "E.",
+    labs(title = "(e)",
          x = NULL, y = NULL) +
     base_theme + theme(axis.text.y = element_text(size = 8))
 
@@ -271,7 +271,7 @@ build_ccc_drivers_figure <- function(df, gas = c("CO2", "H2O")) {
     ) +
     scale_fill_distiller(palette = "YlGn", direction = 1, limits = c(0, 2.5),
                          name = "VAI") +
-    labs(title = "F.",
+    labs(title = "(f)",
          x = "Mean canopy height (m)",
          y = "Best CCC at site") +
     coord_cartesian(ylim = c(-0.05, 1.10)) +

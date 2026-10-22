@@ -93,7 +93,7 @@ plot.flux.count.ecotype <- SITE_DATA_FLUX_COUNTS_Total_EcoType %>%
 
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/SamplingFluxesEcotype", run.tag, ".png"), 
-       plot = ggarrange( plot.flux.count.ecotype, labels="E"), 
+       plot = ggarrange( plot.flux.count.ecotype, labels="(e)"), 
        width = 8, height = 4, units = "in")
 
 # FLUX COUNTS BY APPROACH: ####
@@ -181,7 +181,7 @@ plot.counts.season.hour.percent.co2 <- SITE_DATA_FLUX_COUNTS_HOUR_Season  %>% fi
 
 hour.plots <- ggarrange( plot.counts.season.hour.percent.co2,
                          plot.counts.season.hour.percent.h2o,  
-                         nrow=2, labels= c('B', 'C'))
+                         nrow=2, labels= c("(b)", "(c)"))
 
 season.summary <- SITE_DATA_FLUX_COUNTS_SEASON_Total %>% reframe( .by=c(gas, season), percent.mean= mean(percent),  percent.sd= sd(percent) )
 season.summary$season <- factor(season.summary$season, levels = c("Winter", "Spring", "Summer", "Autumn"))
@@ -197,9 +197,9 @@ p_season <- ggplot(season.summary, aes(x = percent.mean, y = gas, fill = season)
     fill = "Canopy Level"
   )  + theme_bw()  + theme(legend.position = "none")
 
-p_season_label <- ggarrange(p_season, labels="D")
+p_season_label <- ggarrange(p_season, labels="(d)")
 
-final.season.hour.plots <- ggarrange( ggarrange( plot.counts.season, hour.plots, ncol=2,labels="A"), p_season_label ,ncol=1, nrow=2, heights = c(3, 1))
+final.season.hour.plots <- ggarrange( ggarrange( plot.counts.season, hour.plots, ncol=2,labels="(a)"), p_season_label ,ncol=1, nrow=2, heights = c(3, 1))
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Season-Hour_Percent", run.tag, ".png"), plot = final.season.hour.plots , width =9, height = 8, units = "in")
 
@@ -361,7 +361,7 @@ plot.overlap.2 <- SITE_DATA_FLUX_COUNTS_Overlap_Long_summary %>%
 
 
 final.overlap.plot <- ggarrange(plot.overlap.1, plot.overlap.2, 
-          ncol=1, nrow=2, heights = c(3, 0.5), labels=c("A", "B"))
+          ncol=1, nrow=2, heights = c(3, 0.5), labels=c("(a)", "(b)"))
 
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/Counts_Fluxes_Overlap", run.tag, ".png"), plot = final.overlap.plot, width = 6, height = 7, units = "in")
