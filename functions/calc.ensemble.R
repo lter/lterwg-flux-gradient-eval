@@ -49,6 +49,14 @@ ensemble.halfhour <- function(timeEnd_A, timeBgn_B, local = NULL) {
   start
 }
 
+# Pipe-friendly: adds time.rounded (half-hour of the sampling midpoint) to a data frame of 9-min rows.
+add.halfhour <- function(df) {
+  for (cc in c("timeEnd_A", "timeBgn_B")) if (!cc %in% names(df)) {
+    warning(cc, " missing: half-hours assigned from timeEndA.local"); df[[cc]] <- NA }
+  df$time.rounded <- ensemble.halfhour(df$timeEnd_A, df$timeBgn_B, df$timeEndA.local)
+  df
+}
+
 calc.ensemble.site <- function(df, ccc.cut = 0.5) {
   wmean <- function(x, w) {
     keep <- is.finite(x); x <- x[keep]; w <- w[keep]

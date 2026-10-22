@@ -3,6 +3,7 @@
 # Functions use the filtered data and provide both CCC and R2:
 
 source(fs::path(DirRepo.eval,"./functions/calc.linear.terms.R"))
+source(fs::path(DirRepo.eval,"./functions/calc.ensemble.R"))   # add.halfhour()
 
 parse_ccc_threshold <- function(threshold) {
   if (is.numeric(threshold)) {
@@ -65,7 +66,7 @@ validation.canopy <- function( threshold){
     # Harmonize the data: #####
     df_canopy <- df %>%
       left_join(canopy.sub, by = c("dLevelsAminusB", "gas", "Approach"), relationship = "many-to-many") %>%
-      mutate(time.rounded = timeEndA.local %>% round_date(unit = "30 minutes")) %>%
+      add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>%
       apply_validation_threshold(threshold = threshold) %>%
       reframe(.by = c(dLevelsAminusB, gas, Approach, time.rounded),
               EC_mean = mean(EC_mean, na.rm = T),
@@ -158,7 +159,7 @@ Compare.SamplingHeightPairs <- function( threshold){
     
       df_canopy <- df %>%
         left_join(canopy.sub, by = c("dLevelsAminusB", "gas", "Approach"), relationship = "many-to-many") %>%
-        mutate(time.rounded = timeEndA.local %>% round_date(unit = "30 minutes")) %>%
+        add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>%
         apply_validation_threshold(threshold = threshold) %>%
         reframe(.by = c(dLevelsAminusB, gas, Approach, time.rounded),
                 EC_mean = mean(EC_mean, na.rm = T),
@@ -252,7 +253,7 @@ Compare.SamplingHeightPairs_AA <- function( threshold){
     
     df_canopy <- df %>%
       left_join(canopy.sub, by = c("dLevelsAminusB", "gas", "Approach"), relationship = "many-to-many") %>%
-      mutate(time.rounded = timeEndA.local %>% round_date(unit = "30 minutes")) %>%
+      add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>%
       apply_validation_threshold(threshold = threshold) %>%
       reframe(.by = c(dLevelsAminusB, gas, Approach, time.rounded),
               EC_mean = mean(EC_mean, na.rm = T),
@@ -344,7 +345,7 @@ validation.approach <- function(index.df){
     
     canopy.sub <- index.df %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC.FG ) %>% filter( Site == site)
     
-    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC.FG  == '1') %>%
       reframe( .by= c( gas, Approach, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -436,7 +437,7 @@ validation.approach_V1 <- function(index.df){
     
     canopy.sub <- index.df %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC ) %>% filter( Site == site)
     
-    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC  == '1') %>%
       reframe( .by= c( gas, Approach, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -529,7 +530,7 @@ validation.approach_V1_AA <- function(index.df){
     
     canopy.sub <- index.df %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC ) %>% filter( Site == site)
     
-    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC  == '1' , Canopy_L1 == "AA") %>%
       reframe( .by= c( gas, Approach, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -621,7 +622,7 @@ validation.canopy.l1 <- function(index.df){
     
     canopy.sub <- index.df %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC.FG) %>% filter( Site == site)
     
-    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC.FG  == '1') %>%
       reframe( .by= c( gas, Canopy_L1, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -713,7 +714,7 @@ validation.canopy.l1_V1 <- function(index.df){
     
     canopy.sub <- index.df %>% select( Site, dLevelsAminusB, gas, Approach, Good.CCC.EC) %>% filter( Site == site)
     
-    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+    df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), relationship = "many-to-many") %>% add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC  == '1') %>%
       reframe( .by= c( gas, Canopy_L1, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -808,7 +809,7 @@ validation.SamplingHeightPairs <- function( index.df){
     
     df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
                                   relationship = "many-to-many") %>% 
-      mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+      add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC.FG  == '1') %>%
       reframe( .by= c( dLevelsAminusB, gas, Approach, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -902,7 +903,7 @@ validation.SamplingHeightPairs_V1 <- function( index.df){
     
     df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
                                   relationship = "many-to-many") %>% 
-      mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+      add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC  == '1') %>%
       reframe( .by= c( dLevelsAminusB, gas, Approach, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -995,7 +996,7 @@ validation <- function( index.df){
   
     df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
                                   relationship = "many-to-many") %>% 
-      mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+      add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC.FG  == '1') %>%
       reframe( .by= c( gas, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 
@@ -1051,7 +1052,7 @@ validation_V1 <- function( index.df){
     
     df_canopy <- df %>% left_join(canopy.sub , by=c("dLevelsAminusB", "gas", "Approach" ), 
                                   relationship = "many-to-many") %>% 
-      mutate( time.rounded = timeEndA.local %>% round_date( unit = "30 minutes") ) %>% 
+      add.halfhour()   # half-hour of the sampling midpoint (calc.ensemble.R) %>% 
       filter( Good.CCC.EC  == '1') %>%
       reframe( .by= c( gas, time.rounded), 
                EC_mean = mean(EC_mean, na.rm=T), 

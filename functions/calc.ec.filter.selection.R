@@ -1,6 +1,9 @@
 # EC selection diagnostic. Run per site; see docs/ec-filter-selection.md.
-# Inputs use site-local POSIXct times. Reference times must match the ensemble's
-# round_date(..., "30 minutes") labels. EC units: CO2 umol/m2/s, H2O mmol/m2/s.
+# Inputs use site-local POSIXct times. Half-hours are assigned as in the ensemble (ensemble.halfhour():
+# the fixed half-hour containing the midpoint between the two inlet samples, labelled by its start);
+# reference times must use the same half-hour start labels. EC units: CO2 umol/m2/s, H2O mmol/m2/s.
+if (!exists("ensemble.halfhour"))
+  source(file.path(if (exists("DirRepo.eval")) DirRepo.eval else ".", "functions", "calc.ensemble.R"))
 ec_filter_selection <- function(df, thresholds = c(2, 3, 4),
                                 min_per_hour = 5L, ec_reference = NULL,
                                 ensemble_times = NULL) {
@@ -26,7 +29,8 @@ ec_filter_selection <- function(df, thresholds = c(2, 3, 4),
   tz <- attr(as.POSIXct(df$timeEndA.local), "tzone")
   if (is.null(tz) || !length(tz) || !nzchar(tz[1])) stop("Set an explicit site timezone.")
   tz <- tz[1]
-  df$.time <- as.numeric(lubridate::round_date(df$timeEndA.local, "30 minutes"))
+  for (cc in c("timeEnd_A", "timeBgn_B")) if (!cc %in% names(df)) df[[cc]] <- NA
+  df$.time <- as.numeric(ensemble.halfhour(df$timeEnd_A, df$timeBgn_B, df$timeEndA.local))
   df$.ec <- ifelse(df$gas == "CO2", df$FC_turb_interp, df$FH2O_interp)
 
   if (is.null(ec_reference)) {
