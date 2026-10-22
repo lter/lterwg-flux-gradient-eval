@@ -32,11 +32,12 @@ and EC: one quality-controlled value per gas and half-hour. CO2 is in umol/m2/s
 and H2O in mmol/m2/s. Align the time labels to the ensemble's nearest-half-hour
 convention before supplying the table; do not silently join interval midpoints
 to interval endpoints. Preserve physical instants when assigning site timezones.
-Only supply EC values that pass the intended independent reference QC.
-Document that QC, including any turbulence, stationarity or detection screening.
-Do not remove otherwise valid EC solely for being small when constructing this
-diagnostic reference. The diagnostic cannot assess periods already absent from
-the EC reference; a shared exclusion can hide a selection effect.
+The project's preparation code already replaces NEON turbulent-flux values with
+qfFinl == 1 with NA before interpolation ([source, lines 223–271](https://github.com/lter/lterwg-flux-gradient/blob/c7fac402691da57f16309788dc5a2a9d8afce60f/workflows/flow.neon.data.format.conc.diffs.R#L223-L271)).
+NEON processes EC with eddy4R and supplies flags incorporating sensor checks,
+stationarity and integral-turbulence tests ([NEON documentation](https://www.neonscience.org/resources/learning-hub/tutorials/eddy-diel-cycle)).
+Apply equivalent EC quality screening to a supplied reference and document its
+release and exclusions. Periods already excluded from EC cannot be evaluated.
 
 Without this table the baseline is explicitly labelled profile_aligned_EC_proxy:
 the mean of distinct finite interpolated EC values in each profile half-hour.
@@ -82,20 +83,15 @@ reruns remain separate tasks.
 
 ## Interpretation
 
-Target SNR screens gradient detectability; tracer SNR also protects the MBR
-denominator. Turbulence screening addresses transport assumptions. These purposes
-are distinct, and a failed flag alone does not establish that the underlying
-exchange was unreal. This diagnostic does not recommend keeping every rejected
-measurement or applying a chamber-style retention rule to all tower filters.
+The main question is whether gradient-SNR filters change the hourly patterns and
+representative daily totals of available, quality-screened EC observations.
+Hold the project's turbulence eligibility fixed: compare turbulence_target,
+turbulence_tracer and turbulence_target_tracer with turbulence. The exported
+daily_difference_g_m2 uses all_reference, so subtract the turbulence-stage daily
+total from each SNR-stage total for this comparison.
 
-For the target/tracer detection question, compare masks within the same
-turbulence-eligible reference periods. A difference across the turbulence screen
-is descriptive: EC under inadequate turbulence may itself miss exchange, so it
-cannot establish the true budget of those excluded periods.
-
-Changes in hourly patterns, absolute magnitudes and signed daily totals are
-different outcomes. Missing peaks need not produce a systematic net-budget bias.
-Report each outcome separately. The script diagnoses availability selection; it
-does not validate GF errors or later gap filling. Any reconstruction needs
-separate validation under the hours, seasons and conditions actually excluded.
-
+Target SNR screens gradient detectability, which depends on exchange and mixing.
+Tracer SNR also protects against an unstable MBR denominator. Report hourly
+coverage, signed and absolute EC means, and signed daily totals separately.
+This is a representativeness check with no assumed direction of bias; it does
+not establish exchange during periods excluded by NEON QC or turbulence screening.
