@@ -89,17 +89,30 @@ Section 1 aggregates the stacked EDI tables into `Review_Supplement/ALL_*.csv`. 
 ## Ensemble data product (EDI)
 `workflows/WF_Version1/flow.flux.ensemble._V1R.R` builds the 30-min gradient-flux ensemble with `functions/calc.ensemble.R`:
 - **Inputs:** reliable sampling-height pairs (CCC ≥ 0.5 against EC), any approach.
-- **`FG_ENSEMBLE`:** inverse-RMSE weighted mean of the pairs' 9-min fluxes in each 30-min window.
-- **`FG_ENSEMBLE_SD`:** spread between pairs, the SD of the per-pair 30-min means. NA when only one pair contributes.
+- **Half-hours:** each 9-min value goes to the fixed half-hour [hh:00, hh:30) or [hh:30, hh+1:00) containing the midpoint between its two inlet samples, the time to which EC was interpolated (`ensemble.halfhour()`, `add.halfhour()`). Intervals are built in UTC; `time.rounded` is the interval start in site local time. (Before version 3: the end of the first sample rounded to the nearest 30 min.)
+- **`FG_ENSEMBLE`:** inverse-RMSE weighted mean of the pairs' 9-min fluxes in the half-hour. RMSE is the direct GF − EC difference of each pair (before version 3: scatter around a fitted GF–EC line, issue #1).
+- **`FG_ENSEMBLE_SD`:** spread between pairs, the SD of the per-pair (approach × sampling-height pair) 30-min means. NA when only one pair contributes.
 - **Also recorded:** `FG_ENSEMBLE_NPAIRS`, `FG_ENSEMBLE_NVALUES` and `FG_ENSEMBLE_APPROACHES`.
 
 For new runs (`run.tag` other than `_AA_AW`), the script writes the EDI data table:
 - one CSV per site: `NEON_GradientFlux_EDI<period>/{SITE}/{SITE}_GF_ENSEMBLE_30min.csv`;
 - a column description table: `Metadata_table_GF_ENSEMBLE.csv`.
 
-Each row carries both `time_end_local` and `time_end_utc`. The UTC time is the unique key, because local time repeats at the end of daylight saving time. Set `write.edi.ensemble` / `edi.ensemble.dir` to override.
+The CSV lists **every half-hour** from the first to the last value of each site, with start and end times in UTC and local time (UTC is the unique key; local time repeats at the end of daylight saving time). `FG_ENSEMBLE_FLAG` is `ok` (two or more pairs), `single_pair`, or `no_reliable_GF` (flux NA, `FG_ENSEMBLE_NPAIRS` = 0). Nothing is gap filled. `EC_mean` is the EC interpolated to the contributing samples; `EC_30min` is NEON's own 30-min turbulent flux (quality flag 0), filled where the extracted `SITE_30min.Rdata` files exist (`ec30.dirs`; all sites for Jul 2024–Aug 2026, only ABBY for 2021–24 unless those are re-extracted). Set `write.edi.ensemble` / `edi.ensemble.dir` to override.
 
-`FG_ENSEMBLE_SD` ranks uncertainty well: errors against EC grow with it, Spearman 0.43 (CO2) and 0.56 (H2O). It is not a calibrated interval. EC lies within ±1 SD in 42–48% and within ±2 SD in 66–70% of windows.
+`FG_ENSEMBLE_SD` ranks uncertainty well: errors against EC grow with it, Spearman 0.43 (CO2) and 0.56 (H2O). It is not a calibrated interval. EC lies within ±1 SD in 42–48% and within ±2 SD in 66–70% of windows (published 2021–2026 run).
+
+## Version 3 run (October 2026)
+
+`flow.evaluation.batch_V1.R` is set to the version 3 run: `run.tag <- "_AA_AW_2021_2026_v3"`, `eval.data.dirs <- "NEON_GradientFlux_Data_2021_2026_v3"`, `edi.dir <- "NEON_GradientFlux_EDI_2021_2026_v3"` (built by `lterwg-flux-gradient/workflows/WorkFlow_rerun_2021_2026_v3.R`; see that README for the flux changes). All outputs carry the `_v3` tag, so the published `_AA_AW_2021_2026` results are kept for comparison. Changes in this repository:
+- **Pair RMSE** is the direct GF − EC difference (`calc.One2One.CCC_testing.R`, `calc.One2One.CCC_V2.R`; issue #1, PR #3).
+- **Diel curves** are in g m⁻² h⁻¹ (3600 s; was 1800 s, so daily totals and absolute diel values were half; correlations, slopes, relative biases and signs are unaffected) (`calc.diel.R`; issue #2, PR #4). CH4 diel conversion corrected to g C per hour (PR #7).
+- **Half-hour assignment** by sampling midpoint everywhere half-hours are formed (ensemble, Table 5 comparison, RSHP threshold sensitivity, `calc_validation.R`, EC filter diagnostic).
+- **Spike evaluation** bins stability by the pair's (z − d)/L (`flow.evaluation.spike_eval.R`).
+- **Review aggregates** (`flow.supplement_review.R`) are tagged by run and rebuilt automatically when missing (~1 h on the first v3 run).
+- **New checks:** `flow.evaluation.canopy_height_sensitivity.R`, `flow.evaluation.rmse_definition_check.R`, and `flow.ec.filter.selection.R` (EC representativeness under SNR filtering, issue #5, PR #6; run after the v3 rerun).
+
+Known limitation: the stability corrections of the flux calculation (φh, Eqs. 4–5 of the paper) were derived for roughly −5 < ζ < 0 and 0 ≤ ζ < 1. That is their range of validity, not a filter; they are applied to all values (0.07 % of filtered AE and 0.13 % of WP values were outside it in the 2021–2026 run).
 
 ## Supplementary analyses
 These scripts produce the figures, tables and numbers in the manuscript supplement (essd-2026-413, review revision):
@@ -170,7 +183,7 @@ LTER Scientific Computing Team [website](https://lter.github.io/scicomp/) & NCEA
 
 ## Re-running the paper figures (2021–2026 run)
 
-All workflow scripts default to `run.tag <- "_AA_AW_2021_2026"`, `localdir <- "/Volumes/MaloneLab/Research/FluxGradient"` and the Dropbox repo path, and write to `Figures/WF_Version1/<name>_AA_AW_2021_2026.png`. The data products (filtered fluxes, `SITES_One2One`, `SITE_DATA_FILTERED_CCC`) already exist, so only the figure steps need to run. Run in this order (later steps read files written by earlier ones):
+All workflow scripts default to `run.tag <- "_AA_AW_2021_2026"` (the published run; `flow.evaluation.batch_V1.R` sets the version 3 tag), `localdir <- "/Volumes/MaloneLab/Research/FluxGradient"` and the Dropbox repo path, and write to `Figures/WF_Version1/<name>_AA_AW_2021_2026.png`. The data products (filtered fluxes, `SITES_One2One`, `SITE_DATA_FILTERED_CCC`) already exist, so only the figure steps need to run. Run in this order (later steps read files written by earlier ones):
 
 | # | Script (`workflows/…`) | Figures / tables |
 |---|---|---|
