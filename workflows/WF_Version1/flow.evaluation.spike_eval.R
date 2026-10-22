@@ -54,7 +54,21 @@ for (s in sites) for (m in c("MBR","AE","WP")) {
 files <- list.files(extract.dir, "\\.csv\\.gz$", full.names = TRUE)
 use.cols <- c("Site","Approach","period","timeEndA.local","dLevelsAminusB","gas","FG_mean","dConc","dConc_sd","vari_A","vari_B",
               "ustar_interp","ustar_threshold","FC_turb_interp","FH2O_interp","ubar1","ubar2","ubar3","ubar4",
-              "zeta","cross_grad_flag","dConc.tracer","dConc.tracer_sd","EddyDiff","effective_h","roughLength_calc","phih")
+              "zeta","cross_grad_flag","dConc.tracer","dConc.tracer_sd","EddyDiff","effective_h","roughLength_calc","phih",
+              "timeEnd_A","TowerHeight_A","TowerHeight_B","L_obukhov","MO.param")
+# Stability parameter of each sampling-height pair, zeta = (z - d)/L with z = sqrt(zA zB), d = 0.66 h and
+# z - d >= 0.1 m, as in calc.stability.correction() (MO.param, used for phi_h in the AE and WP).
+# The extracts' "zeta" column is (h - d)/L from flag.all.gas.stability(), i.e. a canopy-height value that is
+# the same for every pair, so it is not used here. The MBR extracts have no MO.param and carry the older
+# turbulence-based h of the formatting step, so for the MBR d is taken from the aerodynamic canopy height
+# (Pennypacker and Baldocchi, 2016) of the AE extract of the same site, interpolated in time.
+h.aero <- rbindlist(lapply(files[grepl("_AE\\.csv\\.gz$", files)], function(f) {
+  d <- unique(fread(f, select = c("timeEnd_A", "z_veg_aero")))
+  d[, Site := sub("_AE\\.csv\\.gz$", "", basename(f))]
+}))
+h.aero[, t := as.numeric(as.POSIXct(timeEnd_A, tz = "UTC"))]
+h.aero <- unique(h.aero[is.finite(t) & is.finite(z_veg_aero), .(Site, t, z_veg_aero)], by = c("Site", "t"))
+setkey(h.aero, Site, t)
 cj <- unique(as.data.table(canopy)[, .(Site, dLevelsAminusB, Canopy_L1, CanopyHeight, MeasurementHeight_m_A, MeasurementHeight_m_B)],
              by = c("Site", "dLevelsAminusB"))
 flag_approach <- function(m) {
@@ -63,6 +77,16 @@ flag_approach <- function(m) {
   x[, `:=`(hour = as.integer(substr(timeEndA.local, 12, 13)), month = as.integer(substr(timeEndA.local, 6, 7)),
            date = as.IDate(substr(timeEndA.local, 1, 10)))]                     # local clock time
   x[, timeEndA.local := NULL]
+  if (m == "MBR" || !"MO.param" %in% names(x)) {
+    x[, t := as.numeric(as.POSIXct(timeEnd_A, tz = "UTC"))]
+    x[, h_pb := {
+      hs <- h.aero[.BY$Site]
+      if (nrow(hs) >= 2) approx(hs$t, hs$z_veg_aero, t, rule = 2)$y else rep(NA_real_, .N)
+    }, by = Site]
+    x[, MO.param := pmax(sqrt(TowerHeight_A * TowerHeight_B) - 0.66 * h_pb, 0.1) / L_obukhov]
+    x[, c("t", "h_pb") := NULL]
+  }
+  x[, zeta := MO.param]   # pair stability parameter (z - d)/L
   for (cc in setdiff(c("EddyDiff","effective_h","roughLength_calc","phih","dConc.tracer","dConc.tracer_sd","zeta","cross_grad_flag"), names(x))) x[, (cc) := NA_real_]
   x[, daynight := fifelse(hour %in% 7:18, "day", "night")]
   x[, season := fcase(month %in% c(12,1,2), "Winter", month %in% 3:5, "Spring", month %in% 6:8, "Summer", default = "Autumn")]
@@ -190,7 +214,7 @@ ggsave(file.path(fig.dir, paste0("SPIKE_rate_hour", run.tag, ".png")), S2, width
 bins <- bind_rows(B.snr %>% mutate(var = "Concentration SNR |dC|/sd"),
                   B.tsnr %>% mutate(Approach = "MBR", var = "Tracer SNR (MBR)"),
                   B.ustar %>% mutate(var = "u* / u* threshold"),
-                  B.zeta %>% mutate(var = "Stability z/L")) %>% ap.f() %>%
+                  B.zeta %>% mutate(var = "Stability (z - d)/L")) %>% ap.f() %>%
   group_by(var, Approach, gas) %>% mutate(i = as.integer(factor(bin, levels = unique(bin)))) %>% ungroup()
 S3 <- ggplot(bins, aes(bin, spike_pct, colour = Approach, linetype = gas, group = interaction(Approach, gas))) +
   geom_line() + geom_point(size = 0.9) + facet_wrap(~var, scales = "free", nrow = 2) +
