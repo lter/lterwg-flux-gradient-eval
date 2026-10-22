@@ -171,13 +171,14 @@ DIEL.season <- function( dataframe, flux, Gas, flux.other){
   
   
   if(Gas == "CO2"){
-    dataframe$flux.other <- ((dataframe[, flux.other]*44.01)/1000000)*1800 
-    dataframe$flux <- ((dataframe[, flux]* 44.01)/1000000)*1800 
+    # Hourly mass flux: the seasonal curve has one prediction per hour.
+    dataframe$flux.other <- ((dataframe[, flux.other]*44.01)/1000000)*3600 # g CO2 m-2 h-1
+    dataframe$flux <- ((dataframe[, flux]* 44.01)/1000000)*3600
   }
   
   if(Gas == "H2O"){
-    dataframe$flux.other <- dataframe[, flux.other]* 0.018015*1800 # g H2O m-2 30min-1
-    dataframe$flux <- dataframe[, flux]* 0.018015*1800 
+    dataframe$flux.other <- dataframe[, flux.other]* 0.018015*3600 # g H2O m-2 h-1
+    dataframe$flux <- dataframe[, flux]* 0.018015*3600
   }
   
 # Make sure season is in the dataframe:
