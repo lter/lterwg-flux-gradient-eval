@@ -1,7 +1,7 @@
 # Creates a file of the sites and IGBP class to merge with anyfile:
 library(sf)
 
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') # has a list of all 
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) # has a list of all 
 
 site.att.sf <- st_as_sf(x = metadata,                         
                         coords = c("Longitude..degrees.", "Latitude..degrees."),

@@ -10,7 +10,7 @@ if(DnldFromGoogleDrive == TRUE){
     
     site <- site
     
-    paste(site, "_Evaluation.Rdata", sep = "")
+    paste(site, "_Evaluation.RData", sep = "")
     dnld_files <- c()
     
     localdir.site <- paste(localdir,"/", site, sep = "")

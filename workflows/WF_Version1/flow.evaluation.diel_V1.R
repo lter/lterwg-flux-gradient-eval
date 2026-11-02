@@ -15,9 +15,9 @@ DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/R
 
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1", run.tag, ".Rdata"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1", run.tag, ".RData"))))
 
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>% 
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) %>% 
   mutate(EcoType = case_when( Vegetation.Abbreviation..IGBP. == 'ENF' ~ 'Forest',
                               Vegetation.Abbreviation..IGBP. == 'DBF' ~ 'Forest', 
                               Vegetation.Abbreviation..IGBP. == 'MF' ~ 'Forest',
@@ -250,14 +250,14 @@ readr::write_csv(
 
 # Save the plots:
 
-fileSave <- paste0("/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA")
+fileSave <- paste0(localdir, "/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RData")
 atomic_save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,ENSEMBLE_DIELS_EVAL,
       DIEL_curve_diagnostics, 
       file= fileSave )
 
 # DIEL PLOTS: ####
 
-load(file=paste0("/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA"))
+load(file=paste0(localdir, "/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RData"))
 
 sites.sub <- c("JORN", "KONZ", "GUAN", "HARV")
 
@@ -270,7 +270,7 @@ Subset.plot.h2o <- ENSEMBLE_DIELS  %>% filter( site %in% sites.sub, gas =='H2O')
         strip.background = element_rect(fill = "transparent", linewidth = 0.5),
         legend.title = element_blank()) + ylab(expression(paste( "Ecosystem Flux (g m"^-2, " h"^-1, ")")))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, "_SUBSET.png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, "_SUBSET.png"), 
        plot = Subset.plot.h2o, width = 4, height =4, units = "in")
 
 Subset.plot.co2 <- ENSEMBLE_DIELS  %>% filter( site %in% sites.sub, gas =='CO2') %>%   ggplot()+ 
@@ -282,7 +282,7 @@ Subset.plot.co2 <- ENSEMBLE_DIELS  %>% filter( site %in% sites.sub, gas =='CO2')
         strip.background = element_rect(fill = "transparent", linewidth = 0.5),
         legend.title = element_blank()) + ylab(expression(paste( "Ecosystem Flux (g m"^-2, " h"^-1, ")")))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, "_SUBSET2.png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, "_SUBSET2.png"), 
        plot = Subset.plot.co2, width = 4, height =2, units = "in")
 
 
@@ -317,7 +317,7 @@ diel.plot.season <- ggarrange ( ggarrange(plot.diel.gas.season.ec,  plot.diel.ga
 ggarrange(plot.diel.gas.season.regression, ncol=1,
           labels= "(c)"), ncol=1)
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, ".png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON", run.tag, ".png"), 
        plot = diel.plot.season, width = 9, height =8, units = "in")
 
 # Create a Linear plot by EcoType:
@@ -368,7 +368,7 @@ ecoplot <- ENSEMBLE_DIELS %>% rename(Site = site)  %>% left_join(metadata.igbp, 
   xlab(expression(paste( "EC (g m"^-2, " day"^-1,")"))) +
   scale_colour_discrete_qualitative(palette = "Harmonic") 
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_EcoAssessment", run.tag, ".png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_EcoAssessment", run.tag, ".png"), 
        plot = ecoplot, width = 8, height =7, units = "in")
 
 # Results text:
@@ -419,9 +419,9 @@ plot.diels.h2o <- ENSEMBLE_DIELS %>% filter(season == 'Spring', gas=="H2O") %>% 
   geom_ribbon(aes(x=Hour, ymin = FG, ymax = EC), fill = "red", alpha = 0.2)+
   theme_bw() + facet_wrap(~ site, scales = "free_y", ncol=5) +  ylab(expression(paste( "H"[2],"O (g m"^-2, " h"^-1, ")")))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SITES_CO2_V1", run.tag, ".png"), plot = plot.diels.co2 , width = 8, height =9, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SITES_CO2_V1", run.tag, ".png"), plot = plot.diels.co2 , width = 8, height =9, units = "in")
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SITES_H2O_V1", run.tag, ".png"), plot = plot.diels.h2o , width = 8, height =9, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SITES_H2O_V1", run.tag, ".png"), plot = plot.diels.h2o , width = 8, height =9, units = "in")
 
 
 # Evaluation plots for DIELS: #####
@@ -438,7 +438,7 @@ Plot_ENSEMBLE_DIEL_EVAL_SITES <- ENSEMBLE_DIELS_EVAL %>% ggplot() +
          strip.background = element_rect(fill = "transparent", size = 0.5),
          legend.position = "top")+ ylab("") +  xlab(expression(paste("Ensemble GF R"^2)))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_EVAL_SITES_V1", run.tag, ".png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON_EVAL_SITES_V1", run.tag, ".png"), 
        plot = Plot_ENSEMBLE_DIEL_EVAL_SITES, width = 9, height =8, units = "in")
 
 
@@ -457,7 +457,7 @@ Plot_ENSEMBLE_DIEL_EVAL <- ENSEMBLE_DIELS_EVAL %>% ggplot() +
          legend.position = "top")+ ylab("") +  
   xlab(expression(paste("Ensemble GF R"^2)))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_EVAL_V1", run.tag, ".png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON_EVAL_V1", run.tag, ".png"), 
        plot = Plot_ENSEMBLE_DIEL_EVAL, width = 9, height =8, units = "in")
 
 
@@ -513,7 +513,7 @@ ENSEMBLE_DIELS_EVAL_canopy <- ENSEMBLE_DIELS_EVAL %>% rename(Site = site) %>%
  
  plot.23 <- ggarrange(   plot.2,  plot.3 , nrow=2 , heights= c(3,1))
 
- ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_Final_V1", run.tag, ".png"), 
+ ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON_Final_V1", run.tag, ".png"), 
         plot =  plot.23, width = 8, height =8, units = "in")
  
 # Figure: EVAL by Ecotype: #### 
@@ -536,7 +536,7 @@ Plot_ENSEMBLE_DIEL_Eco_EVAL_Season <- ENSEMBLE_DIELS_EVAL_canopy %>% filter(!is.
          strip.background = element_rect(fill = "transparent", size = 0.5),
          legend.position = "top")+ ylab("") +  xlab(expression(paste("Ensemble GF R"^2)))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/DIEL_PLOTS_SEASON_EcoType_EVAL_V1", run.tag, ".png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/DIEL_PLOTS_SEASON_EcoType_EVAL_V1", run.tag, ".png"), 
        plot = Plot_ENSEMBLE_DIEL_Eco_EVAL, width = 9, height =4, units = "in")
 
 # Text Summary: ####

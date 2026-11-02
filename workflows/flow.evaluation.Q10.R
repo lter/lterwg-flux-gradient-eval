@@ -5,8 +5,8 @@ library(ggpubr)
 library(ggplot2)
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-load( fs::path(localdir,paste0("SITE_DATA_Harmonized.Rdata")))
+DirRepo <-DirRepo.eval
+load( fs::path(localdir,paste0("SITE_DATA_Harmonized.RData")))
 source(paste(DirRepo,"/functions/calc.diel.R", sep="") )
 # Calculate diels by Season: ####
 Harmonized_Q10 <- data.frame()

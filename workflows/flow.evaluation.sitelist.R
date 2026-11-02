@@ -12,8 +12,8 @@ DirRepo.eval <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Re
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 
 source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))
-load(fs::path(localdir,paste0("SITES_One2One.Rdata"))) # Import CCC results
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
+load(fs::path(localdir,paste0("SITES_One2One.RData"))) # Import CCC results
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) 
 site.list <- metadata$Site_Id.NEON %>% unique
 
 # Need to bring in new canopy file with all the canopy_L1 options
@@ -39,7 +39,7 @@ for( site in site.list){
   message( paste("Importing the data for ", site))
   
   localdir.site <- paste(localdir,"/", site, sep = "")
-  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+  load(paste(localdir.site, "/", site, "_FILTER.RData", sep=""))
   
   canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, Canopy_L1, dLevelsAminusB)
   canopy.sub$Canopy_L1 %>% unique

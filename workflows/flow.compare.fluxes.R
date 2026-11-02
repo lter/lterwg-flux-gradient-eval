@@ -12,15 +12,15 @@ library(gtools)
 library(ggplot2)
 library(ggpmisc)
 
-DirRepo <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo <-DirRepo.eval
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 source(fs::path(DirRepo,'functions/calc.diel.R' ))
-load(fs::path(localdir,paste0("SITES_One2One.Rdata"))) # Import CCC results
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
+load(fs::path(localdir,paste0("SITES_One2One.RData"))) # Import CCC results
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) 
 site.list <- metadata$Site_Id.NEON %>% unique
 
 # Import canopy information:
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>% mutate( Site = Site_Id.NEON, IGBP = Vegetation.Abbreviation..IGBP., Koppen = Climate.Class.Abbreviation..Koeppen.) %>%  select( Site, IGBP, Koppen)
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) %>% mutate( Site = Site_Id.NEON, IGBP = Vegetation.Abbreviation..IGBP., Koppen = Climate.Class.Abbreviation..Koeppen.) %>%  select( Site, IGBP, Koppen)
 
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct %>% left_join(metadata, by="Site" )
 
@@ -33,7 +33,7 @@ for( site in site.list){
   
   message( paste("Importing the data for ", site))
   localdir.site <- paste(localdir,"/", site, sep = "")
-  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+  load(paste(localdir.site, "/", site, "_FILTER.RData", sep=""))
   
   canopy.sub <- canopy %>% filter( Site == site) 
   

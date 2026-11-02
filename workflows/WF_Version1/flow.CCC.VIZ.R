@@ -12,7 +12,7 @@ library(colorspace)
 library(ggpubr)
 
 
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".RData"))))
 
 SITES_One2One$CCC %>% range
 
@@ -68,7 +68,7 @@ SITES_One2One_canopy.subH2O <- SITES_One2One %>% filter(gas=="H2O")
             ncol=2 , nrow=2, labels= c("(a)", "(b)", "(c)", "(d)"), common.legend = T, legend = "right")
  
  
- ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/final.plot.matrix", run.tag, ".png"), plot =  final.plot.matrix, width = 5, height = 5, units = "in")
+ ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/final.plot.matrix", run.tag, ".png"), plot =  final.plot.matrix, width = 5, height = 5, units = "in")
  
  
  SITES_One2One %>% reframe( .by=c(Approach, gas) , CCC = mean(CCC))
@@ -139,7 +139,7 @@ final.eval.ccc.plot <- ggarrange( evaluation.ccc.plot, evaluation.ggridges , nco
 
 final.eval.ccc.plot 
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/final.eval.ccc.plot", run.tag, ".png"), plot = final.eval.ccc.plot, width = 5, height = 6, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/final.eval.ccc.plot", run.tag, ".png"), plot = final.eval.ccc.plot, width = 5, height = 6, units = "in")
 
 
  # CCC  Evaluation Threshold ####
@@ -161,8 +161,8 @@ plot.CCC.H2O.all <- SITES_One2One %>% filter(gas=="H2O") %>%
   theme_bw() + ylab("") + xlab("CCC") +
   geom_vline(xintercept= 0.5, linetype="dashed", color ="red")
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/CCC_plot_co2", run.tag, ".png"), plot = plot.CCC.CO2.all, width = 8, height = 9, units = "in")
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/CCC_plot_h2o", run.tag, ".png"), plot = plot.CCC.H2O.all, width = 8, height = 9, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/CCC_plot_co2", run.tag, ".png"), plot = plot.CCC.CO2.all, width = 8, height = 9, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/CCC_plot_h2o", run.tag, ".png"), plot = plot.CCC.H2O.all, width = 8, height = 9, units = "in")
 
 
 
@@ -174,7 +174,7 @@ plot.CCC.all <- SITES_One2One %>%  ggplot() +
   geom_vline(xintercept= 0.5, linetype="dashed", color = "red")
 
 plot.CCC.all
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/CCC_plot_all", run.tag, ".png"), plot = plot.CCC.all, width = 6, height = 6, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/CCC_plot_all", run.tag, ".png"), plot = plot.CCC.all, width = 6, height = 6, units = "in")
 
 # Determine the distribution of sampling pair heights: ####
 library(tidyverse)
@@ -267,7 +267,7 @@ p_canopy <- ggplot(df_canopy, aes(x = gas, y = percent, fill = Canopy_L1)) +
 plots.samplingHeights.counts <- ggarrange( p_overall , p_method , p_canopy,
            nrow = 1, labels=c("(a)", "(b)", "(c)"))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/SamplingHeightPairs", run.tag, ".png"), plot = plots.samplingHeights.counts, width = 8.5, height = 3, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/SamplingHeightPairs", run.tag, ".png"), plot = plots.samplingHeights.counts, width = 8.5, height = 3, units = "in")
 
 
 SITES_One2One %>% filter( CCC >= 0.5, Canopy_L1 != "WW" ) %>% mutate( count.sh = 1) %>% 
@@ -279,5 +279,5 @@ mean.counts$Mean.count %>% mean
 mean.counts$Mean.count %>% sd       
 
 atomic_save(plot.CCC.CO2.all ,
-     plot.CCC.H2O.all, plots.samplingHeights.counts, file = fs::path(localdir,paste0(paste0("/flow.CCC_VIZ", run.tag, ".RDATA"))))
+     plot.CCC.H2O.all, plots.samplingHeights.counts, file = fs::path(localdir,paste0(paste0("/flow.CCC_VIZ", run.tag, ".RData"))))
 

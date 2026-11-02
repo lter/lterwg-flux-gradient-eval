@@ -2,7 +2,7 @@
 
 # -------------- Change this stuff -------------
 #DirRepo <- 'C:/Users/csturtevant/Documents/Git/lterwg-flux-gradient' # Relative or absolute path to lterwg-flux-gradient git repo on your local machine. Make sure you've pulled the latest from main!
-DirRepo <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
+DirRepo <-DirRepo.eval
 setwd(DirRepo)
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
 
@@ -17,7 +17,7 @@ googledrive::drive_auth(email = email) # Likely will not work on RStudio Server.
 
 localdir.data <- paste("/data")
 
-dnld_files <- c( "Ameriflux_NEON field-sites.csv","DIEL_SUMMARY.RDATA", "SITES_One2One.Rdata", "Sites_AOP_Summary.Rdata","Site_Attributes.csv", "CanopyInformation.Rdata","canopy_commbined.csv", "flow.CCC_VIZ.R" ) # List of files you want to download
+dnld_files <- c( "Ameriflux_NEON field-sites.csv","DIEL_SUMMARY.RData", "SITES_One2One.RData", "Sites_AOP_Summary.RData","Site_Attributes.csv", "CanopyInformation.RData","canopy_commbined.csv", "flow.CCC_VIZ.R" ) # List of files you want to download
 
 # Download the files : 
 
@@ -37,7 +37,7 @@ for (focal_file in dnld_files){
 }
 
 ##### Download filtered data for sites: ####
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') # has a list of all the sites
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) # has a list of all the sites
 
 # -------------------------------------------------------
 site.list <- metadata$Site_Id.NEON %>% unique
@@ -56,7 +56,7 @@ if(DnldFromGoogleDrive == TRUE){
     
     site <- site
     
-    paste(site, "_Evaluation.Rdata", sep = "")
+    paste(site, "_Evaluation.RData", sep = "")
     dnld_files <- c()
     
     localdir.site <- paste(localdir,"/", site, sep = "")

@@ -15,8 +15,8 @@ drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77
 
 source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))
 
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata")))) # Import CCC results
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".RData")))) # Import CCC results
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) 
 site.list <- SITES_One2One$Site %>% unique
 
 SITE_DATA_FILTERED_CCC <- list() # Save all the data here:
@@ -29,7 +29,7 @@ for( site in site.list){
   message( paste("Importing the data for ", site))
   
   localdir.site <- paste(localdir,"/NEON_GradientFlux_Data_Filter/", site, sep = "")
-  load(paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
+  load(paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".RData"), sep=""))
   
   SITES_One2One_sub <- SITES_One2One %>% 
     select( -c('Canopy_L1', 'TowerPosition_A', 'TowerPosition_B')) %>% filter(Site == site)

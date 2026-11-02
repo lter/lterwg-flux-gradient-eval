@@ -7,8 +7,8 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-load(file= paste(localdir, "SITES_One2One_canopy_model.Rdata", sep="" ))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.Rdata")))
+load(file= paste(localdir, "SITES_One2One_canopy_model.RData", sep="" ))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED_CCC.RData")))
 source(fs::path(DirRepo.eval,"./functions/calc_validation.R"))
 
 # Canopy Information:
@@ -108,7 +108,7 @@ plot.CCC.gf <- val.SHP.resample  %>% drop_na(predicted)%>%
 final.model.plots.gf <- ggarrange( ggarrange(plot.CCC.gf, plot.Cmatrix.gf, nrow=1, ncol=2, labels=c("(a)", "(b)")),
                                 ggarrange(plot.approach.gf , plot.canopylevels.gf, nrow= 1, common.legend = T, labels=c("(c)", "(d)")), ncol=1 )
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/SamplingHeightPair_Selection_GFMODELPRED.png", plot =  final.model.plots.gf, width = 7, height = 7, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/SamplingHeightPair_Selection_GFMODELPRED.png"), plot =  final.model.plots.gf, width = 7, height = 7, units = "in")
 
 # How many additional pairs were added ####
 sites.model <- pairs.MODEL  %>% select (Site) %>% unique # sites
@@ -128,11 +128,11 @@ setdiff(sites.EC, sites.GF)
  
 # Save this file for use:
 save(SITES_One2One_canopy_model, val.SHP.resample ,
-     file= paste(localdir, "SITES_One2One_canopy_model_CCCGF.Rdata", sep="") )
+     file= paste(localdir, "SITES_One2One_canopy_model_CCCGF.RData", sep="") )
 
 # Pre-validation: ####.  START HERE.. ####
 
-load(  file= paste(localdir, "SITES_One2One_canopy_model_CCCGF.Rdata", sep="") )
+load(  file= paste(localdir, "SITES_One2One_canopy_model_CCCGF.RData", sep="") )
 
 # Select information needed to ID the reliable levels:
 
@@ -213,16 +213,16 @@ final.pre.validation.plot <- ggarrange(plot.preval.SHP.density,
 
 # Save the plots:
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.SHP.APPROACH.CL1.png",
+ggsave(paste0(DirRepo.eval, "/Figures/PreValidation.SHP.APPROACH.CL1.png"),
        plot =  final.pre.validation.plot, width = 6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.APPROACH.png",
+ggsave(paste0(DirRepo.eval, "/Figures/PreValidation.APPROACH.png"),
        plot =  finalplot.preval.approach, width = 6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.CL1.png",
+ggsave(paste0(DirRepo.eval, "/Figures/PreValidation.CL1.png"),
        plot =  finalplot.preval.canopy, width = 6, height = 7, units = "in")
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/PreValidation.SHP.png",
+ggsave(paste0(DirRepo.eval, "/Figures/PreValidation.SHP.png"),
        plot =  final.plots.preval.SHP, width = 6, height = 7, units = "in")
 
 # Post-validation: ####
@@ -245,7 +245,7 @@ final.post.validation.plot <- ggarrange(plot.post.val,
                                        labels=c("(a)", "(b)"),
                                        heights=c(3,1))
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.PLOTS.png",
+ggsave(paste0(DirRepo.eval, "/Figures/Validation.PLOTS.png"),
        plot =  final.post.validation.plot, width = 6, height = 7, units = "in")
 
 final.post.validation.plot <- ggarrange(plot.post.val,
@@ -255,7 +255,7 @@ final.post.validation.plot <- ggarrange(plot.post.val,
 
 SUper.plot <- ggarrange( final.pre.validation.plot,final.post.validation.plot , ncol=2 )
 
-ggsave("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Validation.Harmonization.png",
+ggsave(paste0(DirRepo.eval, "/Figures/Validation.Harmonization.png"),
        plot =  SUper.plot, width = 8, height = 7, units = "in")
 
 

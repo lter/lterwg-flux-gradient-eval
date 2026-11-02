@@ -19,9 +19,9 @@ library(ggpubr)
 library(ggplot2)
 
 localdir <- '/Volumes/MaloneLab/Research/FluxGradient/FluxData'
-DirRepo <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-load( fs::path(localdir,paste0("SITES_One2One.Rdata")))
-load( fs::path(localdir,paste0("SITE_DATA_FILTERED.Rdata")))
+DirRepo <-DirRepo.eval
+load( fs::path(localdir,paste0("SITES_One2One.RData")))
+load( fs::path(localdir,paste0("SITE_DATA_FILTERED.RData")))
 
 # Extract month from POSIXct dates
 months <- as.numeric(format(dates, "%m"))
@@ -48,7 +48,7 @@ for( site in site.list){
   print(paste("Working on " ,site))
   localdir.site <- paste(localdir,"/", site, sep = "")
   
-  load(paste(localdir.site, "/", site, "_FILTER.Rdata", sep=""))
+  load(paste(localdir.site, "/", site, "_FILTER.RData", sep=""))
   
   
   canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, Canopy_L1, dLevelsAminusB)

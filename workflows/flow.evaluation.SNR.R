@@ -14,7 +14,7 @@ for( site in site.list){
   if (length(eval.data.dirs) != 1L) stop("SNR requires one combined evaluation directory")
   localdir.site <- file.path(localdir, eval.data.dirs, site)
   
-  files <- paste(site, "_Evaluation.Rdata", sep = "")
+  files <- paste(site, "_Evaluation.RData", sep = "")
   
   load(paste(localdir.site, "/", files, sep=""))
   

@@ -28,9 +28,9 @@ suppressPackageStartupMessages({
 })
 
 # --- Paths ------------------------------------------------------
-root_dir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient"
-rdata <- file.path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".Rdata"))
-if (!exists("fig_dir")) fig_dir <- '/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
+if (!exists("root_dir")) root_dir <- localdir
+rdata <- file.path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".RData"))
+if (!exists("fig_dir")) fig_dir <- paste0(DirRepo.eval, "/Figures/WF_Version1/")
 
 # --- Load -------------------------------------------------------
 # This file contains: train, test, rf_model, final.vars,

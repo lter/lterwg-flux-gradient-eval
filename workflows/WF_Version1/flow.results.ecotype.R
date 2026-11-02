@@ -10,8 +10,8 @@ library(colorspace)
 library(ggpubr)
 library(ggplot2)
 
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
-load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".RData"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".RData"))))
 
 source(fs::path(DirRepo.eval,'workflows/flow.igbp.R'))
 
@@ -93,7 +93,7 @@ eco.plot.final <- ggarrange( Summary.approach.ecotype ,
                              RSHP.CCC.ecotype,
                              total.RSHP.plot, labels=c("(a)", "(b)", "(c)", "(d)"))
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/EcoType_Results", run.tag, ".png"), plot = eco.plot.final , width =8, height = 7, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/EcoType_Results", run.tag, ".png"), plot = eco.plot.final , width =8, height = 7, units = "in")
 
 
              

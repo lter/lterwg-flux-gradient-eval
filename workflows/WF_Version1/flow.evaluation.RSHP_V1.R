@@ -16,8 +16,8 @@ library(rpart)
 
 DirRepo.eval <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 
-load(file= fs::path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".Rdata")))
-load( fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_DATA_FILTERED_CCC", run.tag, ".Rdata")))
+load(file= fs::path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITES_One2One_canopy_model", run.tag, ".RData")))
+load( fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_DATA_FILTERED_CCC", run.tag, ".RData")))
 source(fs::path(DirRepo.eval,"./functions/calc_validation.R"))
 source(fs::path(DirRepo.eval,"./functions/calc.linear.terms.R"))
 source(fs::path(DirRepo.eval,"./functions/calc.lins.ccc.R"))
@@ -89,12 +89,12 @@ val.SHP.total.canopy.summary <- val.SHP.total.canopy %>% reframe(.by= c(Site, ga
                                                                  CCC.GF.range = mean(CCC.GF.range),
                                                                  CCC.GF = mean(CCC.GF))
 
-fileSave <- fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".Rdata"))
+fileSave <- fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".RData"))
 atomic_save(val.SHP.total.canopy ,val.SHP.total.canopy.summary, file=fileSave)
 
 # Detect RSHP with CCC.GF: RANDOM FOREST MODEL DEVELOPMENT ####
 
-load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".RData")))
 
 
 train <- val.SHP.total.canopy.summary %>% na.omit() %>% 
@@ -256,14 +256,14 @@ model.plots.gf <- ggarrange(ggarrange(plot.Model.matrix.gf,
 
 final.model.plots.gf <- ggarrange(tree.plot.grid, model.plots.gf, ncol=2 )
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/RSHP_V1", run.tag, ".png"), 
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/RSHP_V1", run.tag, ".png"), 
        plot =  final.model.plots.gf, width = 12, height = 5, units = "in")
 
 
 # Save this file for use:
 atomic_save(val.SHP.total.canopy.summary ,rf.good.ccc.ec,tree_surrogate , confusion.matrix.RSHP ,
      tree_surrogate ,
-     file= fs::path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITE_RSHP_MODEL", run.tag, ".Rdata")) )
+     file= fs::path(localdir, "NEON_GradientFlux_Data_MODEL", paste0("SITE_RSHP_MODEL", run.tag, ".RData")) )
 
 # Reults: 
-load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_RSHP", run.tag, ".RData")))

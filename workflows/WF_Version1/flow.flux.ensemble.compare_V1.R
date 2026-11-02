@@ -1,5 +1,5 @@
 if (!exists("atomic_save", mode = "function")) source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
-source(fs::path(if (exists("DirRepo.eval")) DirRepo.eval else "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval", 'functions/calc.ensemble.R'))   # ensemble.halfhour()
+source(fs::path(if (exists("DirRepo.eval")) DirRepo.eval else DirRepo.eval, 'functions/calc.ensemble.R'))   # ensemble.halfhour()
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) 
@@ -9,8 +9,8 @@ library(lubridate)
 
 source(fs::path(DirRepo.eval, "functions/calc.lins.ccc.R"))
 
-load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_DATA_FILTERED_CCC", run.tag, ".Rdata")))
-load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITE_DATA_FILTERED_CCC", run.tag, ".RData")))
+load(fs::path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".RData")))
 
 safe_inverse <- function(x, power = 1, fallback = 0) {
   out <- rep(fallback, length(x))
@@ -309,7 +309,7 @@ atomic_save(
   ensemble_r2_summary,
   method_priors,
   plot.ensemble.method.comparison,
-  file = fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_METHOD_COMPARISON_RSHP_CCC05", run.tag, ".Rdata"))
+  file = fs::path(DirRepo.eval, paste0("Figures/WF_Version1/ENSEMBLE_METHOD_COMPARISON_RSHP_CCC05", run.tag, ".RData"))
 )
 
 print(ensemble_r2_summary)

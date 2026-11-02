@@ -54,7 +54,7 @@ local({
   d$timeEndA <- d$timeEnd_A <- d$timeEndA.local
   MBR_9min.df.final <- AE_9min.df.final <- WP_9min.df.final <- d
   save(MBR_9min.df.final, AE_9min.df.final, WP_9min.df.final,
-       file = file.path(root, "inputs", "TEST", "TEST_Evaluation.Rdata"))
+       file = file.path(root, "inputs", "TEST", "TEST_Evaluation.RData"))
   write.csv(data.frame(Site = "TEST", dLevelsAminusB = "2_1", Canopy_L1 = "AA"),
             file.path(root, "canopy.csv"), row.names = FALSE)
   config <- file.path(root, "config.R")

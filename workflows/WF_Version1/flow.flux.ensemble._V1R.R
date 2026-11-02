@@ -23,11 +23,12 @@ source(fs::path(DirRepo.eval, 'functions/calc.ensemble.R'))
 if (!exists("write.edi.ensemble")) write.edi.ensemble <- run.tag != "_AA_AW"
 if (!exists("edi.ensemble.dir")) edi.ensemble.dir <- fs::path(localdir, paste0("NEON_GradientFlux_EDI", sub("^_AA_AW", "", run.tag)))
 
-load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
-load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
-#load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_RSHP", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".RData"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".RData"))))
+#load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_RSHP", run.tag, ".RData"))))
 
-canopy.adj <- SITES_One2One %>% 
+# Site canopy height hc = lidar CHM mean (NEON site value where no lidar), as in the manuscript
+canopy.adj <- SITES_One2One %>% mutate(canopyHeight_m = coalesce(CHM.mean, canopyHeight_m)) %>% 
   select( Site, Approach, gas, dLevelsAminusB, Good.CCC, Canopy_L1, canopyHeight_m) %>% 
   rename( Good.CCC.EC = Good.CCC) 
 
@@ -147,7 +148,7 @@ for( site in site.list){
 
 if (isTRUE(write.edi.ensemble)) {
   # Complete 30-min grid (every half-hour; no gap filling) with NEON's own 30-min EC flux where the
-  # extracted SITE_30min.Rdata files exist (EC_30min); EC_mean stays the interpolated EC of the GF samples.
+  # extracted SITE_30min.RData files exist (EC_30min); EC_mean stays the interpolated EC of the GF samples.
   if (!exists("ec30.dirs")) ec30.dirs <- file.path(localdir, c("NEON_Tower_Data", "NEON_Tower_Data_202407_202608"))
   ec30 <- do.call(rbind, lapply(names(SITE_DATA_ENSEMBLE), load.ec30.neon, tower.dirs = ec30.dirs))
   write.ensemble.edi(SITE_DATA_ENSEMBLE, edi.ensemble.dir, method = ensemble_method_name, complete = TRUE, ec30 = ec30)
@@ -163,8 +164,8 @@ plots.linear.h2o.2 <- ggarrange(plotlist = Linear_ENSEMBLE_plots_H2O[26:50], com
 plots.linear.co2 <- ggarrange( plots.linear.co2.1, plots.linear.co2.2, ncol=1)
 plots.linear.h2o <- ggarrange( plots.linear.h2o.1, plots.linear.h2o.2, ncol=1)
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2", run.tag, ".png"), plot = plots.linear.co2, width = 8, height = 16, units = "in")
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o", run.tag, ".png"), plot = plots.linear.h2o, width = 8, height = 16, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/ENSEMBLE_Linear_plots_co2", run.tag, ".png"), plot = plots.linear.co2, width = 8, height = 16, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/ENSEMBLE_Linear_plots_h2o", run.tag, ".png"), plot = plots.linear.h2o, width = 8, height = 16, units = "in")
 
 # ENSEMBLE_ linear plots #####
 Linear_ENSEMBLE_Stats %>% 
@@ -307,12 +308,12 @@ final.plot.CCC.support <- ggarrange( plot.CCC.canopy,plot.CCC.canopyHt,  ncol=1,
            labels=c("(a)", "(b)"), heights=c(1, 1)) 
 
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1", run.tag, ".png"), plot = final.plot.CCC, width = 7, height = 8, units = "in")
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1", run.tag, ".png"), plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/ENSEMBLE_Eval_R2_V1", run.tag, ".png"), plot = final.plot.CCC, width = 7, height = 8, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/ENSEMBLE_Eval_R2_Canopy_V1", run.tag, ".png"), plot = final.plot.CCC.support, width = 6, height = 10, units = "in")
 
 # Save the data: #####
 
-fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1", run.tag, ".Rdata")))
+fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1", run.tag, ".RData")))
 
 atomic_save( SITE_DATA_ENSEMBLE,
       Linear_ENSEMBLE_plots_H2O, 
@@ -355,7 +356,7 @@ plot_ENSEMBLE_siteLevel.CCC <- Linear_ENSEMBLE_Stats_Canopy  %>% ggplot() + geom
   scale_color_manual(values = c('#009966', "#000CCC", "")) +
   theme(legend.title = element_blank()) 
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/ENSEMBLE_Eval_Summary_V1", run.tag, ".png"), plot = plot_ENSEMBLE_siteLevel.CCC, width =4, height = 3, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/WF_Version1/ENSEMBLE_Eval_Summary_V1", run.tag, ".png"), plot = plot_ENSEMBLE_siteLevel.CCC, width =4, height = 3, units = "in")
 
 SITES_ENSEMBLE_canopy_season <- SITES_One2One_canopy_summary %>% 
   full_join(Linear_ENSEMBLE_Season_Stats %>% 

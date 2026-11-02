@@ -23,6 +23,13 @@ lterwg-flux-gradient-eval/
 ├── exploratory/             # Preliminary analyses and development
 │   └── flow.evaluation.*.R
 │
+├── workflows/WF_Version1/   # Evaluation steps sourced by workflows/flow.evaluation.batch_V1.R
+├── workflows/manuscript/    # In-text numbers of essd-2026-413 (flow.manuscript.numbers.R + ms_*.R)
+├── workflows/EDI_release/   # EDI v3b release tables (metadata, lidar canopy, concentration profiles), same-inlet cleanup
+├── workflows/review_tests/  # Tests behind decisions in the revision (SE-based SNR, CH4 pair rule)
+├── hpc/bouchet_v3b/         # Slurm/run scripts used for the v3b run on Yale's Bouchet cluster
+├── tests/                   # Unit tests (Rscript tests/<file>.R)
+│
 └── aop/             # Preparation of AOP, canopy diversity, and caopy information data
     ├── flow.NEONAOP.EVI.Download.R
     ├── flow_AOP_FormatLayers.R
@@ -102,17 +109,51 @@ The CSV lists **every half-hour** from the first to the last value of each site,
 
 `FG_ENSEMBLE_SD` ranks uncertainty well: errors against EC grow with it, Spearman 0.43 (CO2) and 0.56 (H2O). It is not a calibrated interval. EC lies within ±1 SD in 42–48% and within ±2 SD in 66–70% of windows (published 2021–2026 run).
 
-## Version 3 run (October 2026)
+## Version 3b run used in the revised manuscript (October 2026)
 
-`flow.evaluation.batch_V1.R` is set to the version 3 run: `run.tag <- "_AA_AW_2021_2026_v3"`, `eval.data.dirs <- "NEON_GradientFlux_Data_2021_2026_v3"`, `edi.dir <- "NEON_GradientFlux_EDI_2021_2026_v3"` (built by `lterwg-flux-gradient/workflows/WorkFlow_rerun_2021_2026_v3.R`; see that README for the flux changes). All outputs carry the `_v3` tag, so the published `_AA_AW_2021_2026` results are kept for comparison. Changes in this repository:
+`flow.evaluation.batch_V1.R` is set to the run behind every number, table and figure of the revised manuscript:
+`run.tag <- "_AA_AW_2021_2026_v3b"`, `eval.data.dirs <- "NEON_GradientFlux_Data_2021_2026_v3b"`, `edi.dir <- "NEON_GradientFlux_EDI_2021_2026_v3b"`.
+The fluxes were calculated with `lterwg-flux-gradient/workflows/WorkFlow_rerun_2021_2026_v3.R` (see that README for the flux
+changes) on Bouchet, 26–27 Oct 2026 (`hpc/bouchet_v3b/`). "v3b" is the version 3 code run there; `_v3` was the first test run of
+the same code. All outputs carry the tag, so the published `_AA_AW_2021_2026` results are kept for comparison. Changes in this repository:
 - **Pair RMSE** is the direct GF − EC difference (`calc.One2One.CCC_testing.R`, `calc.One2One.CCC_V2.R`; issue #1, PR #3).
 - **Diel curves** are in g m⁻² h⁻¹ (3600 s; was 1800 s, so daily totals and absolute diel values were half; correlations, slopes, relative biases and signs are unaffected) (`calc.diel.R`; issue #2, PR #4). CH4 diel conversion corrected to g C per hour (PR #7).
-- **Half-hour assignment** by sampling midpoint everywhere half-hours are formed (ensemble, Table 5 comparison, RSHP threshold sensitivity, `calc_validation.R`, EC filter diagnostic).
+- **Half-hour assignment** by sampling midpoint everywhere half-hours are formed (ensemble, Table 5 comparison, RSHP threshold sensitivity, `calc_validation.R`, EC filter diagnostic). The v3b run fixed two bugs here: a `%>%` inside a comment in `calc_validation.R`, and `flow.evaluation.sitelist_FILTER.R` now keeps `timeEnd_A`/`timeBgn_B`, which the midpoint needs.
+- **Canopy height** everywhere in the manuscript is the NEON AOP lidar canopy-height-model mean in the tower area (`CanopyHeight = coalesce(CHM.mean, canopyHeight_m)`; NEON site value at DCFS, KONA, LAJA and TREE, which have no lidar summary; 0.03–37.9 m). The canopy classes (AA/AW/WW) always used it; the plots and rankings that used the NEON metadata height now use it too: `flow.attr.map.R` (Fig. 1), `flow.flux.ensemble._V1R.R` (ensemble CCC vs canopy height), `flow.results.delta_z_site_slopes.R` and `flow.results.delta_z_site_rankings_all_canopy.R` (and the slope-vs-height plots that read their output). These reproduce the 29 Oct 2026 lidar comparison (`run_logs/lidar_height_20261029`: slope vs hc R² 0.18 CO2, 0.25 H2O).
 - **Spike evaluation** bins stability by the pair's (z − d)/L (`flow.evaluation.spike_eval.R`).
-- **Review aggregates** (`flow.supplement_review.R`) are tagged by run and rebuilt automatically when missing (~1 h on the first v3 run).
-- **New checks:** `flow.evaluation.canopy_height_sensitivity.R`, `flow.evaluation.rmse_definition_check.R`, and `flow.ec.filter.selection.R` (EC representativeness under SNR filtering, issue #5, PR #6; run after the v3 rerun).
+- **Review aggregates** (`flow.supplement_review.R`) are tagged by run and rebuilt automatically when missing (~1 h on the first run).
+- **Paths:** scripts use `DirRepo.eval` (this repository) and `localdir` (data folder) instead of hard-coded Dropbox and server paths. The batch takes them from the environment variables `FG_EVAL_REPO` and `FG_ROOT` (defaults: the Dropbox repo and `/Volumes/MaloneLab/Research/FluxGradient`), so the same code runs on the Mac and on Bouchet. All RData names use the `.RData` extension (Linux is case sensitive). `flow.flux.counts.R` now writes `flow.flux.counts<run.tag>.RData` (was untagged).
+- **New checks:** `flow.evaluation.canopy_height_sensitivity.R`, `flow.evaluation.rmse_definition_check.R`, and `flow.ec.filter.selection.R` (EC representativeness under SNR filtering, issue #5, PR #6).
 
-Known limitation: the stability corrections of the flux calculation (φh, Eqs. 4–5 of the paper) were derived for roughly −5 < ζ < 0 and 0 ≤ ζ < 1. That is their range of validity, not a filter; they are applied to all values (0.07 % of filtered AE and 0.13 % of WP values were outside it in the 2021–2026 run).
+Known limitation: the stability corrections of the flux calculation (φh, Eqs. 4–5 of the paper) were derived for roughly −5 < ζ < 0 and 0 ≤ ζ < 1. That is their range of validity, not a filter; they are applied to all values (< 0.2 % of filtered AE and < 0.4 % of WP values were outside it in the v3b run).
+
+## Reproducing the revised manuscript (essd-2026-413)
+
+1. **Fluxes** (`lterwg-flux-gradient`): `workflows/WorkFlow_rerun_2021_2026_v3.R`, one Slurm task per site (`hpc/bouchet_v3b/run_array_v3b.sh` → `run_site_v3b.sh`; `validate_sites_v3b.R` checks each site). Writes `NEON_GradientFlux_Data_2021_2026_v3b/{SITE}/{SITE}_Evaluation.RData` and the EDI 9-min CSVs.
+2. **Evaluation** (this repository): `workflows/flow.evaluation.batch_V1.R` (`hpc/bouchet_v3b/run_evaluation_v3b.sh`; 128 GB, ~1 day). Writes the filtered data, CCC tables, ensemble, diel curves, every figure and table, and the in-text numbers (step 5).
+3. **EC representativeness of the filters** (issue #5; Sects. 2.5, 3.4): `Rscript hpc/bouchet_v3b/ec_filter_selection_v3b_run.R hpc/bouchet_v3b/ec_filter_config_v3b.R` from the repository root (`run_ecfilter_v3b.sh`). Writes `EC_filter_selection_v3b/{SITE}_{hourly,daily,unmatched}.csv`.
+4. **Tests behind decisions in the revision** (`workflows/review_tests/SNR_SE_v3b/`): `run_snrse_v3b.sh` (SE-based vs SD-based SNR; kept the SD rule, Sect. 2.5 limitation), `run_ensemble_v3b.sh` (ensemble under both rules) and `run_ch4method_v3b.sh` (CH4 pair rule: CO2-reliable pairs, AA-MBR fallback; Appendix C.5, Supplement S2.5, Table S5b). Outputs in `SNR_SE_v3b/` (copied to `Results_v3b/SNR_SE_ch4method_tests/` on the server).
+5. **In-text numbers**: `workflows/manuscript/flow.manuscript.numbers.R` (sourced at the end of the batch; run it again after step 3). Writes `Manuscript_numbers/ms_*<run.tag>.txt`; see the table below.
+6. **EDI release tables** (`workflows/EDI_release/`, run from the FluxGradient root with the scripts in `EDI_v3b_scripts/`): `remove_self_pairs_v3b.sh` (drops same-inlet `n_n` rows), `run_profiles_v3b.sh` + `flow.edi.profiles.v3b.R combine` (Site_ConcentrationProfiles.csv), then `flow.edi.metadata.v3b.R` (method and site metadata tables, lidar canopy attributes, sampling-height pairs). Methods text for ezEML and md5s of every output: `EDI_v3b_methods_canopy_height.md`, `README_EDI_v3b_metadata.md`. The matching change to the EDI writer (`edi_drop_self.patch.R`) belongs in `lterwg-flux-gradient/workflows/flow.evaluation.dataframe_EDI.R`.
+
+### In-text numbers (`workflows/manuscript/`)
+
+| Manuscript | Script | Reads |
+|---|---|---|
+| Abstract, Sect. 3.1 | `ms_S3.1_reliable_pairs.R` | `SITES_One2One`, `flow.flux.counts` |
+| Sect. 2.4.2 (Eqs. 4–5 validity range) | `ms_S2.4_stability_range.R` | per-site `{SITE}_FILTER` files (not re-checked: on Bouchet only) |
+| Sect. 2.5 (filters) | `ms_S2.5_filters.R` | `SITES_FILTER_REPORTS` |
+| Sects. 2.5, 3.4 (issue #5) | `ms_S2.5_S3.4_ec_representativeness.R` | `EC_filter_selection_v3b/` |
+| Sects. 2.7, 3.2 (random forest) | `ms_S3.2_random_forest.R` | `flow.flux.counts` |
+| Sect. 3.2 (placement, lidar hc, structure, Δz) | `ms_S3.2_geometry_structure.R` | `SITES_One2One`, `delta_z_*` csv |
+| Sects. 2.8, 3.3, 3.4 (ensemble, overlap, spread, CPER/CLBJ) | `ms_S3.3_ensemble.R` | `SITE_DATA_ENSEMBLE_V1`, ensemble csv |
+| Sects. 3.3, 4.3 (1.6×/1.5× windows) | `ms_S3.3_window_gain.R` | `SITES_*_9min_FILTER` |
+| Abstract, Sect. 3.4 (diel) | `ms_S3.4_diel.R` | `DIEL_SUMMARY_ENSEMBLE_V1` |
+| Sect. 4.2, Fig. 9 | `ms_S4.2_placement.R` | `SITES_One2One_canopy_model` |
+| Sect. 2.5, App. B, Supplement S1 | `ms_AppB_spikes.R` | `Spike_Eval/SPIKE_*` |
+| App. C, Supplement S2 | `ms_AppC_noEC.R` | `Spike_Eval/noEC_*`, `SITES_*_9min_FILTER` |
+
+Checked 2 Nov 2026 against the v3b outputs: every script except `ms_S2.4_stability_range.R` (its inputs are only on Bouchet) reproduces the numbers in the revised manuscript (e.g. 17.6/25.2 % reliable pairs at 42/43 sites; RF OOB 11.9 %, accuracy 89.6 % vs NIR 80.8 %; r(CCC, lower inlet − hc) 0.42/0.50; ensemble windows 1.57×/1.54×; spread ρ 0.43/0.58; EC retention 20/44 %; AA-MBR self-agreement AUC 0.59; top-3 RF CCC 0.49/0.60).
 
 ## Supplementary analyses
 These scripts produce the figures, tables and numbers in the manuscript supplement (essd-2026-413, review revision):
@@ -181,9 +222,9 @@ Both scripts are sourced at the end of `flow.evaluation.batch_V1.R` and use the 
 
 LTER Scientific Computing Team [website](https://lter.github.io/scicomp/) & NCEAS' [Resources for Working Groups](https://www.nceas.ucsb.edu/working-group-resources)
 
-## Re-running the paper figures (2021–2026 run)
+## Manuscript map: figures and tables (v3b run)
 
-All workflow scripts default to `run.tag <- "_AA_AW_2021_2026"` (the published run; `flow.evaluation.batch_V1.R` sets the version 3 tag), `localdir <- "/Volumes/MaloneLab/Research/FluxGradient"` and the Dropbox repo path, and write to `Figures/WF_Version1/<name>_AA_AW_2021_2026.png`. The data products (filtered fluxes, `SITES_One2One`, `SITE_DATA_FILTERED_CCC`) already exist, so only the figure steps need to run. Run in this order (later steps read files written by earlier ones):
+`flow.evaluation.batch_V1.R` runs all of these in order; figures go to `Figures/WF_Version1/<name><run.tag>.png`. Individual scripts default to `run.tag <- "_AA_AW_2021_2026"` (the published run) when sourced on their own, so set `run.tag <- "_AA_AW_2021_2026_v3b"`, `localdir` and `DirRepo.eval` first. Once the data products (filtered fluxes, `SITES_One2One`, `SITE_DATA_FILTERED_CCC`) exist, only the figure steps need to run. Run in this order (later steps read files written by earlier ones):
 
 | # | Script (`workflows/…`) | Figures / tables |
 |---|---|---|
@@ -200,6 +241,9 @@ All workflow scripts default to `run.tag <- "_AA_AW_2021_2026"` (the published r
 | 11 | `flow.CCC.results.summary.R` | Fig 4 `CCC_results_summary` |
 | 12 | `WF_Version1/flow.flux.ensemble.compare_V1.R` | Table 5 |
 | 13 | `WF_Version1/flow.flux.distributions.site_density_V1.R` | Figs A13–A14 |
-| 14 | `WF_Version1/flow.evaluation.spike_eval.R`, `flow.evaluation.noEC_pair_selection.R`, `flow.supplement_review.R` | Supplements S1, S2, S3; Figs A20–A22 |
+| 14 | `WF_Version1/flow.results.delta_z_*.R` (7 scripts, order in the batch) | Δz figures and csv used in Sect. 3.2 (lidar hc) |
+| 15 | `WF_Version1/flow.evaluation.spike_eval.R`, `flow.evaluation.sampling_time.R`, `flow.evaluation.noEC_pair_selection.R`, `flow.supplement_review.R` | Supplements S1, S2, S3 (sampling time); Appendices B–C; Figs A20–A22 |
+| 16 | `flow.attr.map.R` | Fig 1 `Map_plot` (lidar canopy height) |
+| 17 | `manuscript/flow.manuscript.numbers.R` | In-text numbers (table above) |
 
-Not produced by code: Fig 1 (`flow.attr.map.R`, site attributes only; unchanged), Fig 2 (workflow diagram), and the assembly of Fig 8 from the step-3 panels. Scripts marked `# LEGACY` at the top of `workflows/` read preprint-era files and are not part of this set.
+Not produced by code: Fig 2 (workflow diagram) and the assembly of Fig 8 from the step-3 panels. Scripts marked `# LEGACY` at the top of `workflows/` read preprint-era files and are not part of this set.

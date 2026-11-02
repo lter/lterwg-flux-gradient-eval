@@ -6,7 +6,7 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 
-if (!exists("figdir")) figdir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
+if (!exists("figdir")) figdir <- paste0(DirRepo.eval, "/Figures/WF_Version1")
 
 site_slopes_all <- read_csv(
   file.path(figdir, paste0("delta_z_all_canopy_site_trend_detail", run.tag, ".csv")),

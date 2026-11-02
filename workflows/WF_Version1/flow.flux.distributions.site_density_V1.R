@@ -4,7 +4,7 @@ if (!exists("DirRepo.eval"))
 library(tidyverse)
 
 
-load(fs::path(localdir, "NEON_GradientFlux_Ensemble", paste0("SITE_DATA_ENSEMBLE_V1", run.tag, ".Rdata")))
+load(fs::path(localdir, "NEON_GradientFlux_Ensemble", paste0("SITE_DATA_ENSEMBLE_V1", run.tag, ".RData")))
 
 output_dir <- fs::path(DirRepo.eval, "Figures", "WF_Version1")
 fs::dir_create(output_dir)

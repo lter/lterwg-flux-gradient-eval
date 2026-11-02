@@ -10,7 +10,7 @@ library(ggplot2)
 library(ggpmisc)
 
 source(fs::path(DirRepo.eval,'functions/calc.diel.R' ))
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) 
 site.list <- metadata$Site_Id.NEON %>% unique
 
 # Need to bring in new canopy file with all the canopy_L1 options
@@ -41,25 +41,25 @@ for( site in site.list){
   
   localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
-  load(paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
+  load(paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".RData"), sep=""))
   
   canopy.sub <- canopy %>% filter( Site == site) %>% select(Site, dLevelsAminusB, Approach)
  
   MBR_9min_FILTER_canopy <- canopy.sub %>% filter( Approach == "MBR") %>% 
     full_join( MBR_9min_FILTER , by = c('dLevelsAminusB'), relationship = "many-to-many")  %>% 
-    select( timeEndA.local,FG_mean ,Approach, Canopy_L1, gas, 
+    select( timeEnd_A, timeBgn_B, timeEndA.local,FG_mean ,Approach, Canopy_L1, gas, 
             TowerPosition_A, TowerPosition_B,  EC_mean, cross_grad_flag, dLevelsAminusB)
  
   WP_9min_FILTER_canopy <- canopy.sub %>% filter( Approach == "WP") %>% 
     full_join( WP_9min_FILTER , by = c('dLevelsAminusB'), relationship = "many-to-many" )  %>% 
-    select( timeEndA.local,FG_mean ,Approach, Canopy_L1, gas, 
+    select( timeEnd_A, timeBgn_B, timeEndA.local,FG_mean ,Approach, Canopy_L1, gas, 
             TowerPosition_A, TowerPosition_B,  EC_mean, cross_grad_flag, dLevelsAminusB)
   
   AE_9min_FILTER_canopy <- canopy.sub %>% 
     filter( Approach == "AE") %>% 
     full_join( AE_9min_FILTER , by = c('dLevelsAminusB'), 
                relationship = "many-to-many")  %>% 
-    select( timeEndA.local,FG_mean, Approach, Canopy_L1, gas, 
+    select( timeEnd_A, timeBgn_B, timeEndA.local,FG_mean, Approach, Canopy_L1, gas, 
             TowerPosition_A, TowerPosition_B,  EC_mean, cross_grad_flag, dLevelsAminusB)
   
   Data <- rbind( MBR_9min_FILTER_canopy,  AE_9min_FILTER_canopy, WP_9min_FILTER_canopy) %>% as.data.frame() 

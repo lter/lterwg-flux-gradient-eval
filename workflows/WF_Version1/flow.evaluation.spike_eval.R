@@ -185,7 +185,7 @@ OR <- rbindlist(OR); auc <- rbindlist(auc)
 
 atomic_save(tab.overall, tab.floor, tab.paired, tab.wp.sing, tab.level, tab.level.site, tab.L2, tab.period, tab.stab, tab.daynight, tab.character, tab.cluster, tab.sites,
      B.hour, B.snr, B.tsnr, B.ustar, B.zeta, B.ns, B.zrel, B.K, B.zdz0, OR, auc,
-     file = file.path(spike.dir, paste0("SPIKE_EVAL", run.tag, ".Rdata")))
+     file = file.path(spike.dir, paste0("SPIKE_EVAL", run.tag, ".RData")))
 fwrite(tab.level.site, file.path(spike.dir, paste0("SPIKE_rate_by_level", run.tag, ".csv")))
 fwrite(tab.paired, file.path(spike.dir, paste0("SPIKE_AA_vs_AW_paired", run.tag, ".csv")))
 fwrite(OR, file.path(spike.dir, paste0("SPIKE_odds_ratios", run.tag, ".csv")))

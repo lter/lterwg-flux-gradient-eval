@@ -3,9 +3,9 @@ drive_url <- googledrive::as_id("https://drive.google.com/drive/folders/1Q99CT77
 
 source(fs::path(DirRepo.eval, 'functions/calc.One2One.CCC_testing.R'))
 
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_MBR_9min_FILTER", run.tag, ".Rdata"))))
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_AE_9min_FILTER", run.tag, ".Rdata"))))
-load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_WP_9min_FILTER", run.tag, ".Rdata"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_MBR_9min_FILTER", run.tag, ".RData"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_AE_9min_FILTER", run.tag, ".RData"))))
+load(fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_WP_9min_FILTER", run.tag, ".RData"))))
 
 
 # Calculate CCC parameters for CO2

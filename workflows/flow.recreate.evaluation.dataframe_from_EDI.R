@@ -2,7 +2,7 @@
 #     Recreate Evaluation RDATA files from EDI CSVs
 ## --------------------------------------------- ##
 # Purpose:
-# Rebuild SITE_Evaluation.RDATA files from the three EDI gradient-flux CSVs
+# Rebuild SITE_Evaluation.RData files from the three EDI gradient-flux CSVs
 # written by workflows/flow.evaluation.dataframe_EDI.R.
 #
 # Expected input files, inside each site folder:
@@ -11,14 +11,14 @@
 #   SITE_WP_9min.df.final.csv
 #
 # Output:
-#   SITE_Evaluation.RDATA
+#   SITE_Evaluation.RData
 #
 # By default, outputs are saved back into each EDI site folder. To write to a
 # different location, change output.data below.
 
 library(tools)
 
-edi.data <- "/Volumes/MaloneLab/Research/FluxGradient/NEON_GradientFlux_EDI"
+edi.data <- paste0(localdir, "/NEON_GradientFlux_EDI")
 output.data <- edi.data
 overwrite <- TRUE
 strict <- FALSE
@@ -97,7 +97,7 @@ for (site in site_ids) {
     dir.create(output.site.dir, recursive = TRUE)
   }
 
-  output.file <- file.path(output.site.dir, paste0(site, "_Evaluation.RDATA"))
+  output.file <- file.path(output.site.dir, paste0(site, "_Evaluation.RData"))
   if (file.exists(output.file) && !overwrite) {
     skipped[[site]] <- "output exists and overwrite is FALSE"
     message("Skipping ", site, ": output exists and overwrite is FALSE.")

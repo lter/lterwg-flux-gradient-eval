@@ -87,7 +87,7 @@ if (isTRUE(make.aggregates)) {
 PROF <- fread(file.path(rev.dir, paste0("ALL_profile", run.tag, ".csv"))); SCHED <- fread(file.path(rev.dir, paste0("ALL_schedule", run.tag, ".csv")))
 ZVEG <- fread(file.path(rev.dir, paste0("ALL_zveg", run.tag, ".csv"))); TRACER <- fread(file.path(rev.dir, paste0("ALL_tracer", run.tag, ".csv"))); FRANGE <- fread(file.path(rev.dir, paste0("ALL_fluxrange", run.tag, ".csv")))
 
-load(file.path(filter.dir, paste0("SITES_One2One", run.tag, ".Rdata")))
+load(file.path(filter.dir, paste0("SITES_One2One", run.tag, ".RData")))
 O <- as.data.table(SITES_One2One)[, .(Site, gas, Approach = as.character(Approach), pair = dLevelsAminusB, CCC, count,
         z_lower = MeasurementHeight_m_A, z_upper = MeasurementHeight_m_B, hc = CanopyHeight, Canopy_L1, Canopy_L2, CHM.years)]
 rm(SITES_One2One)
@@ -224,7 +224,7 @@ ggsave(file.path(fig.dir, paste0("REVIEW_R6_canopy_height_seasonal", run.tag, ".
 
 # R7. Flux ranges: unfiltered, filtered (before despike), filtered + despiked --------------
 filt <- rbindlist(lapply(c("MBR","AE","WP"), function(m) {
-  e <- new.env(); load(file.path(filter.dir, paste0("SITES_", m, "_9min_FILTER", run.tag, ".Rdata")), envir = e); L <- get(ls(e)[1], envir = e)
+  e <- new.env(); load(file.path(filter.dir, paste0("SITES_", m, "_9min_FILTER", run.tag, ".RData")), envir = e); L <- get(ls(e)[1], envir = e)
   rbindlist(lapply(names(L), function(s) data.table(Site = s, gas = L[[s]]$gas, FG = L[[s]]$FG_mean)[!is.na(FG) & gas %in% c("CO2","H2O")][
     , .(q0.1 = quantile(FG, .001), q99.9 = quantile(FG, .999), min = min(FG), max = max(FG)), by = .(Site, gas)]))[, Approach := m] }))
 pre <- rbindlist(lapply(list.files(spike.extract.dir, "\\.csv\\.gz$", full.names = TRUE), function(f) {

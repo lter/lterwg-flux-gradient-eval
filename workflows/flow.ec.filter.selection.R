@@ -19,7 +19,7 @@ for (site in names(cfg$site.timezones)) {
   parts <- list()
   for (period in cfg$eval.data.dirs) {
     folder <- file.path(cfg$localdir, period, site)
-    candidates <- file.path(folder, paste0(site, c("_Evaluation.Rdata", "_Evaluation.RDATA")))
+    candidates <- file.path(folder, paste0(site, c("_Evaluation.RData", "_Evaluation.RData")))
     path <- candidates[file.exists(candidates)]
     if (!length(path)) stop("Missing evaluation file: ", folder)
     env <- new.env()

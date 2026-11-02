@@ -92,12 +92,12 @@ calc.ensemble.site <- function(df, ccc.cut = 0.5) {
 }
 
 # NEON 30-min turbulent fluxes (CO2 umol m-2 s-1; H2O mmol m-2 s-1 from LE) for the EC_30min column.
-# Reads SITE_30min.Rdata (min30.list from flow.neon.data.extract.v2.R) in each folder of tower.dirs;
+# Reads SITE_30min.RData (min30.list from flow.neon.data.extract.v2.R) in each folder of tower.dirs;
 # values with turb.qfFinl == 1 are set to NA. Sites or periods without the file are skipped.
 load.ec30.neon <- function(site, tower.dirs) {
   out <- list()
   for (dd in tower.dirs) {
-    f <- file.path(dd, "data", site, paste0(site, "_30min.Rdata"))
+    f <- file.path(dd, "data", site, paste0(site, "_30min.RData"))
     if (!file.exists(f)) next
     e <- new.env(); load(f, envir = e); m <- e$min30.list
     tbgn <- function(x) as.POSIXct(substr(x, 1, 19), format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")

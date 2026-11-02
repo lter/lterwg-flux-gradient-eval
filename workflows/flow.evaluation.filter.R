@@ -20,12 +20,12 @@ for( site in site.list){
     filter(Site == site, Canopy_L1 != "WW") %>% select(Site, Canopy_L1, dLevelsAminusB)
   
   
-  # Load the files (one SITE_Evaluation.Rdata per data period in eval.data.dirs; stacked):
+  # Load the files (one SITE_Evaluation.RData per data period in eval.data.dirs; stacked):
   if (!exists("eval.data.dirs")) eval.data.dirs <- "NEON_GradientFlux_Data"
   period.list <- list(MBR = list(), AE = list(), WP = list())
   for (period.dir in eval.data.dirs) {
     localdir.site <- paste(localdir, "/", period.dir, "/", site, sep = "")
-    files <- paste(site, "_Evaluation.Rdata", sep = "")
+    files <- paste(site, "_Evaluation.RData", sep = "")
     if (!file.exists(paste(localdir.site, "/", files, sep = ""))) {
       message("No evaluation file for ", site, " in ", period.dir); next }
     load(paste(localdir.site, "/", files, sep = ""))
@@ -217,14 +217,14 @@ for( site in site.list){
   
   atomic_save( AE_9min_FILTER,
         WP_9min_FILTER,
-        MBR_9min_FILTER, file = paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
+        MBR_9min_FILTER, file = paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".RData"), sep=""))
   
   
   # Upload files to the google
   
   site_folder <-data_folder$id[data_folder$name==site]
   
-  fileSave <- paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep="")
+  fileSave <- paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".RData"), sep="")
   if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = site_folder)
   
   fileSave <- paste(localdir.site, "/", site,paste0("_9min.report.CO2", run.tag, ".csv"), sep="")

@@ -13,8 +13,8 @@ library(VSURF)
 library(randomForest)
 
 
-load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata"))))
-load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".RData"))))
+load( fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".RData"))))
 
 dir <- DirRepo.eval
 
@@ -88,12 +88,12 @@ if( stop == 'no'){
   
   final.vars <- c(rf_index.sdesign.vars, rf_index.Cspec.vars,rf_index.Cstructure.vars) 
   
-  atomic_save(final.vars, file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".Rdata")) )
+  atomic_save(final.vars, file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".RData")) )
 }
 
 # Final Model Fit : ####
 if( stop == 'no'){
-load( file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".Rdata")) )
+load( file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".RData")) )
 
   final.vars[final.vars != 'gas' & final.vars !=  'MeasurementDist'] 
   
@@ -117,7 +117,7 @@ confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
 atomic_save(train, test,rf_model, final.vars, SITES_One2One, 
-     file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
+     file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.RData", run.tag, ""), sep="") )
 }
 
 # Refit the final model on this run's CCC table (same predictors as the published model; no
@@ -135,11 +135,11 @@ if (exists("refit.rf") && isTRUE(refit.rf) && stop != 'no') {
   print(rf_model)
   dir.create(paste(localdir, "/NEON_GradientFlux_Data_MODEL", sep = ""), showWarnings = FALSE)
   atomic_save(train, test, rf_model, final.vars, SITES_One2One,
-       file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep = ""))
+       file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.RData", run.tag, ""), sep = ""))
 }
 
 # Sensitivity Analysis: ####
-load(file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
+load(file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.RData", run.tag, ""), sep="") )
 
 SITES_One2One$Approach %>% unique
 SITES_One2One$Canopy_L1 %>% unique#
@@ -255,7 +255,7 @@ setwd(DirRepo.eval )
 ggsave(paste0("Figures/WF_Version1/GoodData_plot", run.tag, ".png"), plot = final.gd.plot, width = 11, height = 9, units = "in")
 
 # Model Results: ####
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') 
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) 
 site.list <- metadata$Site_Id.NEON %>% unique
 
 rf_model 
@@ -268,7 +268,7 @@ caret::confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Model Use: #####
 
-load(file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
+load(file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.RData", run.tag, ""), sep="") )
 
 SITES_One2One$rf_model <- predict(rf_model , SITES_One2One, type = "prob")[,2]
 
@@ -311,14 +311,14 @@ final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.can
                                    labels=c("(b)", "(c)")), nrow=1,
           widths = c(1, 2, 2), labels="(a)")
 
-ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix", run.tag, ".png"), plot =  final.model.plots, width = 9, height = 3, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/Model.plot.matrix", run.tag, ".png"), plot =  final.model.plots, width = 9, height = 3, units = "in")
 
 atomic_save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_model", run.tag, ".Rdata"), sep="") )
+     file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_model", run.tag, ".RData"), sep="") )
 
 # Save the AA_AW canopy model artifact expected by downstream RSHP scripts.
 atomic_save(train, test, rf_model, final.vars, SITES_One2One, SITES_One2One_model,
-     file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_canopy_model", run.tag, ".Rdata"), sep = ""))
+     file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_canopy_model", run.tag, ".RData"), sep = ""))
   
 # Results
 SITES_One2One_EC.summary <- 

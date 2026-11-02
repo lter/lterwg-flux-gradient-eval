@@ -6,7 +6,7 @@
 # from the preprint text) is NOT used in the figure; seasonal coverage is Fig. A5 (flow.flux.counts.R).
 #
 # Figure 4 of the paper (panels A-E, F = dataset size, G = overlap between approaches).
-# Input : localdir/NEON_GradientFlux_Data_Filter/SITES_One2One<run.tag>.Rdata (+ flow.flux.counts.R for panel G)
+# Input : localdir/NEON_GradientFlux_Data_Filter/SITES_One2One<run.tag>.RData (+ flow.flux.counts.R for panel G)
 # Output: Figures/WF_Version1/CCC_results_summary<run.tag>.{png,pdf}
 # ---------------------------------------------------------------
 
@@ -21,7 +21,7 @@ suppressPackageStartupMessages({
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # set in flow.evaluation.batch_V1.R
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
-rdata   <- file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata"))
+rdata   <- file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".RData"))
 fig_dir <- file.path(DirRepo.eval, "Figures", "WF_Version1")
 # Name of the output files:
 out_png  <- file.path(fig_dir, paste0("CCC_results_summary", run.tag, ".png"))

@@ -20,8 +20,8 @@
 # Compared with: all AA pairs, AA MBR only, AA MBR + unscaled AE/WP, and pairs selected on
 # CCC >= 0.5 against EC (the current reliable sampling-height pairs; uses EC).
 #
-# Inputs : localdir/NEON_GradientFlux_Data_Filter/SITES_One2One<run.tag>.Rdata
-#          localdir/NEON_GradientFlux_Data_Filter/SITES_<MBR|AE|WP>_9min_FILTER<run.tag>.Rdata
+# Inputs : localdir/NEON_GradientFlux_Data_Filter/SITES_One2One<run.tag>.RData
+#          localdir/NEON_GradientFlux_Data_Filter/SITES_<MBR|AE|WP>_9min_FILTER<run.tag>.RData
 # Outputs: localdir/Spike_Eval/noEC_*<run.tag>.csv
 #          DirRepo.eval/Figures/WF_Version1/S2_noEC_pair_selection<run.tag>.png
 # -----------------------------------------------------------------------------
@@ -43,14 +43,14 @@ lccc <- function(x, y) { mx <- mean(x); my <- mean(y)
   2 * mean((x - mx) * (y - my)) / (mean((x - mx)^2) + mean((y - my)^2) + (mx - my)^2) }
 
 # 1. Pair table (CCC against EC, canopy level) ---------------------------------------------
-load(file.path(filter.dir, paste0("SITES_One2One", run.tag, ".Rdata")))
+load(file.path(filter.dir, paste0("SITES_One2One", run.tag, ".RData")))
 pairs <- as.data.table(SITES_One2One)[!is.na(CCC), .(Site, gas, Approach = as.character(Approach),
                                                      pair = dLevelsAminusB, CCC, level = substr(Canopy_L1, 1, 2))]
 # (SITES_One2One is left in place for scripts sourced after this one)
 
 # 2. 30-min gradient fluxes per pair (filtered + despiked 9-min GF averaged to 30 min) -----
 read_approach <- function(m) {
-  e <- new.env(); load(file.path(filter.dir, paste0("SITES_", m, "_9min_FILTER", run.tag, ".Rdata")), envir = e)
+  e <- new.env(); load(file.path(filter.dir, paste0("SITES_", m, "_9min_FILTER", run.tag, ".RData")), envir = e)
   L <- get(ls(e)[1], envir = e)
   x <- rbindlist(lapply(names(L), function(s) { d <- L[[s]]
     data.table(Site = s, gas = d$gas, pair = d$dLevelsAminusB, GF = d$FG_mean, EC = d$EC_mean,

@@ -7,9 +7,11 @@ library(readr)
 library(tidyr)
 
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
-if (!exists("figdir")) figdir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
+if (!exists("figdir")) figdir <- paste0(DirRepo.eval, "/Figures/WF_Version1")
 
-load(file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata")))
+load(file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".RData")))
+# Site canopy height hc = NEON AOP lidar CHM mean (NEON site value at DCFS, KONA, LAJA, TREE without lidar), as in the manuscript
+SITES_One2One <- SITES_One2One %>% mutate(canopyHeight_m = coalesce(CHM.mean, canopyHeight_m))
 
 delta_z_site_detail_all <- SITES_One2One %>%
   mutate(delta_z = abs(MeasurementHeight_m_B - MeasurementHeight_m_A)) %>%

@@ -2,9 +2,9 @@
 
 library(tidyverse)
 library(sf)
-library(AOI)
+library(rnaturalearth)   # country outlines (packaged Natural Earth 1:110m); replaces AOI
 
-metadata <- read.csv('/Volumes/MaloneLab/Research/FluxGradient/Ameriflux_NEON field-sites.csv') %>% 
+metadata <- read.csv(paste0(localdir, "/Ameriflux_NEON field-sites.csv")) %>% 
   mutate(EcoType = case_when( Vegetation.Abbreviation..IGBP. == 'ENF' ~ 'Forest',
                                Vegetation.Abbreviation..IGBP. == 'DBF' ~ 'Forest', 
                                Vegetation.Abbreviation..IGBP. == 'MF' ~ 'Forest',
@@ -29,6 +29,8 @@ summary.igbp <-  metadata %>% reframe( .by = c(Vegetation.Abbreviation..IGBP., E
 
 
 canopy <- read.csv(file.path(paste(localdir, "canopy_commbined.csv", sep="/"))) %>% distinct
+# Site canopy height hc = NEON AOP lidar CHM mean (NEON site value where no lidar), as in the manuscript (Fig. 1)
+canopy <- canopy %>% mutate(canopyHeight_m = coalesce(CHM.mean, canopyHeight_m))
 
 canopy.Ht <- canopy %>% reframe( .by= Site,
                          canopyHeight_m = mean(canopyHeight_m))
@@ -41,8 +43,8 @@ plot.tower.counts <- ggplot(data=site.att.sf, aes(x=EcoType)) +
 
 site.att.sf.ht <- site.att.sf %>% left_join(canopy.Ht, by = 'Site')
 
-N.America <- aoi.usa <- aoi_get(country = 'North America')
-aoi.usa <- aoi_get(country = c('PR', 'USA'))
+N.America <- rnaturalearth::ne_countries(scale = 110, continent = "North America", returnclass = "sf")
+# (AOI lookup of PR/USA was unused)
 
 library(colorspace)
 plot.map <- ggplot() + geom_sf(data = N.America) + 
@@ -77,10 +79,10 @@ plot.canopy <-  ggplot(data= canopy.summary.lter) +
   theme(legend.position = "top") + labs(color = "Height Variance")  + theme_bw()
 
 
-top.plot <- ggarrange(plot.map, labels=c("(a)", "(b)"), ncol=2)
-bottom.plot <-ggarrange( plot.canopy,plot.tower.counts, common.legend=T,  labels=c("(c)", "(d)"), ncol=2)
+top.plot <- ggarrange(plot.map, labels="(a)", ncol=1)
+bottom.plot <-ggarrange( plot.canopy,plot.tower.counts, common.legend=T,  labels=c("(b)", "(c)"), ncol=2)
 
 final.plot <- ggarrange(top.plot , bottom.plot, ncol=1)
 
-ggsave("Figures/Map_plot.png", plot = final.plot, width = 7.6, height = 7, units = "in")
+ggsave(paste0(DirRepo.eval, "/Figures/Map_plot", run.tag, ".png"), plot = final.plot, width = 7.6, height = 7, units = "in", bg = "white")
 

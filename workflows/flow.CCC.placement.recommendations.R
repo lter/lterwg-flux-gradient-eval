@@ -24,9 +24,9 @@ suppressPackageStartupMessages({
 })
 
 # --- Paths ------------------------------------------------------
-root_dir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient"
-rdata    <- file.path(root_dir, "lterwg-flux-gradient-evalSITES_One2One_canopy_model.Rdata")
-fig_dir <- '/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1/'
+if (!exists("root_dir")) root_dir <- localdir
+rdata    <- file.path(root_dir, "lterwg-flux-gradient-evalSITES_One2One_canopy_model.RData")
+fig_dir <- paste0(DirRepo.eval, "/Figures/WF_Version1/")
 
 
 out_png  <- file.path(fig_dir , "CCC_placement_recommendations.png")

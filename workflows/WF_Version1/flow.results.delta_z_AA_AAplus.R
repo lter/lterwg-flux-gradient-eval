@@ -8,9 +8,9 @@ library(ggplot2)
 library(readr)
 
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
-if (!exists("figdir")) figdir <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/WF_Version1"
+if (!exists("figdir")) figdir <- paste0(DirRepo.eval, "/Figures/WF_Version1")
 
-load(file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".Rdata")))
+load(file.path(localdir, "NEON_GradientFlux_Data_Filter", paste0("SITES_One2One", run.tag, ".RData")))
 
 delta_z_eval <- SITES_One2One %>%
   mutate(delta_z = abs(MeasurementDist)) %>%

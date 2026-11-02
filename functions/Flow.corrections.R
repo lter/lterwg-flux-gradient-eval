@@ -31,7 +31,7 @@ val.approach.CCC.0.5 <- validation.approach(threshold = threshold.workflow )
 
 # Save these validation files: ####
 
-fileSave <- fs::path(localdir,paste0("Validation_SITE_DATA_FILTERED.Rdata"))
+fileSave <- fs::path(localdir,paste0("Validation_SITE_DATA_FILTERED.RData"))
 
 save(val.canopy.rf_model.all,val.approach.rf_model.all,val.canopy.rf_model.1,val.approach.rf_model.1 , val.canopy.CCC.0.5 ,  val.approach.CCC.0.5 ,file=fileSave)
 
