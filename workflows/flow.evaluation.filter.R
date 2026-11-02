@@ -1,3 +1,4 @@
+source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 if (!exists("run.tag")) run.tag <- "_AA_AW" # output-name tag; set in flow.evaluation.batch_V1.R
 # Filter Gradient Flux Data:
 
@@ -171,6 +172,12 @@ for( site in site.list){
                                 gas == "CH4"~ NA))
   
   
+  stage.before <- list(MBR = MBR_9min_FILTER, AE = AE_9min_FILTER, WP = WP_9min_FILTER)
+  input.tables <- list(MBR = MBR_9min.df.final, AE = AE_9min.df.final, WP = WP_9min.df.final)
+  stage.counts <- bind_rows(lapply(names(stage.before), function(method)
+    filter_stage_report(input.tables[[method]], stage.before[[method]], stage.before[[method]], method)))
+  rm(stage.before, input.tables)
+
   # Gradient-flux spike removal (GF only; EC is not used). Drops FG_mean outside
   # median +/- despike.k * MAD within gas x sampling-height pair x day/night x season,
   # computed over all periods loaded above. Set despike.k <- NULL in the batch file to skip.
@@ -181,21 +188,34 @@ for( site in site.list){
     WP_9min_FILTER  <- despike_fluxes(WP_9min_FILTER,  k = despike.k)
   }
   
+  final.counts <- bind_rows(
+    MBR_9min_FILTER %>% count(gas, dLevelsAminusB) %>% mutate(Approach = "MBR"),
+    AE_9min_FILTER %>% count(gas, dLevelsAminusB) %>% mutate(Approach = "AE"),
+    WP_9min_FILTER %>% count(gas, dLevelsAminusB) %>% mutate(Approach = "WP"))
+  stage.counts <- stage.counts %>% select(-retained, -rejected_spikes, -rejected_total) %>%
+    left_join(final.counts, by = c("gas", "dLevelsAminusB", "Approach")) %>%
+    mutate(retained = coalesce(n, 0L), rejected_spikes = after_snr_ustar - retained,
+           rejected_total = input - retained, site = site) %>% select(-n)
+  stopifnot(all(stage.counts$input == stage.counts$rejected_snr_ustar +
+                  stage.counts$rejected_spikes + stage.counts$retained))
+
   # Output the files
   rm(localdir.site)
   
   localdir.site <- paste(localdir, "/NEON_GradientFlux_Data_Filter/", site, sep="" )
   
   dir.create(localdir.site)
+  atomic_write_csv(stage.counts,
+    file.path(localdir.site, paste0(site, "_filter_stage_counts", run.tag, ".csv")), row.names = FALSE)
   
-  write.csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,paste0("_9min.report.stability.CO2", run.tag, ".csv"), sep=""))
-  write.csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,paste0("_9min.report.CO2", run.tag, ".csv"), sep=""))
+  atomic_write_csv( SITE_9min.report.stability.CO2,  paste(localdir.site, "/", site,paste0("_9min.report.stability.CO2", run.tag, ".csv"), sep=""))
+  atomic_write_csv( SITE_9min.report.CO2,  paste(localdir.site, "/", site,paste0("_9min.report.CO2", run.tag, ".csv"), sep=""))
   
-  write.csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,paste0("_9min.report.stability.H2O", run.tag, ".csv"), sep=""))
-  write.csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,paste0("_9min.report.H2O", run.tag, ".csv"), sep=""))
+  atomic_write_csv( SITE_9min.report.stability.H2O,  paste(localdir.site, "/", site,paste0("_9min.report.stability.H2O", run.tag, ".csv"), sep=""))
+  atomic_write_csv( SITE_9min.report.H2O,  paste(localdir.site, "/", site,paste0("_9min.report.H2O", run.tag, ".csv"), sep=""))
   
   
-  save( AE_9min_FILTER,
+  atomic_save( AE_9min_FILTER,
         WP_9min_FILTER,
         MBR_9min_FILTER, file = paste(localdir.site, "/", site, paste0("_FILTER", run.tag, ".Rdata"), sep=""))
   

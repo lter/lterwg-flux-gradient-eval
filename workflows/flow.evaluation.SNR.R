@@ -56,10 +56,8 @@ for( site in site.list){
                                         dConcSNR.min = SNR.threshold,
                                         approach = approach) %>% filter( gas == gas.t , dLevelsAminusB == MLevel)
  
-    lm_object <- lm(data = df.filter , 
-                    FC_nee_interp~FG_mean) 
-    
-    rmse <- sqrt(mean(lm_object$residuals^2,na.rm=T))
+    keep <- is.finite(df.filter$FC_turb_interp) & is.finite(df.filter$FG_mean)
+    rmse <- if (any(keep)) sqrt(mean((df.filter$FC_turb_interp[keep] - df.filter$FG_mean[keep])^2)) else NA_real_
     
     return(rmse)
   }
@@ -91,13 +89,13 @@ for( site in site.list){
       AE.rmse =  try(get.rmse( dataframe = AE_9min.df.final,
                                SNR.threshold = j, 
                                approach="AE", 
-                               gas = "CO2",
+                               gas.t = "CO2",
                                MLevel= i),  silent = T) %>% as.numeric
       
       WP.rmse =  try(get.rmse( dataframe = WP_9min.df.final,
                                SNR.threshold = j, 
                                approach="WP", 
-                               gas = "CO2",
+                               gas.t = "CO2",
                                MLevel= i), silent = T) %>% as.numeric
     
       df <- data.frame( dConcSNR.min= j,

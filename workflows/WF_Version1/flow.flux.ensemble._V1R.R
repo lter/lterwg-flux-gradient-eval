@@ -1,3 +1,4 @@
+if (!exists("atomic_save", mode = "function")) source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
@@ -313,7 +314,7 @@ ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Res
 
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Ensemble/SITE_DATA_ENSEMBLE_V1", run.tag, ".Rdata")))
 
-save( SITE_DATA_ENSEMBLE,
+atomic_save( SITE_DATA_ENSEMBLE,
       Linear_ENSEMBLE_plots_H2O, 
       Linear_ENSEMBLE_plots_CO2,  
       Linear_ENSEMBLE_Stats,

@@ -1,3 +1,4 @@
+if (!exists("atomic_save", mode = "function")) source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 source(fs::path(if (exists("DirRepo.eval")) DirRepo.eval else "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval", 'functions/calc.ensemble.R'))   # ensemble.halfhour()
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
@@ -302,7 +303,7 @@ ggsave(
   units = "in"
 )
 
-save(
+atomic_save(
   ensemble_timeseries_all,
   ensemble_site_metrics,
   ensemble_r2_summary,

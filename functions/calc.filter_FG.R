@@ -1,28 +1,25 @@
-# Although we trach cross gradient flags we dont filter by it! 
-
-filter_fluxes <- function( df, 
-                           dConcSNR.min,
-                           approach){
-  df <- as.data.frame(df) 
-  
-  H.filter.list = df$dLevelsAminusB %>% unique
-  
-  if( approach !="MBR"){
-  
+# One set of row flags drives both the filter and its rejection report.
+flux_filter_flags <- function(df, dConcSNR.min, approach) {
+  df <- as.data.frame(df)
+  if (approach != "MBR") {
     df$dConc.tracer <- dConcSNR.min
     df$dConc.tracer_sd <- 1
   }
-  
-  df.new <- df %>% mutate(dConcSNR = abs(dConc)/dConc_sd,
-                          dConcTSNR = abs(dConc.tracer)/dConc.tracer_sd) %>%  
-    filter(dLevelsAminusB  %in% H.filter.list,
-           TowerPosition_A != TowerPosition_B,
-           dConcSNR >= dConcSNR.min,
-           dConcTSNR >= dConcSNR.min,
-           ustar_interp >= ustar_threshold)
-  return(df.new)
+  df %>%
+    mutate(dConcSNR = abs(dConc) / dConc_sd,
+           dConcTSNR = abs(dConc.tracer) / dConc.tracer_sd,
+           flag.dConcSNR = as.integer(!coalesce(dConcSNR >= dConcSNR.min, FALSE)),
+           flag.dConcTSNR = as.integer(!coalesce(dConcTSNR >= dConcSNR.min, FALSE)),
+           flag.ustar_interp = as.integer(!coalesce(ustar_interp >= ustar_threshold, FALSE)),
+           flag.missing = as.integer(is.na(dConcSNR) | is.na(dConcTSNR) |
+                                     is.na(ustar_interp) | is.na(ustar_threshold)),
+           flag.interaction.ALL = as.integer(flag.dConcSNR + flag.dConcTSNR + flag.ustar_interp > 0))
 }
-
+filter_fluxes <- function(df, dConcSNR.min, approach) {
+  flux_filter_flags(df, dConcSNR.min, approach) %>%
+    filter(TowerPosition_A != TowerPosition_B, flag.interaction.ALL == 0L) %>%
+    select(-any_of(c("flag.dConcSNR", "flag.dConcTSNR", "flag.ustar_interp", "flag.missing", "flag.interaction.ALL")))
+}
 
 Apply.filter <- function( site.tibble,
                           dConcSNR.min, 
@@ -45,82 +42,44 @@ Apply.filter <- function( site.tibble,
   return(site.tibble_FILTER )  
 }
 
-# Filter Report:
-filter_report <- function( df, 
-                           dConcSNR.min, 
-                           approach){
-  df <- as.data.frame(df) 
-  
-  H.filter.list = df$dLevelsAminusB %>% unique
-  
-  
-  if( approach !="MBR"){
-    df$dConc.tracer <- dConcSNR.min
-    df$dConc.tracer_sd <- 1
-  }
-
-  df$cross_grad_flag %>% summary
-  df.new <- df %>% mutate(diff.flux = abs(FG_mean - FC_turb_interp),
-                          dConcSNR = abs(dConc)/dConc_sd,
-                          dConcTSNR = abs(dConc.tracer)/dConc.tracer_sd) %>%  
-    filter(dLevelsAminusB  %in% H.filter.list,
-           TowerPosition_A != TowerPosition_B) %>% 
-    mutate(
-      flag.dConcSNR = case_when( dConcSNR >= dConcSNR.min ~ 0, dConcSNR < dConcSNR.min ~ 1, is.na(dConcSNR ) ~ 0),
-      flag.dConcTSNR = case_when( dConcTSNR >= dConcSNR.min ~ 0, dConcTSNR < dConcSNR.min ~ 1, is.na(dConcTSNR ) ~ 0),
-           flag.ustar_interp = case_when( ustar_interp >=  ustar_threshold ~ 0, ustar_interp <  ustar_threshold ~ 1, is.na(ustar_interp) ~ 0),   
-      interaction.ALL= flag.ustar_interp + flag.dConcTSNR + flag.dConcSNR,
-      
-           flag.interaction.ALL = case_when( interaction.ALL > 0 ~1 ) )  %>% 
-    reframe( .by = dLevelsAminusB,
-             total =  length(timeEnd_A), 
-             flag.ustar_interp = sum(flag.ustar_interp, na.rm=T) /total *100,
-             flag.dConcTSNR =  sum(flag.dConcTSNR, na.rm=T) /total *100,
-             flag.dConcSNR =  sum(flag.dConcSNR, na.rm=T) /total *100,
-             flag.cross_grad =  sum(cross_grad_flag, na.rm=T) /total *100,
-             flag.interaction.ALL = sum(flag.interaction.ALL, na.rm=T)/total *100)
-  
-  return(df.new)
+# Percentages retain their existing names; counts reconcile with filter_fluxes().
+flux_filter_report <- function(df, dConcSNR.min, approach, groups) {
+  flux_filter_flags(df, dConcSNR.min, approach) %>%
+    filter(TowerPosition_A != TowerPosition_B) %>%
+    group_by(across(all_of(groups))) %>%
+    summarise(total = n(),
+              flag.ustar_interp = mean(flag.ustar_interp) * 100,
+              flag.dConcTSNR = mean(flag.dConcTSNR) * 100,
+              flag.dConcSNR = mean(flag.dConcSNR) * 100,
+              flag.cross_grad = sum(cross_grad_flag, na.rm = TRUE) / n() * 100,
+              rejected = sum(flag.interaction.ALL),
+              retained = sum(flag.interaction.ALL == 0L),
+              missing_inputs = sum(flag.missing),
+              .groups = "drop") %>%
+    mutate(flag.interaction.ALL = rejected / total * 100)
+}
+filter_report <- function(df, dConcSNR.min, approach) {
+  flux_filter_report(df, dConcSNR.min, approach, "dLevelsAminusB")
+}
+filter_report_stability <- function(df, dConcSNR.min, approach) {
+  flux_filter_report(df, dConcSNR.min, approach, c("dLevelsAminusB", "Stability_500"))
 }
 
-# Stability filter report:
-filter_report_stability <- function( df, 
-                           dConcSNR.min, 
-                           approach){
-  df <- as.data.frame(df) 
-  
-  H.filter.list = df$dLevelsAminusB %>% unique
-  
-  if( approach !="MBR"){
-    
-    df$dConc.tracer <- dConcSNR.min
-    df$dConc.tracer_sd <- 1
+# Reconcile every stage, including spike removal, by gas and sampling-height pair.
+filter_stage_report <- function(input, filtered, despiked, approach) {
+  count_stage <- function(x, name) {
+    x %>% filter(TowerPosition_A != TowerPosition_B) %>%
+      count(gas, dLevelsAminusB, name = name)
   }
-  
-  df.new <- df %>% mutate(diff.flux = abs(FG_mean - FC_turb_interp),
-                          dConcSNR = abs(dConc)/dConc_sd,
-                          dConcTSNR = abs(dConc.tracer)/dConc.tracer_sd) %>%  
-    filter(dLevelsAminusB  %in% H.filter.list,
-           TowerPosition_A != TowerPosition_B) %>% 
-    mutate(
-      flag.dConcSNR = case_when( dConcSNR >= dConcSNR.min ~ 0, dConcSNR < dConcSNR.min ~ 1, is.na(dConcSNR ) ~ 0),
-      flag.dConcTSNR = case_when( dConcTSNR >= dConcSNR.min ~ 0, dConcTSNR < dConcSNR.min ~ 1, is.na(dConcTSNR ) ~ 0),
-      flag.ustar_interp = case_when( ustar_interp >=  ustar_threshold ~ 0, ustar_interp <  ustar_threshold ~ 1, is.na(ustar_interp) ~ 0),
-      interaction.ALL= flag.ustar_interp + flag.dConcTSNR + flag.dConcSNR  , 
-      
-      
-      flag.interaction.ALL = case_when( interaction.ALL > 0 ~1 ) )  %>% 
-    reframe( .by = c(dLevelsAminusB,Stability_500),
-             total =  length(timeEnd_A), 
-             flag.ustar_interp = sum(flag.ustar_interp, na.rm=T) /total *100,
-             flag.dConcTSNR =  sum(flag.dConcTSNR, na.rm=T) /total *100,
-             flag.dConcSNR =  sum(flag.dConcSNR, na.rm=T) /total *100,
-             flag.cross_grad =  sum(cross_grad_flag, na.rm=T)/total *100,
-             flag.interaction.ALL = sum(flag.interaction.ALL, na.rm=T)/total *100)
-  
-  return(df.new)
+  count_stage(input, "input") %>%
+    left_join(count_stage(filtered, "after_snr_ustar"), by = c("gas", "dLevelsAminusB")) %>%
+    left_join(count_stage(despiked, "retained"), by = c("gas", "dLevelsAminusB")) %>%
+    mutate(across(c(after_snr_ustar, retained), ~coalesce(.x, 0L)),
+           rejected_snr_ustar = input - after_snr_ustar,
+           rejected_spikes = after_snr_ustar - retained,
+           rejected_total = input - retained,
+           Approach = approach)
 }
-
 
 Generate.filter.report <- function( site.tibble,
                                     dConcSNR.min,

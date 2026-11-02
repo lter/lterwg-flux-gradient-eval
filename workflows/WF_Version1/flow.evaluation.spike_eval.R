@@ -1,3 +1,4 @@
+if (!exists("atomic_save", mode = "function")) source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 # flow.evaluation.spike_eval.R ------------------------------------------------
 # What causes gradient-flux (GF) spikes?
 #
@@ -182,7 +183,7 @@ for (m in c("MBR","AE","WP")) {
 }
 OR <- rbindlist(OR); auc <- rbindlist(auc)
 
-save(tab.overall, tab.floor, tab.paired, tab.wp.sing, tab.level, tab.level.site, tab.L2, tab.period, tab.stab, tab.daynight, tab.character, tab.cluster, tab.sites,
+atomic_save(tab.overall, tab.floor, tab.paired, tab.wp.sing, tab.level, tab.level.site, tab.L2, tab.period, tab.stab, tab.daynight, tab.character, tab.cluster, tab.sites,
      B.hour, B.snr, B.tsnr, B.ustar, B.zeta, B.ns, B.zrel, B.K, B.zdz0, OR, auc,
      file = file.path(spike.dir, paste0("SPIKE_EVAL", run.tag, ".Rdata")))
 fwrite(tab.level.site, file.path(spike.dir, paste0("SPIKE_rate_by_level", run.tag, ".csv")))

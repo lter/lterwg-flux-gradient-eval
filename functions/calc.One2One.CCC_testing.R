@@ -72,12 +72,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
       facet_wrap(~ dLevelsAminusB, ncol = length(unique(WP.DF$dLevelsAminusB)),
-           labeller = function(variable, value) {
-             if (variable == "dLevelsAminusB") {
-               return(wp_labels[as.character(value)])
-             }
-             return(value)
-           }) +
+           labeller = ggplot2::labeller(dLevelsAminusB = ggplot2::as_labeller(mbr_labels))) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("MBR") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -88,12 +83,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
       facet_wrap(~ dLevelsAminusB, ncol = length(unique(WP.DF$dLevelsAminusB)),
-                 labeller = function(variable, value) {
-                   if (variable == "dLevelsAminusB") {
-                     return(wp_labels[as.character(value)])
-                   }
-                   return(value)
-                 }) +
+                 labeller = ggplot2::labeller(dLevelsAminusB = ggplot2::as_labeller(wp_labels))) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("WP") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -101,11 +91,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
       facet_wrap(~ dLevelsAminusB, ncol = length(unique(AE.DF$dLevelsAminusB)),
-                 labeller = function(variable, value) {
-                   if (variable == "dLevelsAminusB") {
-                     return(ae_labels[as.character(value)])
-                   }
-                   return(value)}) +
+                 labeller = ggplot2::labeller(dLevelsAminusB = ggplot2::as_labeller(ae_labels))) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("AE") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -136,12 +122,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
       facet_wrap(~ dLevelsAminusB, ncol = length(unique(MBR.DF$dLevelsAminusB)),
-                 labeller = function(variable, value) {
-                   if(variable == "dLevelsAminusB") {
-                     return(mbr_labels[as.character(value)])
-                   }
-                   return(value)
-                 }) +
+                 labeller = ggplot2::labeller(dLevelsAminusB = ggplot2::as_labeller(mbr_labels))) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("MBR") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -149,12 +130,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
       facet_wrap(~ dLevelsAminusB, ncol = length(unique(MBR.DF$dLevelsAminusB)),
-                 labeller = function(variable, value) {
-                   if(variable == "dLevelsAminusB") {
-                     return(mbr_labels[as.character(value)])
-                   }
-                   return(value)
-                 }) +
+                 labeller = ggplot2::labeller(dLevelsAminusB = ggplot2::as_labeller(wp_labels))) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("WP") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     
@@ -162,12 +138,7 @@ ccc.plots <- function(MBR.DF, AE.DF, WP.DF, gas) {
       stat_smooth(method = "lm", se=FALSE, color="red", formula = y ~ x) + 
       geom_point(alpha=0.1) +
       facet_wrap(~ dLevelsAminusB, ncol = length(unique(MBR.DF$dLevelsAminusB)),
-                 labeller = function(variable, value) {
-                   if(variable == "dLevelsAminusB") {
-                     return(mbr_labels[as.character(value)])
-                   }
-                   return(value)
-                 }) +
+                 labeller = ggplot2::labeller(dLevelsAminusB = ggplot2::as_labeller(ae_labels))) +
       geom_abline(intercept = 0, slope = 1, col = 'grey50', linetype="dashed") + 
       ylab("AE") + xlim(-30, 30) + ylim(-30, 30) + xlab("EC") + theme_bw()
     

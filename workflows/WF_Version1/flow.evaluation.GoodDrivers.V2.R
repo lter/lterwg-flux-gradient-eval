@@ -1,3 +1,4 @@
+if (!exists("atomic_save", mode = "function")) source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
@@ -87,7 +88,7 @@ if( stop == 'no'){
   
   final.vars <- c(rf_index.sdesign.vars, rf_index.Cspec.vars,rf_index.Cstructure.vars) 
   
-  save(final.vars, file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".Rdata")) )
+  atomic_save(final.vars, file= file.path(dir, paste0("FinalVarsSelection", run.tag, ".Rdata")) )
 }
 
 # Final Model Fit : ####
@@ -115,7 +116,7 @@ train$rf_model <- predict(rf_model , train)
 confusionMatrix(train$rf_model, train$Good.CCC)
 
 # Save the model 
-save(train, test,rf_model, final.vars, SITES_One2One, 
+atomic_save(train, test,rf_model, final.vars, SITES_One2One, 
      file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep="") )
 }
 
@@ -133,7 +134,7 @@ if (exists("refit.rf") && isTRUE(refit.rf) && stop != 'no') {
                            importance = TRUE, predicted = TRUE, keep.inbag = TRUE)
   print(rf_model)
   dir.create(paste(localdir, "/NEON_GradientFlux_Data_MODEL", sep = ""), showWarnings = FALSE)
-  save(train, test, rf_model, final.vars, SITES_One2One,
+  atomic_save(train, test, rf_model, final.vars, SITES_One2One,
        file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/Good_Fluxes.Rdata", run.tag, ""), sep = ""))
 }
 
@@ -312,11 +313,11 @@ final.model.plots <- ggarrange(plot.Cmatrix,  ggarrange(plot.approach , plot.can
 
 ggsave(paste0("/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval/Figures/Model.plot.matrix", run.tag, ".png"), plot =  final.model.plots, width = 9, height = 3, units = "in")
 
-save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
+atomic_save(train, test,rf_model, final.vars, SITES_One2One, SITES_One2One_model,
      file= paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_model", run.tag, ".Rdata"), sep="") )
 
 # Save the AA_AW canopy model artifact expected by downstream RSHP scripts.
-save(train, test, rf_model, final.vars, SITES_One2One, SITES_One2One_model,
+atomic_save(train, test, rf_model, final.vars, SITES_One2One, SITES_One2One_model,
      file = paste(localdir, paste0("/NEON_GradientFlux_Data_MODEL/SITES_One2One_canopy_model", run.tag, ".Rdata"), sep = ""))
   
 # Results

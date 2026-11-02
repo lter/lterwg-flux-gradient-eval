@@ -14,6 +14,7 @@ library(sf)
 #DirRepo <- 'C:/Users/csturtevant/Documents/Git/lterwg-flux-gradient' # Relative or absolute path to lterwg-flux-gradient git repo on your local machine. Make sure you've pulled the latest from main!
 DirRepo.eval <-"/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
 setwd(DirRepo.eval)
+source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 
 #localdir <- 'C:/Users/csturtevant/OneDrive - Battelle Ecology/FluxGradient/filterTesting' # We'll deposit output files here prior to uploading to Google Drive
 
@@ -78,24 +79,24 @@ source(fs::path(DirRepo.eval,'workflows/flow.evaluation.filter.R')) # 20 minutes
 source(fs::path(DirRepo.eval,'workflows/flow.evaluation.sitelist_FILTER.R'))
 # 4 Objects are created
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED", run.tag, ".Rdata")))
-save( SITE_DATA_FILTERED,file=fileSave)
+atomic_save( SITE_DATA_FILTERED,file=fileSave)
 if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_MBR_9min_FILTER", run.tag, ".Rdata")))
-save( SITES_MBR_9min_FILTER,file=fileSave)
+atomic_save( SITES_MBR_9min_FILTER,file=fileSave)
 if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_AE_9min_FILTER", run.tag, ".Rdata")))
-save( SITES_AE_9min_FILTER ,file=fileSave)
+atomic_save( SITES_AE_9min_FILTER ,file=fileSave)
 if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_WP_9min_FILTER", run.tag, ".Rdata")))
-save( SITES_WP_9min_FILTER,file=fileSave)
+atomic_save( SITES_WP_9min_FILTER,file=fileSave)
 if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # Save the reports as well:
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_FILTER_REPORTS", run.tag, ".Rdata")))
-save( filter.report.H2O,
+atomic_save( filter.report.H2O,
       filter.report.CO2, 
       filter.report.stability.H2O,
       filter.report.stability.CO2, file=fileSave)
@@ -108,13 +109,13 @@ message('Running  CCC computation by Sampling Height...')
 source(fs::path(DirRepo.eval,'workflows/flow.evaluation.One2One.CCC.R'))
 
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITES_One2One", run.tag, ".Rdata")))
-save( SITES_One2One, file=fileSave)
+atomic_save( SITES_One2One, file=fileSave)
 if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # Compile Data with the CCC in it:
 source(fs::path(DirRepo.eval,'workflows/flow.evaluation.sitelist_CCC.R')) # ENSURE all SUBSEQUENT FILES ARE USING THE FILES PRODUCED HERE:
 fileSave <- fs::path(localdir,paste0(paste0("/NEON_GradientFlux_Data_Filter/SITE_DATA_FILTERED_CCC", run.tag, ".Rdata")))
-save( SITE_DATA_FILTERED_CCC,file=fileSave)
+atomic_save( SITE_DATA_FILTERED_CCC,file=fileSave)
 if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(media = fileSave, overwrite = T, path = drive_url)
 
 # ----------------------WF_Version1--------------------
@@ -122,7 +123,7 @@ if (!exists("upload.drive") || isTRUE(upload.drive)) googledrive::drive_upload(m
 # Canopy Analysis:
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.GoodDrivers.V2.R'))
 fileSave <- fs::path(localdir,paste0(paste0("SITES_One2One_canopy_model", run.tag, ".Rdata")))
-save( SITES_One2One_model,file=fileSave )
+atomic_save( SITES_One2One_model,file=fileSave )
 
 # ENSEMBLE:
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.ensemble._V1R.R'))
@@ -130,7 +131,7 @@ source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.flux.ensemble._V1R.R'))
 
 source(fs::path(DirRepo.eval,'workflows/WF_Version1/flow.evaluation.diel_V1.R'))
 fileSave <- paste0(localdir, "/NEON_GradientFlux_Ensemble/DIEL_SUMMARY_ENSEMBLE_V1", run.tag, ".RDATA")
-save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,ENSEMBLE_DIELS_EVAL,
+atomic_save( ENSEMBLE_DIELS ,ENSEMBLE_DIELS_Site,ENSEMBLE_DIELS_Site_summary,ENSEMBLE_DIELS_EVAL,
       DIEL_curve_diagnostics, 
       file= fileSave )
 

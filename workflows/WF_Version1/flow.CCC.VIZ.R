@@ -1,3 +1,4 @@
+if (!exists("atomic_save", mode = "function")) source(file.path(DirRepo.eval, "functions", "workflow.runtime.R"))
 if (!exists("run.tag")) run.tag <- "_AA_AW_2021_2026" # output-name tag; set in flow.evaluation.batch_V1.R ("_AA_AW" = preprint run)
 if (!exists("localdir")) localdir <- "/Volumes/MaloneLab/Research/FluxGradient"
 if (!exists("DirRepo.eval")) DirRepo.eval <- "/Users/sm3466/Library/CloudStorage/Dropbox-YSE/Sparkle Malone/Research/FluxGradient/lterwg-flux-gradient-eval"
@@ -277,6 +278,6 @@ mean.counts <- SITES_One2One %>% filter(gas == "CO2", CCC >= 0.5 ) %>% mutate( c
 mean.counts$Mean.count %>% mean
 mean.counts$Mean.count %>% sd       
 
-save(plot.CCC.CO2.all ,
+atomic_save(plot.CCC.CO2.all ,
      plot.CCC.H2O.all, plots.samplingHeights.counts, file = fs::path(localdir,paste0(paste0("/flow.CCC_VIZ", run.tag, ".RDATA"))))
 
