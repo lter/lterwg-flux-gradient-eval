@@ -141,7 +141,7 @@ Known limitation: the stability corrections of the flux calculation (φh, Eqs. 4
 | Manuscript | Script | Reads |
 |---|---|---|
 | Abstract, Sect. 3.1 | `ms_S3.1_reliable_pairs.R` | `SITES_One2One`, `flow.flux.counts` |
-| Sect. 2.4.2 (Eqs. 4–5 validity range) | `ms_S2.4_stability_range.R` | per-site `{SITE}_FILTER` files (not re-checked: on Bouchet only) |
+| Sect. 2.4.2 (Eqs. 4–5 validity range) | `ms_S2.4_stability_range.R` | per-site `{SITE}_FILTER` files (on Bouchet; 0.05 % AE, 0.10 % WP outside) |
 | Sect. 2.5 (filters) | `ms_S2.5_filters.R` | `SITES_FILTER_REPORTS` |
 | Sects. 2.5, 3.4 (issue #5) | `ms_S2.5_S3.4_ec_representativeness.R` | `EC_filter_selection_v3b/` |
 | Sects. 2.7, 3.2 (random forest) | `ms_S3.2_random_forest.R` | `flow.flux.counts` |
@@ -153,7 +153,7 @@ Known limitation: the stability corrections of the flux calculation (φh, Eqs. 4
 | Sect. 2.5, App. B, Supplement S1 | `ms_AppB_spikes.R` | `Spike_Eval/SPIKE_*` |
 | App. C, Supplement S2 | `ms_AppC_noEC.R` | `Spike_Eval/noEC_*`, `SITES_*_9min_FILTER` |
 
-Checked 2 Nov 2026 against the v3b outputs: every script except `ms_S2.4_stability_range.R` (its inputs are only on Bouchet) reproduces the numbers in the revised manuscript (e.g. 17.6/25.2 % reliable pairs at 42/43 sites; RF OOB 11.9 %, accuracy 89.6 % vs NIR 80.8 %; r(CCC, lower inlet − hc) 0.42/0.50; ensemble windows 1.57×/1.54×; spread ρ 0.43/0.58; EC retention 20/44 %; AA-MBR self-agreement AUC 0.59; top-3 RF CCC 0.49/0.60).
+Checked 2 Nov 2026 against the v3b outputs: every script reproduces (`ms_S2.4_stability_range.R` was run on Bouchet, where its inputs are) the numbers in the revised manuscript (e.g. 17.6/25.2 % reliable pairs at 42/43 sites; RF OOB 11.9 %, accuracy 89.6 % vs NIR 80.8 %; r(CCC, lower inlet − hc) 0.42/0.50; ensemble windows 1.57×/1.54×; spread ρ 0.43/0.58; EC retention 20/44 %; AA-MBR self-agreement AUC 0.59; top-3 RF CCC 0.49/0.60).
 
 ## Supplementary analyses
 These scripts produce the figures, tables and numbers in the manuscript supplement (essd-2026-413, review revision):

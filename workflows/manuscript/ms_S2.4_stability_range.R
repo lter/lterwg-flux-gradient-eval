@@ -2,7 +2,8 @@
 # Share of the filtered AE and WP values (CO2, H2O) whose pair stability zeta = (z - d)/L lies outside -5 < zeta < 1.
 # Input: the per-site filter files NEON_GradientFlux_Data_Filter/{SITE}/{SITE}_FILTER<run.tag>.RData written by
 # flow.evaluation.filter.R (AE_9min_FILTER, WP_9min_FILTER); the combined SITE_DATA_FILTERED* tables drop zeta.
-# Manuscript (v3b): < 0.2 % of AE and < 0.4 % of WP values outside. Not re-run on 2 Nov 2026 (files only on Bouchet).
+# v3b (run on Bouchet 3 Nov 2026, 47 sites): 0.05 % of AE (2,534,056) and 0.10 % of WP (1,244,324) filtered values outside
+# (AE CO2 0.07, H2O 0.04; WP CO2 0.15, H2O 0.08 %); the manuscript says < 0.2 % and < 0.4 %. Needs ~32 GB RAM.
 if (!exists("ms_rdata")) source(file.path(DirRepo.eval, "workflows", "manuscript", "ms_setup.R"))
 
 fdir  <- file.path(localdir, "NEON_GradientFlux_Data_Filter")
