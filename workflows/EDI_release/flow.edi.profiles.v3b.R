@@ -33,7 +33,7 @@ if (root == "") {
 }
 if (is.na(root) || !dir.exists(root)) stop("FluxGradient root not found; set FG_ROOT")
 edi.dir <- file.path(root, Sys.getenv("FG_EDI_DIR", "NEON_GradientFlux_EDI_2021_2026_v3b"))
-tmp.dir <- file.path(root, "EDI_v3b_scripts", "profiles_tmp")
+tmp.dir <- Sys.getenv("FG_PROFILE_TMP", file.path(root, "EDI_v3b_scripts", "profiles_tmp"))  # one per release period
 
 args <- commandArgs(trailingOnly = TRUE)
 mode <- if (length(args)) args[1] else "combine"
