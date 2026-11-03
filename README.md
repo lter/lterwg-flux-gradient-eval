@@ -109,6 +109,23 @@ The CSV lists **every half-hour** from the first to the last value of each site,
 
 `FG_ENSEMBLE_SD` ranks uncertainty well: errors against EC grow with it, Spearman 0.43 (CO2) and 0.56 (H2O). It is not a calibrated interval. EC lies within ±1 SD in 42–48% and within ±2 SD in 66–70% of windows (published 2021–2026 run).
 
+## EDI v3b release: which script makes each file
+The release folder is `NEON_GradientFlux_EDI_2021_2026_v3b/` on the MaloneLab server (`/Volumes/MaloneLab/Research/FluxGradient`). Scripts in `workflows/EDI_release/` are also kept, with logs and md5s, in `EDI_v3b_scripts/` on the server. "calc" = the flux-calculation repository, `lter/lterwg-flux-gradient`; "eval" = this repository.
+
+| File(s) | Made by | Notes |
+|---|---|---|
+| `{SITE}/{SITE}_MBR_9min.df.final.csv`, `_AE_`, `_WP_` | calc: `workflows/flow.evaluation.dataframe_EDI.R`, sourced by `workflows/WorkFlow_rerun_2021_2026_v3.R` (one Slurm task per site; scripts in eval `hpc/bouchet_v3b/`) | Same-inlet `n_n` rows then removed with eval `workflows/EDI_release/remove_self_pairs_v3b.sh`; the writer patch `edi_drop_self.patch.R` drops them in future runs. |
+| `{SITE}/{SITE}_GF_ENSEMBLE_30min.csv`, `Metadata_table_GF_ENSEMBLE.csv` | eval: `workflows/WF_Version1/flow.flux.ensemble._V1R.R` → `write.ensemble.edi()` in `functions/calc.ensemble.R` | Written when `write.edi.ensemble` is TRUE (default for new runs). None at ABBY, GUAN, OSBS, PUUM (no reliable pairs). |
+| `Metadata_table_method_MBR.csv`, `_AE.csv`, `_WP.csv`, `Site_Canopy_Attributes.csv`, `Site_SamplingHeightPairs.csv`, `Metadata_table_site_canopy.csv` | eval: `workflows/EDI_release/flow.edi.metadata.v3b.R` | Run after the profile table. |
+| `Site_ConcentrationProfiles.csv` | eval: `workflows/EDI_release/flow.edi.profiles.v3b.R` (`site` per site via `run_profiles_v3b.sh`, then `combine`) | Reads the AE 9-min files. |
+| `{SITE}/{SITE}_STORAGE_FLUX_30min.csv` | calc: `workflows/flow.neon.storage.R` (two runs: Aug 2021–Jun 2024 → `NEON_Storage_Flux/`, Jul 2024–Aug 2026 → `NEON_Storage_Flux_202407_202608/`), merged by eval `workflows/EDI_release/flow.edi.storage.v3b.R` | The merge keeps the newer run at the 1 Jul 2024 00:00 overlap and corrects the CH4 unit labels (nmol → umol; values unchanged). Row counts and md5s: `EDI_v3b_scripts/storage_merge_v3b_summary.txt`. |
+| `Metadata_table_STORAGE_FLUX.csv` | calc: `workflows/flow.neon.storage.metadata.R` (`NEON_storage_flux_metadata.csv`), with a `file_name_pattern` column and notes on the merge, gap filling and CH4 units added by hand (copy in `workflows/EDI_release/`) | |
+| `canopy_combined.csv`, `Metadata_table_canopy_combined.csv` | eval: `aop/flow.canopy.R` (writes `canopy_commbined.csv` in the FluxGradient root; inputs from `aop/workflow_master_AOP.R`); column table `aop/canopy_commbined_metadata.csv`, written by hand | Renamed for the release; the code still reads `canopy_commbined.csv`. `CanopyHeight` is hc (= `hc_m` in Site_Canopy_Attributes.csv); `canopyHeight_m` is the NEON site-metadata height. |
+| `UstarNeonSites.csv`, `Metadata_table_UstarNeonSites.csv` | eval: `exploratory/flow.AmeriFlux__UstarThresholdR.R` (AmeriFlux FLUXNET AUXNEE u* thresholds); same file as calc `metadata/UstarNeonSites.csv`. Column table written by hand for the release (copy in `workflows/EDI_release/`) | `Threshold.final` is the threshold applied. |
+| `metadata_validation.csv`, `Metadata_table_metadata_validation.csv` | Compiled by hand for the four non-NEON validation sites (no script); column table by hand | Release copy has the FI-Hyy latitude without its leading tab. |
+
+Methods text for ezEML: `EDI_v3b_methods_canopy_height.md`; build notes and md5s: `README_EDI_v3b_metadata.md` (both in `workflows/EDI_release/`). File list with server links: the EDI v3b inventory doc.
+
 ## Version 3b run used in the revised manuscript (October 2026)
 
 `flow.evaluation.batch_V1.R` is set to the run behind every number, table and figure of the revised manuscript:

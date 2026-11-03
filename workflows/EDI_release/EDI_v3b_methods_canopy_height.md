@@ -16,6 +16,7 @@
 
 **Canopy height.** The site canopy height (hc) used in this dataset and in Malone et al. (2026) is the mean of the NEON Airborne Observation Platform (AOP) lidar canopy height model (DP3.30015.001) over the tower area, averaged across available flight years. Four sites have no lidar summary (DCFS, KONA, LAJA, TREE); there, the canopy height in the NEON site metadata is used instead. Site values range from 0.03 m (BARR) to 37.9 m (SERC).
 - hc is reported as `hc_m` (with `hc_source`) in Site_Canopy_Attributes.csv, together with the lidar summary statistics, AOP vegetation indices and lidar canopy-structure metrics.
+- canopy_combined.csv (one row per site and inlet pair) gives the same hc as `CanopyHeight`. Its `canopyHeight_m` column is the NEON site-metadata canopy height, which is used for hc only at DCFS, KONA, LAJA and TREE; `CHM.mean` is the lidar value.
 - Site_SamplingHeightPairs.csv gives each inlet's height relative to hc and the class of each sampling-height pair:
   - AA: both inlets at or above the canopy.
   - AW: upper inlet above the canopy, lower inlet within it.
