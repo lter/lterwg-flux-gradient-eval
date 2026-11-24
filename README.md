@@ -110,6 +110,9 @@ The CSV lists **every half-hour** from the first to the last value of each site,
 `FG_ENSEMBLE_SD` ranks uncertainty well: errors against EC grow with it, Spearman 0.43 (CO2) and 0.56 (H2O). It is not a calibrated interval. EC lies within ±1 SD in 42–48% and within ±2 SD in 66–70% of windows (published 2021–2026 run).
 
 ## EDI v3b release: which script makes each file
+
+### Attempt 1: split into two halves
+
 EDI limits file sizes, so the v3b release is submitted as **two packages**: an original covering Aug 2021 – Jun 2024 and a temporal update covering Jul 2024 – Aug 2026. Each is a self-contained folder on the MaloneLab server (`/Volumes/MaloneLab/Research/FluxGradient`) that can be zipped as it is:
 - `NEON_GradientFlux_EDI_202108_202406_v3b/` (original)
 - `NEON_GradientFlux_EDI_202407_202608_v3b/` (temporal update)
@@ -136,6 +139,10 @@ Split (Bouchet, from the FluxGradient folder; scripts and logs in `EDI_split_v3b
 | `metadata_validation.csv`, `Metadata_table_metadata_validation.csv` | Compiled by hand for the four non-NEON validation sites (no script); column table by hand | Release copy has the FI-Hyy latitude without its leading tab. |
 
 Methods text for ezEML: `EDI_v3b_methods_canopy_height.md`; build notes and md5s: `README_EDI_v3b_metadata.md` (both in `workflows/EDI_release/`). File list with server links: the EDI v3b inventory doc.
+
+### Attempt 2: split into annual files
+
+For the second attempt at EDI submission, the combined 2021-2026 flux files were split into annual files instead. As a result, `NEON_GradientFlux_EDI_2021_2026_v3b` was split into `NEON_GradientFlux_EDI_2021_v3b`, `NEON_GradientFlux_EDI_2022_v3b`, ..., up to `NEON_GradientFlux_EDI_2026_v3b`. These folders were then zipped for submission to EDI. The script used to split these files is `workflows/EDI_release/split_into_annual_files.R`.
 
 ## Version 3b run used in the revised manuscript (October 2026)
 
